@@ -29,6 +29,3 @@ SkillBridge offers a dynamic micro-project marketplace where:
 *   **Backend:** MongoDB
 *   **Version Control:** GitHub
 
-## Getting Started
-
-*(will to fill this out once the project has basic functionality.)*

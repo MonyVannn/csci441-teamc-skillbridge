@@ -12,3 +12,47 @@ datasource db {
   provider = "mongodb"
   url      = env("MONGODB_URI")
 }
+
+model User {
+  id        String   @id @map("_id") @db.ObjectId // MongoDB's default `_id` and ObjectId type
+  clerkId   String   @unique // Link to Clerk's user ID
+  email     String   @unique
+  firstName String?
+  lastName  String?
+  bio       String?
+  imageUrl  String? // Clerk usually provides this
+  role      UserRole @default(USER)
+  occupied  Boolean  @default(false) // Is the user currently working on a project?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships (will define other models soon)
+  // projects           Project[] @relation("BusinessOwnerProjects") // For business owners
+  // appliedProjects    Project[] @relation("StudentAppliedProjects") // For students
+
+  // Social Links, Experience, Badges - REVISIT OPTIONS BELOW
+  socialLinks SocialLink[] // Option B: Use a separate embedded document (MongoDB-specific)
+  experiences Experience[] // Option B: Use a separate embedded document (MongoDB-specific)
+  // badges       String[]     // Option A: Simple array of strings
+}
+
+// Embedded documents for MongoDB (No @id, no @map)
+// These models are "embedded" within the User document and don't get their own collection.
+type SocialLink {
+  type String // e.g., "LinkedIn", "GitHub"
+  url  String
+}
+
+type Experience {
+  title       String
+  company     String
+  startDate   DateTime
+  endDate     DateTime? // Optional end date if current
+  description String?
+}
+
+enum UserRole {
+  ADMIN
+  BUSINESS_OWNER
+  USER // Student
+}

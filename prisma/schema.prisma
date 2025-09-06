@@ -31,9 +31,17 @@ model User {
   // appliedProjects    Project[] @relation("StudentAppliedProjects") // For students
 
   // Social Links, Experience, Badges - REVISIT OPTIONS BELOW
-  socialLinks SocialLink[] // Option B: Use a separate embedded document (MongoDB-specific)
-  experiences Experience[] // Option B: Use a separate embedded document (MongoDB-specific)
-  // badges       String[]     // Option A: Simple array of strings
+  socialLinks SocialLink[]
+  experiences Experience[]
+
+  earnedSkillBadges          SkillLevelBadge[] // List of badges for skill progression
+  earnedSpecializationBadges SpecializationBadge[] // List of badges for expertise areas
+  earnedEngagementBadges     EngagementBadge[] // List of badges for community involvement
+
+  // Complementary data not strictly "badges" but displayed prominently
+  totalHoursContributed Int
+  projectsCompleted     Int
+  industriesExperienced String[] // Array of unique industry names (e.g., "Technology", "Healthcare", "Non-profit")
 }
 
 // Embedded documents for MongoDB (No @id, no @map)
@@ -49,6 +57,27 @@ type Experience {
   startDate   DateTime
   endDate     DateTime? // Optional end date if current
   description String?
+}
+
+enum SkillLevelBadge {
+  NEWBIE // E.g., First project completed
+  BEGINNER // E.g., Completed 3 projects
+  INTERMEDIATE // E.g., Completed 10 projects, high ratings
+  ADVANCED // E.g., Completed 25 projects, consistent expert ratings
+  EXPERT // E.g., Top percentile, proven track record
+}
+
+enum SpecializationBadge {
+  WEB_DEVELOPER_PRO // Completed multiple web dev projects
+  DATA_ANALYST_ACE // Completed multiple data analysis projects
+  DESIGN_THINKER // Completed multiple UI/UX projects
+  COMMUNITY_LEADER // Actively helps other students, maybe mentor role
+}
+
+enum EngagementBadge {
+  TOP_CONTRIBUTOR // Highly active, consistently takes projects
+  MENTOR // Guides other students (if you build a mentorship feature)
+  VETERAN // Completed a high number of projects/hours (e.g., 50 projects OR 200 hours)
 }
 
 enum UserRole {

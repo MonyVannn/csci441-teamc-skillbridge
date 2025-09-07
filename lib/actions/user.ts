@@ -3,7 +3,15 @@ import prisma from "../prisma";
 import { User } from "@prisma/client";
 
 export async function createUser(userData: UserJSON) {
+  if (
+    !Array.isArray(userData.email_addresses) ||
+    userData.email_addresses.length === 0 ||
+    !userData.email_addresses[0]?.email_address
+  ) {
+    throw new Error("User data is missing a valid email address.");
+  }
   const email = userData.email_addresses[0].email_address;
+
   try {
     const newUser = await prisma.user.create({
       data: {

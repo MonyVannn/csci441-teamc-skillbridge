@@ -50,7 +50,7 @@ export async function POST(req: Request) {
   const eventType = evt.type;
   if (eventType === "user.created") {
     try {
-      createUser(evt.data);
+      await createUser(evt.data);
     } catch (e) {
       console.error("Error saving user", e);
       return new Response("Error saving user", { status: 500 });

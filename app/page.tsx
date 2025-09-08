@@ -1,79 +1,520 @@
+import { Heart, Star, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Slider } from "@/components/ui/slider";
+import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
 
-export default function Home() {
+const services = [
+  {
+    id: 1,
+    thumbnail:
+      "https://plus.unsplash.com/premium_photo-1671461774955-7aab3ab41b90?q=80&w=2671&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    title: "Clean and organize a small dataset for business insights",
+    seller: {
+      name: "Sarah L.",
+      avatar:
+        "https://images.unsplash.com/photo-1607746882042-944635dfe10e?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80",
+      topRated: true,
+      level: "Top Rated ⭐⭐⭐",
+    },
+    rating: 4.9,
+    reviews: "120",
+    price: 50,
+    duration: "2 days",
+    hasConsultation: false,
+  },
+  {
+    id: 2,
+    thumbnail:
+      "https://images.unsplash.com/photo-1556943418-0e5712249b9d?q=80&w=2669&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    title: "Design a simple promotional flyer for a nonprofit event",
+    seller: {
+      name: "David K.",
+      avatar:
+        "https://images.unsplash.com/photo-1595152772835-219674b2a8a6?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80",
+      topRated: true,
+      level: "Top Rated ⭐⭐⭐",
+    },
+    rating: 4.8,
+    reviews: "89",
+    price: 40,
+    duration: "3 days",
+    hasConsultation: true,
+  },
+  {
+    id: 3,
+    thumbnail:
+      "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?q=80&w=2669&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    title: "Fix small bugs on a website and improve responsiveness",
+    seller: {
+      name: "Scaler Devs",
+      avatar:
+        "https://images.unsplash.com/photo-1603415526960-f7e0328c63b1?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80",
+      topRated: true,
+      level: "Top Rated ⭐⭐⭐",
+    },
+    rating: 5.0,
+    reviews: "200+",
+    price: 75,
+    duration: "2 days",
+    hasConsultation: false,
+  },
+  {
+    id: 4,
+    thumbnail:
+      "https://images.unsplash.com/photo-1570215170761-f056128eda48?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    title: "Test a new website feature and provide usability feedback",
+    seller: {
+      name: "Emily R.",
+      avatar:
+        "https://images.unsplash.com/photo-1544723795-3fb6469f5b39?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80",
+      topRated: true,
+      level: "Top Rated ⭐⭐⭐",
+    },
+    rating: 4.7,
+    reviews: "65",
+    price: 30,
+    duration: "1 day",
+    hasConsultation: true,
+  },
+  {
+    id: 5,
+    thumbnail:
+      "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?q=80&w=2274&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    title: "Create a social media content calendar for one month",
+    seller: {
+      name: "Amine S.",
+      avatar:
+        "https://images.unsplash.com/photo-1603415526960-f7e0328c63b1?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80",
+      topRated: false,
+      level: "SkillBridge Choice",
+      isChoice: true,
+    },
+    rating: 5.0,
+    reviews: "45",
+    price: 60,
+    duration: "4 days",
+    hasConsultation: false,
+  },
+  {
+    id: 6,
+    thumbnail:
+      "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    title: "Build a simple landing page for a small business",
+    seller: {
+      name: "Saqi",
+      avatar:
+        "https://images.unsplash.com/photo-1607746882042-944635dfe10e?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80",
+      topRated: false,
+      level: "Level 1 ⭐",
+    },
+    rating: 4.6,
+    reviews: "78",
+    price: 100,
+    duration: "5 days",
+    hasConsultation: false,
+  },
+  {
+    id: 7,
+    thumbnail:
+      "https://images.unsplash.com/photo-1519337265831-281ec6cc8514?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    title: "Write a blog post draft for a nonprofit’s website",
+    seller: {
+      name: "Jobair",
+      avatar:
+        "https://images.unsplash.com/photo-1595152772835-219674b2a8a6?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80",
+      topRated: false,
+      level: "Level 2 ⭐⭐",
+    },
+    rating: 4.9,
+    reviews: "32",
+    price: 25,
+    duration: "2 days",
+    hasConsultation: false,
+  },
+  {
+    id: 8,
+    thumbnail:
+      "https://images.unsplash.com/photo-1498075702571-ecb018f3752d?q=80&w=2678&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    title: "Create a simple infographic for a community project",
+    seller: {
+      name: "Leo Studio",
+      avatar:
+        "https://images.unsplash.com/photo-1603415526960-f7e0328c63b1?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80",
+      topRated: false,
+      level: "Level 2 ⭐⭐",
+    },
+    rating: 4.8,
+    reviews: "54",
+    price: 35,
+    duration: "3 days",
+    hasConsultation: false,
+  },
+];
+
+export default function MarketplacePage() {
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing Monyvann ehehehehe{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-        <Button>Deploy on Vercel</Button>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+    <div className="min-h-screen bg-white">
+      {/* Main Content Area */}
+      <div className="container mx-auto flex pb-20">
+        {/* Filtering Sidebar */}
+        <div className="w-80 border-r border-gray-200 p-6 space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-gray-900">Filters</h2>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-gray-500 hover:text-gray-700"
+            >
+              Clear all
+            </Button>
+          </div>
+
+          {/* Service Options */}
+          <div className="space-y-3">
+            <h3 className="font-medium text-gray-900">Service options</h3>
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2">
+                <Checkbox id="online-sellers" />
+                <label
+                  htmlFor="online-sellers"
+                  className="text-sm text-gray-700"
+                >
+                  Online sellers
+                </label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox id="local-sellers" />
+                <label
+                  htmlFor="local-sellers"
+                  className="text-sm text-gray-700"
+                >
+                  Local sellers
+                </label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox id="pro-services" />
+                <label htmlFor="pro-services" className="text-sm text-gray-700">
+                  Pro services
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Seller Details */}
+          <div className="space-y-3">
+            <h3 className="font-medium text-gray-900">Seller details</h3>
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2">
+                <Checkbox id="top-rated" />
+                <label htmlFor="top-rated" className="text-sm text-gray-700">
+                  Top Rated seller
+                </label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox id="level-two" />
+                <label htmlFor="level-two" className="text-sm text-gray-700">
+                  Level 2
+                </label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox id="level-one" />
+                <label htmlFor="level-one" className="text-sm text-gray-700">
+                  Level 1
+                </label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox id="new-seller" />
+                <label htmlFor="new-seller" className="text-sm text-gray-700">
+                  New seller
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Budget */}
+          <div className="space-y-3">
+            <h3 className="font-medium text-gray-900">Budget</h3>
+            <div className="space-y-4">
+              <div className="px-2">
+                <Slider
+                  defaultValue={[5, 500]}
+                  max={1000}
+                  min={5}
+                  step={5}
+                  className="w-full"
+                />
+                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>$5</span>
+                  <span>$1000+</span>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <label className="text-xs text-gray-500">MIN.</label>
+                  <input
+                    type="number"
+                    placeholder="5"
+                    className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md text-sm"
+                  />
+                </div>
+                <div className="flex-1">
+                  <label className="text-xs text-gray-500">MAX.</label>
+                  <input
+                    type="number"
+                    placeholder="1000"
+                    className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md text-sm"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Delivery Time */}
+          <div className="space-y-3">
+            <h3 className="font-medium text-gray-900">Delivery time</h3>
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2">
+                <Checkbox id="express-24h" />
+                <label htmlFor="express-24h" className="text-sm text-gray-700">
+                  Express 24H
+                </label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox id="up-to-3-days" />
+                <label htmlFor="up-to-3-days" className="text-sm text-gray-700">
+                  Up to 3 days
+                </label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox id="up-to-7-days" />
+                <label htmlFor="up-to-7-days" className="text-sm text-gray-700">
+                  Up to 7 days
+                </label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox id="anytime" />
+                <label htmlFor="anytime" className="text-sm text-gray-700">
+                  Anytime
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Video Type */}
+          <div className="space-y-3">
+            <h3 className="font-medium text-gray-900">Video type</h3>
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2">
+                <Checkbox id="youtube" />
+                <label htmlFor="youtube" className="text-sm text-gray-700">
+                  YouTube videos
+                </label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox id="social-media" />
+                <label htmlFor="social-media" className="text-sm text-gray-700">
+                  Social media videos
+                </label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox id="wedding" />
+                <label htmlFor="wedding" className="text-sm text-gray-700">
+                  Wedding videos
+                </label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox id="commercial" />
+                <label htmlFor="commercial" className="text-sm text-gray-700">
+                  Commercial videos
+                </label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox id="music-videos" />
+                <label htmlFor="music-videos" className="text-sm text-gray-700">
+                  Music videos
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Software */}
+          <div className="space-y-3">
+            <h3 className="font-medium text-gray-900">Software</h3>
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2">
+                <Checkbox id="premiere-pro" />
+                <label htmlFor="premiere-pro" className="text-sm text-gray-700">
+                  Adobe Premiere Pro
+                </label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox id="after-effects" />
+                <label
+                  htmlFor="after-effects"
+                  className="text-sm text-gray-700"
+                >
+                  Adobe After Effects
+                </label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox id="final-cut" />
+                <label htmlFor="final-cut" className="text-sm text-gray-700">
+                  Final Cut Pro
+                </label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox id="davinci" />
+                <label htmlFor="davinci" className="text-sm text-gray-700">
+                  DaVinci Resolve
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Services Grid */}
+        <div className="flex-1 px-6 py-6">
+          <div className="border-b border-gray-200 mb-5 py-4">
+            <div className="flex items-center justify-between text-sm text-gray-600">
+              <div className="flex items-center gap-4">
+                <span className="font-medium">70,000+ results</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span>Sort by:</span>
+                <Button
+                  variant="ghost"
+                  className="h-auto p-0 text-gray-900 font-medium"
+                >
+                  Best selling
+                  <ChevronDown className="ml-1 h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {services.map((service) => (
+              <Card
+                key={service.id}
+                className="overflow-hidden border border-gray-200 hover:shadow-lg transition-shadow cursor-pointer"
+              >
+                {/* Video Thumbnail */}
+                <div className="relative group">
+                  <Image
+                    src={service.thumbnail || "/placeholder.svg"}
+                    alt={service.title}
+                    width={1000}
+                    height={1000}
+                    className="w-full h-52 object-cover -mt-6"
+                  />
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="absolute -top-2 right-3 h-8 w-8 bg-white/80 hover:bg-white text-gray-700"
+                  >
+                    <Heart className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                {/* Card Content */}
+                <div className="p-4">
+                  {/* Seller Info */}
+                  <div className="flex items-center gap-2 mb-2">
+                    <Avatar className="h-6 w-6">
+                      <AvatarImage
+                        src={service.seller.avatar || "/placeholder.svg"}
+                      />
+                      <AvatarFallback>
+                        {service.seller.name.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="text-sm font-semibold text-gray-900">
+                      {service.seller.name}
+                    </span>
+                    {service.seller.isChoice ? (
+                      <Badge
+                        variant="secondary"
+                        className="bg-blue-100 text-blue-800 text-xs px-2 py-0.5"
+                      >
+                        {service.seller.level}
+                      </Badge>
+                    ) : service.seller.topRated ? (
+                      <Badge
+                        variant="secondary"
+                        className="bg-orange-100 text-orange-800 text-xs px-2 py-0.5"
+                      >
+                        {service.seller.level}
+                      </Badge>
+                    ) : (
+                      <Badge
+                        variant="secondary"
+                        className="bg-gray-100 text-gray-700 text-xs px-2 py-0.5"
+                      >
+                        {service.seller.level}
+                      </Badge>
+                    )}
+                  </div>
+
+                  {/* Service Title */}
+                  <h3 className="text-sm font-medium text-gray-900 mb-3 line-clamp-2 leading-relaxed">
+                    {service.title}
+                  </h3>
+
+                  {/* Rating */}
+                  <div className="flex items-center gap-1 mb-2">
+                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                    <span className="text-sm font-medium text-gray-900">
+                      {service.rating}
+                    </span>
+                    <span className="text-sm text-gray-500">
+                      ({service.reviews})
+                    </span>
+                  </div>
+
+                  {/* Price */}
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm">
+                      <span className="text-gray-600">From</span>
+                      <span className="font-bold text-gray-900 ml-1">
+                        ${service.price}
+                      </span>
+                      <span className="text-gray-500 ml-1">
+                        / {service.duration}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Consultation Badge */}
+                  {service.hasConsultation && (
+                    <div className="mt-2 pt-2 border-t border-gray-100">
+                      <div className="flex items-center gap-1 text-xs text-gray-600">
+                        <div className="w-3 h-3 bg-gray-400 rounded-sm flex items-center justify-center">
+                          <div className="w-1.5 h-1.5 bg-white rounded-full" />
+                        </div>
+                        <span>Offers video consultations</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

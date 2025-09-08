@@ -1,6 +1,5 @@
 import { UserJSON } from "@clerk/nextjs/server";
 import prisma from "../prisma";
-import { User } from "@prisma/client";
 
 export async function createUser(userData: UserJSON) {
   if (

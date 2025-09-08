@@ -7,10 +7,10 @@ const Footer = () => {
   if (pathname.startsWith("/sign-in")) return null;
   return (
     <footer className="bg-[#121212] px-8 py-16">
-      <div className="mx-auto max-w-7xl">
-        <div className="grid grid-cols-1 gap-12 lg:grid-cols-4">
+      <div className="container mx-auto">
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-5">
           {/* Logo and tagline */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-2">
             <div className="flex items-center gap-3 mb-4">
               <div className="text-[#1DBF9F] text-2xl font-black -space-y-2">
                 <h1>SKILL</h1>
@@ -18,12 +18,12 @@ const Footer = () => {
               </div>
             </div>
             <p className="text-gray-300 text-lg">
-              Jumpstart your career as a new-grads with SkillBridge.
+              Jumpstart your career as a new graduates with SkillBridge.
             </p>
           </div>
 
           {/* Navigation columns */}
-          <div className="lg:col-span-3">
+          <div className="lg:col-span-3 lg:col-start-4">
             <div className="grid grid-cols-1 gap-8 sm:grid-cols-3">
               {/* Column 1 */}
               <div>

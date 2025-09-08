@@ -26,10 +26,6 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Relationships (will define other models soon)
-  // projects           Project[] @relation("BusinessOwnerProjects") // For business owners
-  // appliedProjects    Project[] @relation("StudentAppliedProjects") // For students
-
   // Social Links, Experience, Badges - REVISIT OPTIONS BELOW
   socialLinks SocialLink[]
   experiences Experience[]
@@ -42,6 +38,11 @@ model User {
   totalHoursContributed Int
   projectsCompleted     Int
   industriesExperienced String[] // Array of unique industry names (e.g., "Technology", "Healthcare", "Non-profit")
+
+  // Relations to Project and Application models
+  postedProjects   Project[]     @relation("BusinessOwnerProjects") // Projects posted by this user
+  assignedProjects Project[]     @relation("AssignedStudent") // Projects this student is assigned to
+  applications     Application[] @relation("Applicant") // Applications made by this user
 }
 
 // Embedded documents for MongoDB (No @id, no @map)
@@ -84,4 +85,92 @@ enum UserRole {
   ADMIN
   BUSINESS_OWNER
   USER // Student
+}
+
+model Project {
+  id             String          @id @default(auto()) @map("_id") @db.ObjectId
+  title          String
+  description    String
+  // Skills/Requirements: Array of strings for simplicity, or a separate `Skill` model if needed.
+  // For now, let's go with a simple array.
+  requiredSkills String[]        @default([])
+  category       ProjectCategory // Enum for broad categories
+  scope          ProjectScope // Enum for difficulty/scope
+  status         ProjectStatus   @default(OPEN)
+
+  startDate           DateTime // When the project is intended to begin
+  estimatedEndDate    DateTime // When the project is expected to finish
+  applicationDeadline DateTime // Deadline for students to apply
+
+  // Payment/Compensation
+  budget Float // Fixed budget, depending on business owner
+  // You could also add `currency: String?` if needed
+
+  isPublic Boolean @default(true) // All projects are public by default
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  businessOwnerId String @db.ObjectId // ID of the User (BUSINESS_OWNER) who posted this project
+  businessOwner   User   @relation("BusinessOwnerProjects", fields: [businessOwnerId], references: [id])
+
+  assignedStudentId String? @db.ObjectId // ID of the User (USER/Student) assigned. Optional because initially null.
+  assignedStudent   User?   @relation("AssignedStudent", fields: [assignedStudentId], references: [id])
+
+  applications Application[] @relation("ProjectApplications") // All applications for this project
+}
+
+// Enums for Project Model
+enum ProjectCategory {
+  WEB_DEVELOPMENT
+  MOBILE_DEVELOPMENT
+  UI_UX_DESIGN
+  DATA_SCIENCE
+  MACHINE_LEARNING
+  BLOCKCHAIN
+  GAME_DEVELOPMENT
+  OTHER
+}
+
+enum ProjectScope {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+}
+
+enum ProjectStatus {
+  OPEN // Open for applications
+  IN_REVIEW // Applications are being reviewed
+  ASSIGNED // Student has been assigned
+  IN_PROGRESS // Project work is ongoing
+  COMPLETED // Project is finished
+  CANCELLED // Project was cancelled
+  ARCHIVED // Project is no longer active
+}
+
+// --- NEW MODEL: Application ---
+model Application {
+  id          String            @id @default(auto()) @map("_id") @db.ObjectId
+  projectId   String            @db.ObjectId
+  applicantId String            @db.ObjectId
+  status      ApplicationStatus @default(PENDING) // PENDING, ACCEPTED, REJECTED, WITHDRAWN
+  coverLetter String? // Student's message/cover letter
+  appliedAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  // Relationships
+  project   Project @relation("ProjectApplications", fields: [projectId], references: [id])
+  applicant User    @relation("Applicant", fields: [applicantId], references: [id])
+
+  @@unique([projectId, applicantId]) // A student can only apply once to a project
+}
+
+// Enum for Application Status
+enum ApplicationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  WITHDRAWN
 }

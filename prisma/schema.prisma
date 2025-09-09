@@ -29,6 +29,7 @@ model User {
   // Social Links, Experience, Badges - REVISIT OPTIONS BELOW
   socialLinks SocialLink[]
   experiences Experience[]
+  education   Education[]
 
   earnedSkillBadges          SkillLevelBadge[] // List of badges for skill progression
   earnedSpecializationBadges SpecializationBadge[] // List of badges for expertise areas
@@ -57,6 +58,14 @@ type Experience {
   company     String
   startDate   DateTime
   endDate     DateTime? // Optional end date if current
+  description String?
+}
+
+type Education {
+  degree      String
+  school      String
+  startDate   DateTime
+  endDate     DateTime?
   description String?
 }
 

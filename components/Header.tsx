@@ -2,10 +2,11 @@
 import React, { Suspense } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-import { Search } from "lucide-react";
+import { BriefcaseBusiness, Search } from "lucide-react";
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
+import { UserExperience } from "./UserExperience";
 
 const HeaderContent = () => {
   const pathname = usePathname();
@@ -52,7 +53,15 @@ const HeaderContent = () => {
           </Link>
         </SignedOut>
         <SignedIn>
-          <UserButton />
+          <UserButton>
+            <UserButton.UserProfilePage
+              label="Experience"
+              url="experience"
+              labelIcon={<BriefcaseBusiness className="w-4 h-4" />}
+            >
+              <UserExperience />
+            </UserButton.UserProfilePage>
+          </UserButton>
         </SignedIn>
       </div>
     </header>

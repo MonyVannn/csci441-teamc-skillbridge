@@ -14,126 +14,132 @@ import {
 } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { format } from "date-fns";
-import { Plus, Pencil, Trash2, Building2, CalendarIcon } from "lucide-react";
+import {
+  Plus,
+  Pencil,
+  Trash2,
+  GraduationCap,
+  CalendarIcon,
+} from "lucide-react";
 import { Separator } from "./ui/separator";
 
-interface Experience {
+interface Education {
   id: string;
-  title: string;
-  company: string;
+  degree: string;
+  institution: string;
   startDate: string;
   endDate: string | null;
   description: string;
 }
 
-const mockExperiences: Experience[] = [
+const mockEducation: Education[] = [
   {
     id: "1",
-    title: "Senior Software Engineer",
-    company: "TechCorp Inc.",
-    startDate: "2022-01",
-    endDate: null,
+    degree: "Master of Science in Computer Science",
+    institution: "Stanford University",
+    startDate: "2020-09",
+    endDate: "2022-06",
     description:
-      "Leading a team of 5 developers in building scalable web applications using React, Node.js, and AWS. Implemented CI/CD pipelines and improved deployment efficiency by 40%.",
+      "Specialized in Machine Learning and Artificial Intelligence. Completed thesis on neural network optimization. GPA: 3.8/4.0. Relevant coursework: Deep Learning, Computer Vision, Natural Language Processing.",
   },
   {
     id: "2",
-    title: "Full Stack Developer",
-    company: "StartupXYZ",
-    startDate: "2020-06",
-    endDate: "2021-12",
+    degree: "Bachelor of Science in Software Engineering",
+    institution: "University of California, Berkeley",
+    startDate: "2016-08",
+    endDate: "2020-05",
     description:
-      "Developed and maintained multiple client projects using modern web technologies. Collaborated with designers and product managers to deliver high-quality user experiences.",
+      "Graduated Magna Cum Laude with a focus on full-stack development and software architecture. Led multiple team projects and participated in hackathons. GPA: 3.7/4.0.",
   },
   {
     id: "3",
-    title: "Frontend Developer",
-    company: "Digital Agency",
-    startDate: "2019-03",
-    endDate: "2020-05",
+    degree: "AWS Certified Solutions Architect",
+    institution: "Amazon Web Services",
+    startDate: "2023-03",
+    endDate: null,
     description:
-      "Created responsive websites and web applications for various clients. Specialized in React, TypeScript, and modern CSS frameworks.",
+      "Professional certification demonstrating expertise in designing distributed systems on AWS. Covers security, scalability, and cost optimization best practices.",
   },
 ];
 
-export function UserExperience() {
-  const [experiences, setExperiences] = useState<Experience[]>(mockExperiences);
+export function UserEducation() {
+  const [education, setEducation] = useState<Education[]>(mockEducation);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [formData, setFormData] = useState({
-    title: "",
-    company: "",
+    degree: "",
+    institution: "",
     startDate: "",
     endDate: "",
     description: "",
-    isCurrentRole: false,
+    isOngoing: false,
   });
 
-  const handleAddExperience = () => {
+  const handleAddEducation = () => {
     setFormData({
-      title: "",
-      company: "",
+      degree: "",
+      institution: "",
       startDate: "",
       endDate: "",
       description: "",
-      isCurrentRole: false,
+      isOngoing: false,
     });
     setIsAddingNew(true);
     setEditingId(null);
   };
 
-  const handleEditExperience = (experience: Experience) => {
+  const handleEditEducation = (edu: Education) => {
     setFormData({
-      title: experience.title,
-      company: experience.company,
-      startDate: experience.startDate,
-      endDate: experience.endDate || "",
-      description: experience.description,
-      isCurrentRole: !experience.endDate,
+      degree: edu.degree,
+      institution: edu.institution,
+      startDate: edu.startDate,
+      endDate: edu.endDate || "",
+      description: edu.description,
+      isOngoing: !edu.endDate,
     });
-    setEditingId(experience.id);
+    setEditingId(edu.id);
     setIsAddingNew(false);
   };
 
-  const handleDeleteExperience = (id: string) => {
-    setExperiences(experiences.filter((exp) => exp.id !== id));
+  const handleDeleteEducation = (id: string) => {
+    setEducation(education.filter((edu) => edu.id !== id));
   };
 
-  const handleSaveExperience = () => {
-    const experienceData = {
-      title: formData.title,
-      company: formData.company,
+  const handleSaveEducation = () => {
+    const educationData = {
+      degree: formData.degree,
+      institution: formData.institution,
       startDate: formData.startDate,
-      endDate: formData.isCurrentRole ? null : formData.endDate,
+      endDate: formData.isOngoing ? null : formData.endDate,
       description: formData.description,
     };
 
     if (editingId) {
-      // Update existing experience
-      setExperiences(
-        experiences.map((exp) =>
-          exp.id === editingId ? { ...experienceData, id: editingId } : exp
+      // Update existing education
+      setEducation(
+        education.map((edu) =>
+          edu.id === editingId ? { ...educationData, id: editingId } : edu
         )
       );
     } else {
-      // Add new experience
-      const newExperience: Experience = {
-        ...experienceData,
+      // Add new education
+      const newEducation: Education = {
+        ...educationData,
         id: Date.now().toString(),
       };
-      setExperiences([newExperience, ...experiences]);
+      setEducation([newEducation, ...education]);
     }
 
     // Reset states
     setEditingId(null);
     setIsAddingNew(false);
     setFormData({
-      title: "",
-      company: "",
+      degree: "",
+      institution: "",
       startDate: "",
       endDate: "",
       description: "",
-      isCurrentRole: false,
+      isOngoing: false,
     });
   };
 
@@ -141,19 +147,19 @@ export function UserExperience() {
     setEditingId(null);
     setIsAddingNew(false);
     setFormData({
-      title: "",
-      company: "",
+      degree: "",
+      institution: "",
       startDate: "",
       endDate: "",
       description: "",
-      isCurrentRole: false,
+      isOngoing: false,
     });
   };
 
-  const handleCurrentRoleChange = (checked: boolean) => {
+  const handleOngoingChange = (checked: boolean) => {
     setFormData((prev) => ({
       ...prev,
-      isCurrentRole: checked,
+      isOngoing: checked,
       endDate: checked ? "" : prev.endDate,
     }));
   };
@@ -168,24 +174,24 @@ export function UserExperience() {
           year: "numeric",
           month: "short",
         })
-      : "Present";
+      : "Ongoing";
     return `${start} - ${end}`;
   };
 
-  const renderExperienceForm = () => (
+  const renderEducationForm = () => (
     <div className="p-6 bg-[#1DBF9F]/5 border-l-4 border-[#1DBF9F]">
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h3 className="font-bold text-gray-900 flex items-center gap-2">
-            {editingId ? "Edit Experience" : "Add New Experience"}
+            {editingId ? "Edit Education" : "Add New Education"}
           </h3>
           <div className="flex gap-2">
             <Button
-              onClick={handleSaveExperience}
+              onClick={handleSaveEducation}
               size="sm"
               className="bg-[#1DBF9F] hover:bg-[#1DBF9F]/80 text-white"
               disabled={
-                !formData.title || !formData.company || !formData.startDate
+                !formData.degree || !formData.institution || !formData.startDate
               }
             >
               Save
@@ -202,40 +208,43 @@ export function UserExperience() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Job Title */}
+          {/* Degree/Certification */}
           <div className="space-y-2">
             <Label
-              htmlFor="title"
+              htmlFor="degree"
               className="text-sm font-medium text-gray-700 flex items-center gap-2"
             >
-              Job Title
+              Degree/Certification
             </Label>
             <Input
-              id="title"
-              value={formData.title}
+              id="degree"
+              value={formData.degree}
               onChange={(e) =>
-                setFormData((prev) => ({ ...prev, title: e.target.value }))
+                setFormData((prev) => ({ ...prev, degree: e.target.value }))
               }
-              placeholder="e.g. Senior Software Engineer"
+              placeholder="e.g. Bachelor of Science in Computer Science"
               className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 bg-white"
             />
           </div>
 
-          {/* Company */}
+          {/* Institution */}
           <div className="space-y-2">
             <Label
-              htmlFor="company"
+              htmlFor="institution"
               className="text-sm font-medium text-gray-700 flex items-center gap-2"
             >
-              Company
+              Institution
             </Label>
             <Input
-              id="company"
-              value={formData.company}
+              id="institution"
+              value={formData.institution}
               onChange={(e) =>
-                setFormData((prev) => ({ ...prev, company: e.target.value }))
+                setFormData((prev) => ({
+                  ...prev,
+                  institution: e.target.value,
+                }))
               }
-              placeholder="e.g. TechCorp Inc."
+              placeholder="e.g. Stanford University"
               className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 bg-white"
             />
           </div>
@@ -297,13 +306,13 @@ export function UserExperience() {
                 <Button
                   variant="outline"
                   className="w-full justify-start text-left font-normal border-gray-200 focus:border-blue-500 focus:ring-blue-500 bg-white disabled:bg-gray-50 disabled:text-gray-400"
-                  disabled={formData.isCurrentRole}
+                  disabled={formData.isOngoing}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  {formData.endDate && !formData.isCurrentRole
+                  {formData.endDate && !formData.isOngoing
                     ? format(new Date(formData.endDate + "-01"), "MMMM yyyy")
-                    : formData.isCurrentRole
-                    ? "Present"
+                    : formData.isOngoing
+                    ? "Ongoing"
                     : "Select end date"}
                 </Button>
               </PopoverTrigger>
@@ -328,19 +337,19 @@ export function UserExperience() {
           </div>
         </div>
 
-        {/* Current Role Checkbox */}
+        {/* Ongoing Checkbox */}
         <div className="flex items-center space-x-2">
           <Checkbox
-            id="currentRole"
-            checked={formData.isCurrentRole}
-            onCheckedChange={handleCurrentRoleChange}
+            id="ongoing"
+            checked={formData.isOngoing}
+            onCheckedChange={handleOngoingChange}
             className="border-gray-300 bg-white"
           />
           <Label
-            htmlFor="currentRole"
+            htmlFor="ongoing"
             className="text-sm text-gray-700 cursor-pointer"
           >
-            I currently work in this role
+            This is ongoing (currently enrolled/pursuing)
           </Label>
         </div>
 
@@ -358,7 +367,7 @@ export function UserExperience() {
             onChange={(e) =>
               setFormData((prev) => ({ ...prev, description: e.target.value }))
             }
-            placeholder="Describe your role, responsibilities, and key achievements..."
+            placeholder="Describe your studies, achievements, relevant coursework, GPA, honors, etc..."
             rows={4}
             className="border-gray-100 focus:border-blue-500 focus:ring-blue-500 resize-none bg-white"
           />
@@ -372,64 +381,61 @@ export function UserExperience() {
       <div className="flex items-center justify-between">
         <div className="space-y-1">
           <h1 className="font-bold text-gray-900 flex items-center gap-2">
-            Experiences
+            Education
           </h1>
         </div>
-        <Button onClick={handleAddExperience} className="mr-10">
+        <Button onClick={handleAddEducation} className="mr-10">
           <Plus className="h-4 w-4 mr-2" />
-          Add Experience
+          Add Education
         </Button>
       </div>
       <Separator className="my-5" />
       <div>
-        {isAddingNew && renderExperienceForm()}
+        {isAddingNew && renderEducationForm()}
 
-        {experiences.length === 0 ? (
+        {education.length === 0 ? (
           <div className="text-center py-12 text-gray-500">
-            <Building2 className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-            <p>No experiences added yet</p>
+            <GraduationCap className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+            <p>No education added yet</p>
             <p className="text-sm">
-              Click &apos;Add Experience&apos; to get started
+              Click &apos;Add Education&apos; to get started
             </p>
           </div>
         ) : (
           <div className="divide-y divide-gray-100">
-            {experiences.map((experience) => (
-              <div key={experience.id}>
-                {editingId === experience.id ? (
-                  renderExperienceForm()
+            {education.map((edu) => (
+              <div key={edu.id}>
+                {editingId === edu.id ? (
+                  renderEducationForm()
                 ) : (
                   <div className="py-6 px-2 hover:bg-gray-50 transition-colors duration-200 group">
                     <div className="flex items-start justify-between">
                       <div className="flex-1 space-y-3">
                         <div className="space-y-1">
                           <h3 className="font-semibold text-gray-900 text-balance">
-                            {experience.title}
+                            {edu.degree}
                           </h3>
                           <div className="flex items-center justify-between">
                             <p className="text-sm font-medium text-gray-700">
-                              {experience.company}
+                              {edu.institution}
                             </p>
                             <div className="flex items-center gap-2 text-sm text-gray-500">
-                              {!experience.endDate && (
+                              {!edu.endDate && (
                                 <Badge
                                   variant="secondary"
                                   className="text-xs bg-blue-100 text-blue-700 border-blue-200"
                                 >
-                                  Current
+                                  Ongoing
                                 </Badge>
                               )}
                               <span>
-                                {formatDateRange(
-                                  experience.startDate,
-                                  experience.endDate
-                                )}
+                                {formatDateRange(edu.startDate, edu.endDate)}
                               </span>
                             </div>
                           </div>
                         </div>
                         <p className="text-sm text-gray-600 leading-relaxed text-pretty">
-                          {experience.description}
+                          {edu.description}
                         </p>
                       </div>
 
@@ -437,7 +443,7 @@ export function UserExperience() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleEditExperience(experience)}
+                          onClick={() => handleEditEducation(edu)}
                           className="h-8 w-8 p-0 hover:bg-blue-50 hover:text-blue-600"
                           disabled={isAddingNew || editingId !== null}
                         >
@@ -446,7 +452,7 @@ export function UserExperience() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleDeleteExperience(experience.id)}
+                          onClick={() => handleDeleteEducation(edu.id)}
                           className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600"
                           disabled={isAddingNew || editingId !== null}
                         >

@@ -2,11 +2,12 @@
 import React, { Suspense } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-import { BriefcaseBusiness, Search } from "lucide-react";
+import { BriefcaseBusiness, GraduationCap, Search } from "lucide-react";
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import { UserExperience } from "./UserExperience";
+import { UserEducation } from "./UserEducation";
 
 const HeaderContent = () => {
   const pathname = usePathname();
@@ -60,6 +61,13 @@ const HeaderContent = () => {
               labelIcon={<BriefcaseBusiness className="w-4 h-4" />}
             >
               <UserExperience />
+            </UserButton.UserProfilePage>
+            <UserButton.UserProfilePage
+              label="Education"
+              url="education"
+              labelIcon={<GraduationCap className="w-4 h-4" />}
+            >
+              <UserEducation />
             </UserButton.UserProfilePage>
           </UserButton>
         </SignedIn>

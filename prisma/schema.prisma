@@ -63,8 +63,9 @@ type Experience {
 }
 
 type Education {
+  id          String
   degree      String
-  school      String
+  institution String
   startDate   DateTime
   endDate     DateTime?
   description String?

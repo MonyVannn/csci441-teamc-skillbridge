@@ -2,7 +2,7 @@
 
 import { currentUser, UserJSON } from "@clerk/nextjs/server";
 import prisma from "../prisma";
-import { Experience } from "@prisma/client";
+import { Education, Experience } from "@prisma/client";
 
 export async function createUser(userData: UserJSON) {
   if (
@@ -154,5 +154,114 @@ export async function deleteExperience(experienceId: string) {
   } catch (e) {
     console.error("Error deleting user experience, ", e);
     throw new Error("Failed to delete user experience.");
+  }
+}
+
+// Education
+export async function getEducation() {
+  const user = await currentUser();
+
+  if (!user) throw new Error("Not authenticated.");
+
+  try {
+    const existingUser = await prisma.user.findFirst({
+      where: { clerkId: user.id },
+    });
+
+    if (!existingUser) throw new Error("User not found.");
+
+    const education = existingUser.education;
+    return education;
+  } catch (e) {
+    console.error("Error fetching user education.", e);
+    throw new Error("Failed to fetch user education.");
+  }
+}
+
+export async function createEducation(educationData: Omit<Education, "id">) {
+  const user = await currentUser();
+
+  if (!user) throw new Error("Not authenticated.");
+
+  try {
+    // Create the education with a generated ID
+    const educationWithId = {
+      ...educationData,
+      id: Date.now().toString(), // or use crypto.randomUUID() for better uniqueness
+    };
+
+    // Update user's educations array
+    const updatedUser = await prisma.user.update({
+      where: { clerkId: user.id },
+      data: {
+        education: {
+          push: educationWithId,
+        },
+      },
+    });
+
+    console.log("Education added:", updatedUser);
+    return updatedUser;
+  } catch (e) {
+    console.error("Error adding an education: ", e);
+    throw new Error("Failed to add education to user profile.");
+  }
+}
+
+export async function editEducation(educationData: Education) {
+  const user = await currentUser();
+
+  try {
+    if (!user) throw new Error("Not authenticated.");
+
+    const existingUser = await prisma.user.findFirst({
+      where: { clerkId: user.id },
+    });
+
+    if (!existingUser) throw new Error("User not found.");
+
+    const updatedEducation = await prisma.user.update({
+      where: { clerkId: user.id },
+      data: {
+        education: {
+          set: existingUser.education.map((exp) =>
+            exp.id === educationData.id ? { ...exp, ...educationData } : exp
+          ),
+        },
+      },
+    });
+
+    console.log("Edcation updated:", updatedEducation);
+    return updatedEducation;
+  } catch (e) {
+    console.error("Error editting user edcation, ", e);
+    throw new Error("Failed to edit user edcation.");
+  }
+}
+
+export async function deleteEducation(educationId: string) {
+  const user = await currentUser();
+  try {
+    if (!user) throw new Error("Not authenticated.");
+
+    const existingUser = await prisma.user.findFirst({
+      where: { clerkId: user.id },
+    });
+
+    if (!existingUser) throw new Error("User not found.");
+
+    const updatedUser = await prisma.user.update({
+      where: { clerkId: user.id },
+      data: {
+        education: {
+          set: existingUser.education.filter((exp) => exp.id !== educationId),
+        },
+      },
+    });
+    console.log("Education deleted:", updatedUser);
+    return updatedUser;
+  } catch (e) {
+    console.error("Error deleting user education, ", e);
+    throw new Error("Failed to delete user education.");
   }
 }

@@ -109,6 +109,7 @@ async function main() {
       socialLinks: [{ type: "GitHub", url: "https://github.com/emmaj" }],
       experiences: [
         {
+          id: "1274892",
           title: "Intern",
           company: "Web Solutions",
           startDate: new Date("2024-06-01"),

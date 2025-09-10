@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -20,8 +20,15 @@ import {
   Trash2,
   GraduationCap,
   CalendarIcon,
+  LoaderCircle,
 } from "lucide-react";
 import { Separator } from "./ui/separator";
+import {
+  createEducation,
+  deleteEducation,
+  editEducation,
+  getEducation,
+} from "@/lib/actions/user";
 
 interface Education {
   id: string;
@@ -29,43 +36,14 @@ interface Education {
   institution: string;
   startDate: string;
   endDate: string | null;
-  description: string;
+  description: string | null;
 }
 
-const mockEducation: Education[] = [
-  {
-    id: "1",
-    degree: "Master of Science in Computer Science",
-    institution: "Stanford University",
-    startDate: "2020-09",
-    endDate: "2022-06",
-    description:
-      "Specialized in Machine Learning and Artificial Intelligence. Completed thesis on neural network optimization. GPA: 3.8/4.0. Relevant coursework: Deep Learning, Computer Vision, Natural Language Processing.",
-  },
-  {
-    id: "2",
-    degree: "Bachelor of Science in Software Engineering",
-    institution: "University of California, Berkeley",
-    startDate: "2016-08",
-    endDate: "2020-05",
-    description:
-      "Graduated Magna Cum Laude with a focus on full-stack development and software architecture. Led multiple team projects and participated in hackathons. GPA: 3.7/4.0.",
-  },
-  {
-    id: "3",
-    degree: "AWS Certified Solutions Architect",
-    institution: "Amazon Web Services",
-    startDate: "2023-03",
-    endDate: null,
-    description:
-      "Professional certification demonstrating expertise in designing distributed systems on AWS. Covers security, scalability, and cost optimization best practices.",
-  },
-];
-
 export function UserEducation() {
-  const [education, setEducation] = useState<Education[]>(mockEducation);
+  const [education, setEducation] = useState<Education[]>();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isAddingNew, setIsAddingNew] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [formData, setFormData] = useState({
     degree: "",
     institution: "",
@@ -74,6 +52,29 @@ export function UserEducation() {
     description: "",
     isOngoing: false,
   });
+
+  useEffect(() => {
+    async function loadExperiences() {
+      try {
+        const data = await getEducation();
+        setEducation(
+          data.map((exp) => ({
+            ...exp,
+            startDate: exp.startDate.toISOString().split("T")[0], // Convert Date to string
+            endDate: exp.endDate
+              ? exp.endDate.toISOString().split("T")[0]
+              : null, // Convert Date to string or null
+          }))
+        );
+      } catch (error) {
+        console.error("Failed to load experiences:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadExperiences();
+  }, []);
 
   const handleAddEducation = () => {
     setFormData({
@@ -94,18 +95,26 @@ export function UserEducation() {
       institution: edu.institution,
       startDate: edu.startDate,
       endDate: edu.endDate || "",
-      description: edu.description,
+      description: edu.description || "",
       isOngoing: !edu.endDate,
     });
     setEditingId(edu.id);
     setIsAddingNew(false);
   };
 
-  const handleDeleteEducation = (id: string) => {
-    setEducation(education.filter((edu) => edu.id !== id));
+  const handleDeleteEducation = async (id: string) => {
+    try {
+      const user = await deleteEducation(id);
+
+      console.log("Education deleted, ", user);
+
+      setEducation(education?.filter((edu) => edu.id !== id));
+    } catch (e) {
+      console.error("Failed to delete user education, ", e);
+    }
   };
 
-  const handleSaveEducation = () => {
+  const handleSaveEducation = async () => {
     const educationData = {
       degree: formData.degree,
       institution: formData.institution,
@@ -116,18 +125,50 @@ export function UserEducation() {
 
     if (editingId) {
       // Update existing education
-      setEducation(
-        education.map((edu) =>
-          edu.id === editingId ? { ...educationData, id: editingId } : edu
-        )
-      );
+      try {
+        const educationToEdit = {
+          ...educationData,
+          id: editingId,
+          startDate: new Date(educationData.startDate),
+          endDate: educationData.endDate
+            ? new Date(educationData.endDate)
+            : null,
+        };
+
+        const user = await editEducation(educationToEdit);
+
+        console.log("Experience edited, ", user);
+
+        setEducation(
+          education?.map((edu) =>
+            edu.id === editingId ? { ...educationData, id: editingId } : edu
+          )
+        );
+      } catch (e) {
+        console.error("Failed to edit user experience");
+      }
     } else {
-      // Add new education
-      const newEducation: Education = {
-        ...educationData,
-        id: Date.now().toString(),
-      };
-      setEducation([newEducation, ...education]);
+      try {
+        const educationToAdd = {
+          ...educationData,
+          startDate: new Date(educationData.startDate),
+          endDate: educationData.endDate
+            ? new Date(educationData.endDate)
+            : null,
+        };
+
+        const user = await createEducation(educationToAdd);
+
+        console.log("Education added, ", user);
+
+        const newEducation: Education = {
+          ...educationData,
+          id: Date.now().toString(),
+        };
+        setEducation([newEducation, ...(education || [])]);
+      } catch (e) {
+        console.log("Error adding new education: ", e);
+      }
     }
 
     // Reset states
@@ -267,7 +308,7 @@ export function UserEducation() {
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {formData.startDate
-                    ? format(new Date(formData.startDate + "-01"), "MMMM yyyy")
+                    ? format(formData.startDate, "MM/dd/yyyy")
                     : "Select start date"}
                 </Button>
               </PopoverTrigger>
@@ -281,7 +322,7 @@ export function UserEducation() {
                   }
                   onSelect={(date) => {
                     if (date) {
-                      const monthYear = format(date, "yyyy-MM");
+                      const monthYear = format(date, "MM/dd/yyyy");
                       setFormData((prev) => ({
                         ...prev,
                         startDate: monthYear,
@@ -310,7 +351,7 @@ export function UserEducation() {
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {formData.endDate && !formData.isOngoing
-                    ? format(new Date(formData.endDate + "-01"), "MMMM yyyy")
+                    ? format(formData.endDate, "MM/dd/yyyy")
                     : formData.isOngoing
                     ? "Ongoing"
                     : "Select end date"}
@@ -326,7 +367,7 @@ export function UserEducation() {
                   }
                   onSelect={(date) => {
                     if (date) {
-                      const monthYear = format(date, "yyyy-MM");
+                      const monthYear = format(date, "MM/dd/yyyy");
                       setFormData((prev) => ({ ...prev, endDate: monthYear }));
                     }
                   }}
@@ -392,8 +433,12 @@ export function UserEducation() {
       <Separator className="my-5" />
       <div>
         {isAddingNew && renderEducationForm()}
-
-        {education.length === 0 ? (
+        {isLoading ? (
+          <div className="text-center py-12 text-gray-500">
+            <LoaderCircle className="h-6 w-6 mx-auto mb-4 text-gray-300 animate-spin" />
+            <p>Loading</p>
+          </div>
+        ) : education?.length === 0 ? (
           <div className="text-center py-12 text-gray-500">
             <GraduationCap className="h-12 w-12 mx-auto mb-4 text-gray-300" />
             <p>No education added yet</p>
@@ -403,7 +448,7 @@ export function UserEducation() {
           </div>
         ) : (
           <div className="divide-y divide-gray-100">
-            {education.map((edu) => (
+            {education?.map((edu) => (
               <div key={edu.id}>
                 {editingId === edu.id ? (
                   renderEducationForm()

@@ -54,6 +54,7 @@ type SocialLink {
 }
 
 type Experience {
+  id          String
   title       String
   company     String
   startDate   DateTime

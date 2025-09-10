@@ -1,5 +1,8 @@
-import { UserJSON } from "@clerk/nextjs/server";
+"use server";
+
+import { currentUser, UserJSON } from "@clerk/nextjs/server";
 import prisma from "../prisma";
+import { Experience } from "@prisma/client";
 
 export async function createUser(userData: UserJSON) {
   if (
@@ -40,5 +43,116 @@ export async function createUser(userData: UserJSON) {
     // Depending on your error handling strategy, you might re-throw the error
     // or return a specific error object.
     throw new Error("Failed to create user in the database.");
+  }
+}
+
+// Experience
+export async function getExperience() {
+  const user = await currentUser();
+
+  if (!user) throw new Error("Not authenticated.");
+
+  try {
+    const existingUser = await prisma.user.findFirst({
+      where: { clerkId: user.id },
+    });
+
+    if (!existingUser) throw new Error("User not found.");
+
+    const experiences = existingUser.experiences;
+    return experiences;
+  } catch (e) {
+    console.error("Error fetching user experiences.", e);
+    throw new Error("Failed to fetch user experiences.");
+  }
+}
+
+export async function createExperience(experienceData: Omit<Experience, "id">) {
+  const user = await currentUser();
+
+  if (!user) throw new Error("Not authenticated.");
+
+  try {
+    // Create the experience with a generated ID
+    const experienceWithId = {
+      ...experienceData,
+      id: Date.now().toString(), // or use crypto.randomUUID() for better uniqueness
+    };
+
+    // Update user's experiences array
+    const updatedUser = await prisma.user.update({
+      where: { clerkId: user.id },
+      data: {
+        experiences: {
+          push: experienceWithId,
+        },
+      },
+    });
+
+    console.log("Experience added:", updatedUser);
+    return updatedUser;
+  } catch (e) {
+    console.error("Error adding an experience: ", e);
+    throw new Error("Failed to add experience to user profile.");
+  }
+}
+
+export async function editExperience(experienceData: Experience) {
+  const user = await currentUser();
+
+  try {
+    if (!user) throw new Error("Not authenticated.");
+
+    const existingUser = await prisma.user.findFirst({
+      where: { clerkId: user.id },
+    });
+
+    if (!existingUser) throw new Error("User not found.");
+
+    const updatedExperience = await prisma.user.update({
+      where: { clerkId: user.id },
+      data: {
+        experiences: {
+          set: existingUser.experiences.map((exp) =>
+            exp.id === experienceData.id ? { ...exp, ...experienceData } : exp
+          ),
+        },
+      },
+    });
+
+    console.log("Experience updated:", updatedExperience);
+    return updatedExperience;
+  } catch (e) {
+    console.error("Error editting user experience, ", e);
+    throw new Error("Failed to edit user experience.");
+  }
+}
+
+export async function deleteExperience(experienceId: string) {
+  const user = await currentUser();
+  try {
+    if (!user) throw new Error("Not authenticated.");
+
+    const existingUser = await prisma.user.findFirst({
+      where: { clerkId: user.id },
+    });
+
+    if (!existingUser) throw new Error("User not found.");
+
+    const updatedUser = await prisma.user.update({
+      where: { clerkId: user.id },
+      data: {
+        experiences: {
+          set: existingUser.experiences.filter(
+            (exp) => exp.id !== experienceId
+          ),
+        },
+      },
+    });
+    console.log("Experience deleted:", updatedUser);
+    return updatedUser;
+  } catch (e) {
+    console.error("Error deleting user experience, ", e);
+    throw new Error("Failed to delete user experience.");
   }
 }

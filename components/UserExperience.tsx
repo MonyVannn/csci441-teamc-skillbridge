@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -14,8 +14,21 @@ import {
 } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { format } from "date-fns";
-import { Plus, Pencil, Trash2, Building2, CalendarIcon } from "lucide-react";
+import {
+  Plus,
+  Pencil,
+  Trash2,
+  Building2,
+  CalendarIcon,
+  LoaderCircle,
+} from "lucide-react";
 import { Separator } from "./ui/separator";
+import {
+  createExperience,
+  deleteExperience,
+  editExperience,
+  getExperience,
+} from "@/lib/actions/user";
 
 interface Experience {
   id: string;
@@ -23,43 +36,14 @@ interface Experience {
   company: string;
   startDate: string;
   endDate: string | null;
-  description: string;
+  description: string | null; // Allow description to be null
 }
 
-const mockExperiences: Experience[] = [
-  {
-    id: "1",
-    title: "Senior Software Engineer",
-    company: "TechCorp Inc.",
-    startDate: "2022-01",
-    endDate: null,
-    description:
-      "Leading a team of 5 developers in building scalable web applications using React, Node.js, and AWS. Implemented CI/CD pipelines and improved deployment efficiency by 40%.",
-  },
-  {
-    id: "2",
-    title: "Full Stack Developer",
-    company: "StartupXYZ",
-    startDate: "2020-06",
-    endDate: "2021-12",
-    description:
-      "Developed and maintained multiple client projects using modern web technologies. Collaborated with designers and product managers to deliver high-quality user experiences.",
-  },
-  {
-    id: "3",
-    title: "Frontend Developer",
-    company: "Digital Agency",
-    startDate: "2019-03",
-    endDate: "2020-05",
-    description:
-      "Created responsive websites and web applications for various clients. Specialized in React, TypeScript, and modern CSS frameworks.",
-  },
-];
-
 export function UserExperience() {
-  const [experiences, setExperiences] = useState<Experience[]>(mockExperiences);
+  const [experiences, setExperiences] = useState<Experience[]>();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isAddingNew, setIsAddingNew] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [formData, setFormData] = useState({
     title: "",
     company: "",
@@ -68,6 +52,29 @@ export function UserExperience() {
     description: "",
     isCurrentRole: false,
   });
+
+  useEffect(() => {
+    async function loadExperiences() {
+      try {
+        const data = await getExperience();
+        setExperiences(
+          data.map((exp) => ({
+            ...exp,
+            startDate: exp.startDate.toISOString().split("T")[0], // Convert Date to string
+            endDate: exp.endDate
+              ? exp.endDate.toISOString().split("T")[0]
+              : null, // Convert Date to string or null
+          }))
+        );
+      } catch (error) {
+        console.error("Failed to load experiences:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadExperiences();
+  }, []);
 
   const handleAddExperience = () => {
     setFormData({
@@ -88,18 +95,26 @@ export function UserExperience() {
       company: experience.company,
       startDate: experience.startDate,
       endDate: experience.endDate || "",
-      description: experience.description,
+      description: experience.description || "",
       isCurrentRole: !experience.endDate,
     });
     setEditingId(experience.id);
     setIsAddingNew(false);
   };
 
-  const handleDeleteExperience = (id: string) => {
-    setExperiences(experiences.filter((exp) => exp.id !== id));
+  const handleDeleteExperience = async (id: string) => {
+    try {
+      const user = await deleteExperience(id);
+
+      console.log("Experience deleted, ", user);
+
+      setExperiences(experiences?.filter((exp) => exp.id !== id));
+    } catch (e) {
+      console.error("Failed to delete user experience, ", e);
+    }
   };
 
-  const handleSaveExperience = () => {
+  const handleSaveExperience = async () => {
     const experienceData = {
       title: formData.title,
       company: formData.company,
@@ -109,19 +124,52 @@ export function UserExperience() {
     };
 
     if (editingId) {
-      // Update existing experience
-      setExperiences(
-        experiences.map((exp) =>
-          exp.id === editingId ? { ...experienceData, id: editingId } : exp
-        )
-      );
+      try {
+        const experienceToEdit = {
+          ...experienceData,
+          id: editingId,
+          startDate: new Date(experienceData.startDate),
+          endDate: experienceData.endDate
+            ? new Date(experienceData.endDate)
+            : null,
+        };
+
+        const user = await editExperience(experienceToEdit);
+
+        console.log("Experience edited, ", user);
+
+        // Update existing experience
+        setExperiences(
+          experiences?.map((exp) =>
+            exp.id === editingId ? { ...experienceData, id: editingId } : exp
+          )
+        );
+      } catch (e) {
+        console.error("Failed to edit user experience");
+      }
     } else {
       // Add new experience
-      const newExperience: Experience = {
-        ...experienceData,
-        id: Date.now().toString(),
-      };
-      setExperiences([newExperience, ...experiences]);
+      try {
+        const experienceToAdd = {
+          ...experienceData,
+          startDate: new Date(experienceData.startDate),
+          endDate: experienceData.endDate
+            ? new Date(experienceData.endDate)
+            : null,
+        };
+
+        const user = await createExperience(experienceToAdd);
+
+        console.log("Experience added, ", user);
+
+        const newExperience: Experience = {
+          ...experienceData,
+          id: Date.now().toString(),
+        };
+        setExperiences([newExperience, ...(experiences || [])]);
+      } catch (e) {
+        console.log("Error adding new experience: ", e);
+      }
     }
 
     // Reset states
@@ -258,7 +306,7 @@ export function UserExperience() {
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {formData.startDate
-                    ? format(new Date(formData.startDate + "-01"), "MMMM yyyy")
+                    ? format(formData.startDate, "MM/dd/yyyy")
                     : "Select start date"}
                 </Button>
               </PopoverTrigger>
@@ -272,7 +320,7 @@ export function UserExperience() {
                   }
                   onSelect={(date) => {
                     if (date) {
-                      const monthYear = format(date, "yyyy-MM");
+                      const monthYear = format(date, "MM/dd/yyyy");
                       setFormData((prev) => ({
                         ...prev,
                         startDate: monthYear,
@@ -301,7 +349,7 @@ export function UserExperience() {
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {formData.endDate && !formData.isCurrentRole
-                    ? format(new Date(formData.endDate + "-01"), "MMMM yyyy")
+                    ? format(formData.endDate, "MM/dd/yyyy")
                     : formData.isCurrentRole
                     ? "Present"
                     : "Select end date"}
@@ -317,7 +365,7 @@ export function UserExperience() {
                   }
                   onSelect={(date) => {
                     if (date) {
-                      const monthYear = format(date, "yyyy-MM");
+                      const monthYear = format(date, "MM/dd/yyyy");
                       setFormData((prev) => ({ ...prev, endDate: monthYear }));
                     }
                   }}
@@ -383,8 +431,12 @@ export function UserExperience() {
       <Separator className="my-5" />
       <div>
         {isAddingNew && renderExperienceForm()}
-
-        {experiences.length === 0 ? (
+        {isLoading ? (
+          <div className="text-center py-12 text-gray-500">
+            <LoaderCircle className="h-6 w-6 mx-auto mb-4 text-gray-300 animate-spin" />
+            <p>Loading</p>
+          </div>
+        ) : experiences?.length === 0 ? (
           <div className="text-center py-12 text-gray-500">
             <Building2 className="h-12 w-12 mx-auto mb-4 text-gray-300" />
             <p>No experiences added yet</p>
@@ -394,7 +446,7 @@ export function UserExperience() {
           </div>
         ) : (
           <div className="divide-y divide-gray-100">
-            {experiences.map((experience) => (
+            {experiences?.map((experience) => (
               <div key={experience.id}>
                 {editingId === experience.id ? (
                   renderExperienceForm()

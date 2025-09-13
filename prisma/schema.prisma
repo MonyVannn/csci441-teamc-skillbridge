@@ -20,6 +20,9 @@ model User {
   firstName String?
   lastName  String?
   bio       String?
+  intro     String?
+  address   String?
+  skills    String[]
   imageUrl  String? // Clerk usually provides this
   role      UserRole @default(USER)
   occupied  Boolean  @default(false) // Is the user currently working on a project?

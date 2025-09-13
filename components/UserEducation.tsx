@@ -15,7 +15,6 @@ import {
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import {
-  Plus,
   Pencil,
   Trash2,
   GraduationCap,
@@ -425,8 +424,11 @@ export function UserEducation() {
             Education
           </h1>
         </div>
-        <Button onClick={handleAddEducation} className="mr-10">
-          <Plus className="h-4 w-4 mr-2" />
+        <Button
+          onClick={handleAddEducation}
+          variant={"outline"}
+          className="mr-10"
+        >
           Add Education
         </Button>
       </div>

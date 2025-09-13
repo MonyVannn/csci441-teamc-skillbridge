@@ -15,7 +15,6 @@ import {
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import {
-  Plus,
   Pencil,
   Trash2,
   Building2,
@@ -423,8 +422,11 @@ export function UserExperience() {
             Experiences
           </h1>
         </div>
-        <Button onClick={handleAddExperience} className="mr-10">
-          <Plus className="h-4 w-4 mr-2" />
+        <Button
+          onClick={handleAddExperience}
+          variant={"outline"}
+          className="mr-10"
+        >
           Add Experience
         </Button>
       </div>

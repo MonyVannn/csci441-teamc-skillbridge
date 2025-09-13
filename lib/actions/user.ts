@@ -2,7 +2,26 @@
 
 import { currentUser, UserJSON } from "@clerk/nextjs/server";
 import prisma from "../prisma";
-import { Education, Experience } from "@prisma/client";
+import { Education, Experience, User } from "@prisma/client";
+
+export async function getUser() {
+  const user = await currentUser();
+
+  if (!user) throw new Error("Not authenticated.");
+
+  try {
+    const currentUser = await prisma.user.findFirst({
+      where: { clerkId: user.id },
+    });
+
+    if (!currentUser) throw new Error("User not found.");
+
+    return currentUser;
+  } catch (e) {
+    console.error("Error fetching user information, ", e);
+    throw new Error("Failed to fetch user information.");
+  }
+}
 
 export async function createUser(userData: UserJSON) {
   if (
@@ -263,5 +282,32 @@ export async function deleteEducation(educationId: string) {
   } catch (e) {
     console.error("Error deleting user education, ", e);
     throw new Error("Failed to delete user education.");
+  }
+}
+
+// Bio
+export async function editUserInformation(informationData: User) {
+  const user = await currentUser();
+
+  if (!user) throw new Error("Not authenticated.");
+  try {
+    const existingUser = await prisma.user.findFirst({
+      where: { clerkId: user.id },
+    });
+
+    if (!existingUser) throw new Error("User not found.");
+
+    const { id, ...dataWithoutId } = informationData;
+    const updatedInformation = await prisma.user.update({
+      where: { clerkId: user.id },
+      data: {
+        ...dataWithoutId,
+      },
+    });
+
+    console.log("Information updated.", updatedInformation);
+  } catch (e) {
+    console.error("Error editing user information, ", e);
+    throw new Error("Failed to edit user information.");
   }
 }

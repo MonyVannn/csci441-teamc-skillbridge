@@ -15,25 +15,6 @@ import { UserExperience } from "./UserExperience";
 import { UserEducation } from "./UserEducation";
 import { UserInformation } from "./UserInformation";
 
-const sampleUserData = {
-  imageUrl: "/professional-headshot.png",
-  firstName: "Sarah",
-  lastName: "Johnson",
-  email: "sarah.johnson@example.com",
-  bio: "Passionate software engineer with 5+ years of experience in full-stack development.",
-  intro:
-    "I'm a dedicated software engineer who loves building scalable web applications and mentoring junior developers. I specialize in React, Node.js, and cloud architecture.",
-  address: "San Francisco, CA",
-  role: "USER" as const,
-  occupied: true,
-  socialLinks: [
-    { type: "LinkedIn", url: "https://linkedin.com/in/sarahjohnson" },
-    { type: "GitHub", url: "https://github.com/sarahjohnson" },
-    { type: "Website", url: "https://sarahjohnson.dev" },
-  ],
-  skills: ["React", "TypeScript", "Node.js", "Python", "AWS", "Docker"],
-};
-
 const HeaderContent = () => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -85,7 +66,7 @@ const HeaderContent = () => {
               url="bio"
               labelIcon={<ScanFace className="w-4 h-4" />}
             >
-              <UserInformation initialData={sampleUserData} />
+              <UserInformation />
             </UserButton.UserProfilePage>
             <UserButton.UserProfilePage
               label="Experience"

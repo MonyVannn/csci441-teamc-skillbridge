@@ -87,12 +87,27 @@ enum SpecializationBadge {
   DATA_ANALYST_ACE // Completed multiple data analysis projects
   DESIGN_THINKER // Completed multiple UI/UX projects
   COMMUNITY_LEADER // Actively helps other students, maybe mentor role
+  CLOUD_SPECIALIST // Completed multiple cloud-related projects
+  MOBILE_MAVEN // Expert in mobile app development
+  AI_INNOVATOR // Specialized in AI/ML projects
+  CYBERSECURITY_CHAMP // Completed cybersecurity-focused projects
+  DEVOPS_GURU // Demonstrated DevOps expertise
+  DATABASE_WIZARD // Specialized in database design/management
+  FRONTEND_FOCUS // Specialized in frontend/UI development
+  BACKEND_BUILDER // Specialized in backend/API development
+  PRODUCT_MANAGER // Led or managed project teams
+  OPEN_SOURCE_CONTRIBUTOR // Significant contributions to open source projects
 }
 
 enum EngagementBadge {
   TOP_CONTRIBUTOR // Highly active, consistently takes projects
   MENTOR // Guides other students (if you build a mentorship feature)
   VETERAN // Completed a high number of projects/hours (e.g., 50 projects OR 200 hours)
+  EARLY_BIRD // Frequently among the first to apply or join projects
+  TEAM_PLAYER // Consistently collaborates well with others, positive feedback from teammates
+  INNOVATOR // Regularly suggests improvements or new ideas for projects/platform
+  COMMUNITY_HELPER // Actively answers questions or assists others in the community
+  CONSISTENT_PERFORMER // Maintains steady participation and quality over time
 }
 
 enum UserRole {

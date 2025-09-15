@@ -19,7 +19,7 @@ import { PostProjectModal } from "./project/PostProjectModal";
 import { User } from "@prisma/client";
 
 interface HeaderContentProps {
-  user: User;
+  user: User | null;
 }
 
 const HeaderContent: React.FC<HeaderContentProps> = ({ user }) => {
@@ -69,7 +69,7 @@ const HeaderContent: React.FC<HeaderContentProps> = ({ user }) => {
         </SignedOut>
         <SignedIn>
           <div className="flex items-center gap-10">
-            {user.role === "BUSINESS_OWNER" && (
+            {user?.role === "BUSINESS_OWNER" && (
               <div>
                 <Button
                   onClick={() => setIsModalOpen(true)}

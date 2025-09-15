@@ -1,26 +1,8 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { User } from "@prisma/client";
 import { MapPin, Award, Clock, Briefcase } from "lucide-react";
 import Image from "next/image";
-
-interface User {
-  firstName: string;
-  lastName: string;
-  intro: string;
-  address: string;
-  skills: string[];
-  imageUrl: string;
-  experiences: Array<{
-    title: string;
-    company: string;
-  }>;
-  earnedSkillBadges: string[];
-  earnedSpecializationBadges: string[];
-  earnedEngagementBadges: string[];
-  totalHoursContributed: number;
-  projectsCompleted: number;
-  industriesExperienced: string[];
-}
 
 interface ProfileHeaderProps {
   user: User;
@@ -42,10 +24,10 @@ export function ProfileHeader({ user }: ProfileHeaderProps) {
         {/* Profile Picture */}
         <div className="absolute -top-20 left-6">
           <Avatar className="w-40 h-40 border-4 border-background">
-            <AvatarImage src={user.imageUrl} />
+            <AvatarImage src={user?.imageUrl || ""} />
             <AvatarFallback className="text-2xl bg-muted">
-              {user.firstName[0]}
-              {user.lastName[0]}
+              {user.firstName}
+              {user.lastName}
             </AvatarFallback>
           </Avatar>
         </div>

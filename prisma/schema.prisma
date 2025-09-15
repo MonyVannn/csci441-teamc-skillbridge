@@ -30,9 +30,10 @@ model User {
   updatedAt DateTime @updatedAt
 
   // Social Links, Experience, Badges - REVISIT OPTIONS BELOW
-  socialLinks SocialLink[]
-  experiences Experience[]
-  education   Education[]
+  socialLinks      SocialLink[]
+  experiences      Experience[]
+  education        Education[]
+  previousProjects PreviousProject[]
 
   earnedSkillBadges          SkillLevelBadge[] // List of badges for skill progression
   earnedSpecializationBadges SpecializationBadge[] // List of badges for expertise areas
@@ -72,6 +73,17 @@ type Education {
   startDate   DateTime
   endDate     DateTime?
   description String?
+}
+
+type PreviousProject {
+  id          String
+  title       String
+  role        String
+  industry    String
+  description String
+  tags        String[]
+  startDate   DateTime
+  endDate     DateTime?
 }
 
 enum SkillLevelBadge {

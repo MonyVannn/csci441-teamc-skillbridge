@@ -23,6 +23,19 @@ export async function getUser() {
   }
 }
 
+export async function getUserByClerkId(userId: string) {
+  try {
+    const user = await prisma.user.findFirst({
+      where: { clerkId: userId },
+    });
+
+    return user;
+  } catch (e) {
+    console.error("Error fetching user data, ", e);
+    throw new Error("Failed to fatch user Data.");
+  }
+}
+
 export async function createUser(userData: UserJSON) {
   if (
     !Array.isArray(userData.email_addresses) ||

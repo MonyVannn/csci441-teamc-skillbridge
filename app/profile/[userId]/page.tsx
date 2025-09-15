@@ -5,13 +5,13 @@ import { ProfileSidebar } from "@/components/profile/ProfileSidebar";
 import { getUserByClerkId } from "@/lib/actions/user";
 
 interface ProfilePageProps {
-  params: {
+  params: Promise<{
     userId: string;
-  };
+  }>;
 }
 
 export default async function ProfilePage({ params }: ProfilePageProps) {
-  const { userId } = params;
+  const { userId } = await params;
   const userData = await getUserByClerkId(userId);
 
   if (!userData) {

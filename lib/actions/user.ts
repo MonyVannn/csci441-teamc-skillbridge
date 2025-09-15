@@ -4,6 +4,11 @@ import { currentUser, UserJSON } from "@clerk/nextjs/server";
 import prisma from "../prisma";
 import { Education, Experience, User } from "@prisma/client";
 
+export async function isAuthenticated(): Promise<boolean> {
+  const user = await currentUser();
+  return user !== null;
+}
+
 export async function getUser() {
   const user = await currentUser();
 

@@ -21,7 +21,7 @@ import {
   CalendarIcon,
   LoaderCircle,
 } from "lucide-react";
-import { Separator } from "./ui/separator";
+import { Separator } from "../ui/separator";
 import {
   createEducation,
   deleteEducation,

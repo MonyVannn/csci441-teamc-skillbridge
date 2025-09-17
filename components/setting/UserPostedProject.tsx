@@ -25,14 +25,18 @@ import {
 } from "lucide-react";
 import { Separator } from "../ui/separator";
 import {
+  Prisma,
   Project,
   ProjectCategory,
   ProjectScope,
   ProjectStatus,
 } from "@prisma/client";
-import { getProjects } from "@/lib/actions/project";
+import { createProject, editProject, getProjects } from "@/lib/actions/project";
+import { useUser } from "@clerk/nextjs";
+import { getUserByClerkId } from "@/lib/actions/user";
 
 export function UserPostedProjects() {
+  const user = useUser();
   const [projects, setProjects] = useState<Project[]>();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isAddingNew, setIsAddingNew] = useState(false);
@@ -114,33 +118,40 @@ export function UserPostedProjects() {
   };
 
   const handleSaveProject = async () => {
-    // const projectData: CreateProjectData = {
-    //   title: formData.title,
-    //   description: formData.description,
-    //   requiredSkills: formData.requiredSkills,
-    //   category: formData.category as ProjectCategory,
-    //   scope: formData.scope as ProjectScope,
-    //   startDate: new Date(formData.startDate),
-    //   estimatedEndDate: new Date(formData.estimatedEndDate),
-    //   applicationDeadline: new Date(formData.applicationDeadline),
-    //   budget: Number.parseFloat(formData.budget),
-    //   isPublic: formData.isPublic,
-    // }
+    if (!user.isSignedIn) return;
+
+    const dbUser = await getUserByClerkId(user.user.id);
+    if (!dbUser) return;
+
+    const projectData: Prisma.ProjectCreateInput = {
+      title: formData.title,
+      description: formData.description,
+      requiredSkills: formData.requiredSkills,
+      category: formData.category as ProjectCategory,
+      scope: formData.scope as ProjectScope,
+      startDate: new Date(formData.startDate),
+      estimatedEndDate: new Date(formData.estimatedEndDate),
+      applicationDeadline: new Date(formData.applicationDeadline),
+      budget: Number.parseFloat(formData.budget),
+      businessOwner: { connect: { id: dbUser.id } },
+      isPublic: formData.isPublic,
+    };
 
     if (editingId) {
       try {
-        // const updatedProject = await editProject({
-        //   ...projectData,
-        //   id: editingId,
-        // })
-        // setProjects(projects?.map((project) => (project.id === editingId ? updatedProject : project)))
+        const updatedProject = await editProject(projectData, editingId);
+        setProjects(
+          projects?.map((project) =>
+            project.id === editingId ? updatedProject : project
+          )
+        );
       } catch (e) {
         console.error("Failed to edit project:", e);
       }
     } else {
       try {
-        // const newProject = await createProject(projectData)
-        // setProjects([newProject, ...(projects || [])])
+        const newProject = await createProject(projectData);
+        setProjects([newProject, ...(projects || [])]);
       } catch (e) {
         console.error("Error adding new project:", e);
       }

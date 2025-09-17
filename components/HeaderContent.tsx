@@ -4,6 +4,7 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import {
   BriefcaseBusiness,
+  FolderClock,
   GraduationCap,
   Plus,
   ScanFace,
@@ -12,11 +13,12 @@ import {
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
-import { UserExperience } from "./UserExperience";
-import { UserEducation } from "./UserEducation";
-import { UserInformation } from "./UserInformation";
+import { UserExperience } from "./setting/UserExperience";
+import { UserEducation } from "./setting/UserEducation";
+import { UserInformation } from "./setting/UserInformation";
 import { PostProjectModal } from "./project/PostProjectModal";
 import { User } from "@prisma/client";
+import { UserPostedProjects } from "./setting/UserPostedProject";
 
 interface HeaderContentProps {
   user: User | null;
@@ -107,6 +109,15 @@ const HeaderContent: React.FC<HeaderContentProps> = ({ user }) => {
               >
                 <UserEducation />
               </UserButton.UserProfilePage>
+              {user?.role === "BUSINESS_OWNER" && (
+                <UserButton.UserProfilePage
+                  label="Posted Projects"
+                  url="projects"
+                  labelIcon={<FolderClock className="w-4 h-4" />}
+                >
+                  <UserPostedProjects />
+                </UserButton.UserProfilePage>
+              )}
             </UserButton>
           </div>
         </SignedIn>

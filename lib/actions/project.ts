@@ -4,6 +4,31 @@ import { currentUser } from "@clerk/nextjs/server";
 import { Prisma } from "@prisma/client";
 import prisma from "../prisma";
 
+export async function getProjects() {
+  const user = await currentUser();
+
+  if (!user) throw new Error("Not authenticated.");
+
+  try {
+    const existingUser = await prisma.user.findFirst({
+      where: { clerkId: user.id },
+    });
+
+    if (!existingUser) throw new Error("User not found.");
+    if (existingUser.role !== "BUSINESS_OWNER")
+      throw new Error("This role is not allowed to call this function.");
+
+    const projects = await prisma.project.findMany({
+      where: { businessOwnerId: existingUser.id },
+    });
+
+    return projects;
+  } catch (e) {
+    console.error("Error fetching project data, ", e);
+    throw new Error("Failed to fetch project data.");
+  }
+}
+
 export async function createProject(projectData: Prisma.ProjectCreateInput) {
   const user = await currentUser();
 

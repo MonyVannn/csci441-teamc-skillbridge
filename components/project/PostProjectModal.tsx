@@ -158,12 +158,11 @@ export function PostProjectModal({
 
       const project = await createProject({
         ...formDataWithSkills,
-        status: "OPEN", // or a valid status
-        isPublic: true, // or true based on your logic
-        createdAt: new Date(), // or a valid date
-        assignedStudent: undefined, // or a valid student ID if applicable
+        status: "OPEN",
+        isPublic: true,
+        createdAt: new Date(),
+        assignedStudent: undefined,
         businessOwner: { connect: { id: dbUser.id } },
-        updatedAt: new Date(),
       });
 
       console.log("Project successfully created, ", project);

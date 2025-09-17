@@ -6,7 +6,6 @@ import prisma from "../prisma";
 
 export async function createProject(projectData: Prisma.ProjectCreateInput) {
   const user = await currentUser();
-  console.log(projectData);
 
   if (!user) throw new Error("Not authenticated.");
 

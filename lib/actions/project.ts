@@ -54,3 +54,32 @@ export async function createProject(projectData: Prisma.ProjectCreateInput) {
     throw new Error("Failed to create new project.");
   }
 }
+
+export async function editProject(
+  projectData: Prisma.ProjectCreateInput,
+  projectId: string
+) {
+  const user = await currentUser();
+
+  if (!user) throw new Error("User not authenticated.");
+
+  try {
+    const existingUser = await prisma.user.findFirst({
+      where: { clerkId: user.id },
+    });
+
+    if (!existingUser) throw new Error("User not found.");
+    if (existingUser.role !== "BUSINESS_OWNER")
+      throw new Error("This role is now allowed to call this function.");
+
+    const project = await prisma.project.update({
+      where: { id: projectId },
+      data: projectData,
+    });
+
+    return project;
+  } catch (e) {
+    console.error("Error updating project data, ", e);
+    throw new Error("Failed to updated project data.");
+  }
+}

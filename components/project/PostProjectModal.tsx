@@ -43,20 +43,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { createProject } from "@/lib/actions/project";
+import { useUser } from "@clerk/nextjs";
+import { getUserByClerkId } from "@/lib/actions/user";
+import { ProjectCategory, ProjectScope } from "@prisma/client";
 
-const categories = [
-  "WEB_DEVELOPMENT",
-  "MOBILE_DEVELOPMENT",
-  "UI_UX_DESIGN",
-  "DATA_SCIENCE",
-  "MACHINE_LEARNING",
-  "BLOCKCHAIN",
-  "GAME_DEVELOPMENT",
-  "OTHER",
-] as const;
-
-const scopes = ["BEGINNER", "INTERMEDIATE", "ADVANCED", "EXPERT"] as const;
-
+const categories = Object.values(ProjectCategory);
+const scopes = Object.values(ProjectScope);
 const commonSkills = [
   "React",
   "TypeScript",
@@ -134,6 +127,7 @@ export function PostProjectModal({
   open,
   onOpenChange,
 }: PostProjectModalProps) {
+  const user = useUser();
   const [skillInput, setSkillInput] = useState("");
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
 
@@ -150,13 +144,32 @@ export function PostProjectModal({
     },
   });
 
-  const handleSubmit = (data: FormData) => {
+  const handleSubmit = async (data: FormData) => {
+    if (!user.isSignedIn) return;
     const formDataWithSkills = {
       ...data,
       requiredSkills: selectedSkills,
     };
 
-    console.log("Project Form Data:", formDataWithSkills);
+    try {
+      const dbUser = await getUserByClerkId(user.user?.id);
+
+      if (!dbUser) return;
+
+      const project = await createProject({
+        ...formDataWithSkills,
+        status: "OPEN", // or a valid status
+        isPublic: true, // or true based on your logic
+        createdAt: new Date(), // or a valid date
+        assignedStudent: undefined, // or a valid student ID if applicable
+        businessOwner: { connect: { id: dbUser.id } },
+        updatedAt: new Date(),
+      });
+
+      console.log("Project successfully created, ", project);
+    } catch (e) {
+      console.error("Failed to create a new project, ", e);
+    }
 
     // Reset form and close modal
     form.reset();

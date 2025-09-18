@@ -36,7 +36,6 @@ export function UserInformation() {
   );
   const [isEditing, setIsEditing] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function loadUser() {
@@ -45,8 +44,6 @@ export function UserInformation() {
         setUserData(data);
       } catch (error) {
         console.error("Failed to load experiences:", error);
-      } finally {
-        setIsLoading(false);
       }
     }
 

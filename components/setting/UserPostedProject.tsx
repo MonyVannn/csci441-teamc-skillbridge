@@ -31,7 +31,12 @@ import {
   ProjectScope,
   ProjectStatus,
 } from "@prisma/client";
-import { createProject, editProject, getProjects } from "@/lib/actions/project";
+import {
+  createProject,
+  deleteProject,
+  editProject,
+  getProjects,
+} from "@/lib/actions/project";
 import { useUser } from "@clerk/nextjs";
 import { getUserByClerkId } from "@/lib/actions/user";
 
@@ -110,7 +115,7 @@ export function UserPostedProjects() {
 
   const handleDeleteProject = async (id: string) => {
     try {
-      // await deleteProject(id)
+      await deleteProject(id);
       setProjects(projects?.filter((project) => project.id !== id));
     } catch (e) {
       console.error("Failed to delete project:", e);

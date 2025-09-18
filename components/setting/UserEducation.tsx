@@ -144,7 +144,7 @@ export function UserEducation() {
           )
         );
       } catch (e) {
-        console.error("Failed to edit user experience");
+        console.error("Failed to edit user experience, ", e);
       }
     } else {
       try {

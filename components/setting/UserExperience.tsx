@@ -144,7 +144,7 @@ export function UserExperience() {
           )
         );
       } catch (e) {
-        console.error("Failed to edit user experience");
+        console.error("Failed to edit user experience, ", e);
       }
     } else {
       // Add new experience

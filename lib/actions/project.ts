@@ -5,7 +5,7 @@ import { Prisma } from "@prisma/client";
 import prisma from "../prisma";
 
 export async function getAvailableProjects() {
-  const user = currentUser();
+  const user = await currentUser();
 
   if (!user) throw new Error("Not authenticated.");
 

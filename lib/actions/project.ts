@@ -4,7 +4,24 @@ import { currentUser } from "@clerk/nextjs/server";
 import { Prisma } from "@prisma/client";
 import prisma from "../prisma";
 
-export async function getProjects() {
+export async function getAvailableProjects() {
+  const user = currentUser();
+
+  if (!user) throw new Error("Not authenticated.");
+
+  try {
+    const projects = await prisma.project.findMany({
+      where: { status: { not: "ARCHIVED" } },
+    });
+
+    return projects;
+  } catch (e) {
+    console.error("Error fetching available projects, ", e);
+    throw new Error("Failed to fetch available projects.");
+  }
+}
+
+export async function getProjectsByOwnerId() {
   const user = await currentUser();
 
   if (!user) throw new Error("Not authenticated.");

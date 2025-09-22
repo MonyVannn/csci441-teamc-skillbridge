@@ -35,7 +35,7 @@ import {
   createProject,
   deleteProject,
   editProject,
-  getProjects,
+  getProjectsByOwnerId,
 } from "@/lib/actions/project";
 import { useUser } from "@clerk/nextjs";
 import { getUserByClerkId } from "@/lib/actions/user";
@@ -63,7 +63,7 @@ export function UserPostedProjects() {
   useEffect(() => {
     async function loadProjects() {
       try {
-        const data = await getProjects();
+        const data = await getProjectsByOwnerId();
         setProjects(data);
       } catch (error) {
         console.error("Failed to load projects:", error);

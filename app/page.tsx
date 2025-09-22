@@ -7,6 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
 import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
+import { getAvailableProjects } from "@/lib/actions/project";
 
 const services = [
   {
@@ -156,7 +157,9 @@ const services = [
   },
 ];
 
-export default function MarketplacePage() {
+export default async function MarketplacePage() {
+  const projects = await getAvailableProjects();
+
   return (
     <div className="min-h-screen bg-white">
       {/* Main Content Area */}

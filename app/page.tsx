@@ -1,13 +1,9 @@
-import { Heart, Star, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
 import { Separator } from "@/components/ui/separator";
-import Image from "next/image";
 import { getAvailableProjects } from "@/lib/actions/project";
+import { ProjectCard } from "@/components/browse/ProjectCard";
 
 const services = [
   {
@@ -390,133 +386,8 @@ export default async function MarketplacePage() {
           </div>
         </div>
 
-        {/* Services Grid */}
-        <div className="flex-1 px-6 py-6">
-          <div className="border-b border-gray-200 mb-5 py-4">
-            <div className="flex items-center justify-between text-sm text-gray-600">
-              <div className="flex items-center gap-4">
-                <span className="font-medium">70,000+ results</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span>Sort by:</span>
-                <Button
-                  variant="ghost"
-                  className="h-auto p-0 text-gray-900 font-medium"
-                >
-                  Best selling
-                  <ChevronDown className="ml-1 h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {services.map((service) => (
-              <Card
-                key={service.id}
-                className="overflow-hidden border border-gray-200 hover:shadow-lg transition-shadow cursor-pointer"
-              >
-                {/* Video Thumbnail */}
-                <div className="relative group">
-                  <Image
-                    src={service.thumbnail || "/placeholder.svg"}
-                    alt={service.title}
-                    width={1000}
-                    height={1000}
-                    className="w-full h-52 object-cover -mt-6"
-                  />
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="absolute -top-2 right-3 h-8 w-8 bg-white/80 hover:bg-white text-gray-700"
-                  >
-                    <Heart className="h-4 w-4" />
-                  </Button>
-                </div>
-
-                {/* Card Content */}
-                <div className="p-4">
-                  {/* Seller Info */}
-                  <div className="flex items-center gap-2 mb-2">
-                    <Avatar className="h-6 w-6">
-                      <AvatarImage
-                        src={service.seller.avatar || "/placeholder.svg"}
-                      />
-                      <AvatarFallback>
-                        {service.seller.name.charAt(0)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="text-sm font-semibold text-gray-900">
-                      {service.seller.name}
-                    </span>
-                    {service.seller.isChoice ? (
-                      <Badge
-                        variant="secondary"
-                        className="bg-blue-100 text-blue-800 text-xs px-2 py-0.5"
-                      >
-                        {service.seller.level}
-                      </Badge>
-                    ) : service.seller.topRated ? (
-                      <Badge
-                        variant="secondary"
-                        className="bg-orange-100 text-orange-800 text-xs px-2 py-0.5"
-                      >
-                        {service.seller.level}
-                      </Badge>
-                    ) : (
-                      <Badge
-                        variant="secondary"
-                        className="bg-gray-100 text-gray-700 text-xs px-2 py-0.5"
-                      >
-                        {service.seller.level}
-                      </Badge>
-                    )}
-                  </div>
-
-                  {/* Service Title */}
-                  <h3 className="text-sm font-medium text-gray-900 mb-3 line-clamp-2 leading-relaxed">
-                    {service.title}
-                  </h3>
-
-                  {/* Rating */}
-                  <div className="flex items-center gap-1 mb-2">
-                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                    <span className="text-sm font-medium text-gray-900">
-                      {service.rating}
-                    </span>
-                    <span className="text-sm text-gray-500">
-                      ({service.reviews})
-                    </span>
-                  </div>
-
-                  {/* Price */}
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm">
-                      <span className="text-gray-600">From</span>
-                      <span className="font-bold text-gray-900 ml-1">
-                        ${service.price}
-                      </span>
-                      <span className="text-gray-500 ml-1">
-                        / {service.duration}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Consultation Badge */}
-                  {service.hasConsultation && (
-                    <div className="mt-2 pt-2 border-t border-gray-100">
-                      <div className="flex items-center gap-1 text-xs text-gray-600">
-                        <div className="w-3 h-3 bg-gray-400 rounded-sm flex items-center justify-center">
-                          <div className="w-1.5 h-1.5 bg-white rounded-full" />
-                        </div>
-                        <span>Offers video consultations</span>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </Card>
-            ))}
-          </div>
-        </div>
+        {/* Projects */}
+        <ProjectCard projects={projects} />
       </div>
     </div>
   );

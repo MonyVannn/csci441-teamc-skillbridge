@@ -5,10 +5,6 @@ import { Prisma } from "@prisma/client";
 import prisma from "../prisma";
 
 export async function getAvailableProjects() {
-  const user = await currentUser();
-
-  if (!user) throw new Error("Not authenticated.");
-
   try {
     const availableProjects = await prisma.project.findMany({
       where: {

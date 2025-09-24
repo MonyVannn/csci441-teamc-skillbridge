@@ -5,16 +5,32 @@ import { Prisma } from "@prisma/client";
 import prisma from "../prisma";
 
 export async function getAvailableProjects() {
-  const user = await currentUser();
-
-  if (!user) throw new Error("Not authenticated.");
-
   try {
-    const projects = await prisma.project.findMany({
-      where: { status: { not: "ARCHIVED" } },
+    const availableProjects = await prisma.project.findMany({
+      where: {
+        status: { not: "ARCHIVED" },
+      },
+      include: {
+        businessOwner: {
+          select: {
+            id: true,
+            imageUrl: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+        assignedStudent: {
+          select: {
+            id: true,
+            imageUrl: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
     });
 
-    return projects;
+    return availableProjects;
   } catch (e) {
     console.error("Error fetching available projects, ", e);
     throw new Error("Failed to fetch available projects.");

@@ -102,9 +102,19 @@ const formSchema = z
       .min(1, "At least one skill is required"),
     category: z.enum(categories, { error: "Category is required." }),
     scope: z.enum(scopes, { error: "Scope is required." }),
-    startDate: z.date(),
-    estimatedEndDate: z.date(),
-    applicationDeadline: z.date(),
+    startDate: z.date({
+      error: (iss) =>
+        iss.input == null ? "Start date is required" : "Invalid start date",
+    }),
+    estimatedEndDate: z.date({
+      error: (iss) =>
+        iss.input == null ? "End date is required" : "Invalid end date",
+    }),
+    applicationDeadline: z.date({
+      error: (iss) =>
+        iss.input == null ? "Application deadline is required" : "Invalid application deadline",
+    }),
+
     budget: z.number().min(0, "Budget must be a positive number"),
   })
   .refine((data) => data.estimatedEndDate > data.startDate, {
@@ -424,7 +434,7 @@ export function PostProjectModal({
                       <PopoverContent className="w-auto p-0" align="start">
                         <Calendar
                           mode="single"
-                          selected={field.value}
+                          selected={field.value ?? undefined}
                           onSelect={field.onChange}
                           disabled={(date) => date < new Date()}
                           initialFocus

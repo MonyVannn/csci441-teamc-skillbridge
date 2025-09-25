@@ -4,154 +4,7 @@ import { Slider } from "@/components/ui/slider";
 import { Separator } from "@/components/ui/separator";
 import { getAvailableProjects } from "@/lib/actions/project";
 import { ProjectCard } from "@/components/browse/ProjectCard";
-
-const services = [
-  {
-    id: 1,
-    thumbnail:
-      "https://plus.unsplash.com/premium_photo-1671461774955-7aab3ab41b90?q=80&w=2671&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    title: "Clean and organize a small dataset for business insights",
-    seller: {
-      name: "Sarah L.",
-      avatar:
-        "https://images.unsplash.com/photo-1607746882042-944635dfe10e?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80",
-      topRated: true,
-      level: "Top Rated ⭐⭐⭐",
-    },
-    rating: 4.9,
-    reviews: "120",
-    price: 50,
-    duration: "2 days",
-    hasConsultation: false,
-  },
-  {
-    id: 2,
-    thumbnail:
-      "https://images.unsplash.com/photo-1556943418-0e5712249b9d?q=80&w=2669&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    title: "Design a simple promotional flyer for a nonprofit event",
-    seller: {
-      name: "David K.",
-      avatar:
-        "https://images.unsplash.com/photo-1595152772835-219674b2a8a6?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80",
-      topRated: true,
-      level: "Top Rated ⭐⭐⭐",
-    },
-    rating: 4.8,
-    reviews: "89",
-    price: 40,
-    duration: "3 days",
-    hasConsultation: true,
-  },
-  {
-    id: 3,
-    thumbnail:
-      "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?q=80&w=2669&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    title: "Fix small bugs on a website and improve responsiveness",
-    seller: {
-      name: "Scaler Devs",
-      avatar:
-        "https://images.unsplash.com/photo-1603415526960-f7e0328c63b1?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80",
-      topRated: true,
-      level: "Top Rated ⭐⭐⭐",
-    },
-    rating: 5.0,
-    reviews: "200+",
-    price: 75,
-    duration: "2 days",
-    hasConsultation: false,
-  },
-  {
-    id: 4,
-    thumbnail:
-      "https://images.unsplash.com/photo-1570215170761-f056128eda48?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    title: "Test a new website feature and provide usability feedback",
-    seller: {
-      name: "Emily R.",
-      avatar:
-        "https://images.unsplash.com/photo-1544723795-3fb6469f5b39?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80",
-      topRated: true,
-      level: "Top Rated ⭐⭐⭐",
-    },
-    rating: 4.7,
-    reviews: "65",
-    price: 30,
-    duration: "1 day",
-    hasConsultation: true,
-  },
-  {
-    id: 5,
-    thumbnail:
-      "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?q=80&w=2274&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    title: "Create a social media content calendar for one month",
-    seller: {
-      name: "Amine S.",
-      avatar:
-        "https://images.unsplash.com/photo-1603415526960-f7e0328c63b1?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80",
-      topRated: false,
-      level: "SkillBridge Choice",
-      isChoice: true,
-    },
-    rating: 5.0,
-    reviews: "45",
-    price: 60,
-    duration: "4 days",
-    hasConsultation: false,
-  },
-  {
-    id: 6,
-    thumbnail:
-      "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    title: "Build a simple landing page for a small business",
-    seller: {
-      name: "Saqi",
-      avatar:
-        "https://images.unsplash.com/photo-1607746882042-944635dfe10e?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80",
-      topRated: false,
-      level: "Level 1 ⭐",
-    },
-    rating: 4.6,
-    reviews: "78",
-    price: 100,
-    duration: "5 days",
-    hasConsultation: false,
-  },
-  {
-    id: 7,
-    thumbnail:
-      "https://images.unsplash.com/photo-1519337265831-281ec6cc8514?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    title: "Write a blog post draft for a nonprofit’s website",
-    seller: {
-      name: "Jobair",
-      avatar:
-        "https://images.unsplash.com/photo-1595152772835-219674b2a8a6?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80",
-      topRated: false,
-      level: "Level 2 ⭐⭐",
-    },
-    rating: 4.9,
-    reviews: "32",
-    price: 25,
-    duration: "2 days",
-    hasConsultation: false,
-  },
-  {
-    id: 8,
-    thumbnail:
-      "https://images.unsplash.com/photo-1498075702571-ecb018f3752d?q=80&w=2678&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    title: "Create a simple infographic for a community project",
-    seller: {
-      name: "Leo Studio",
-      avatar:
-        "https://images.unsplash.com/photo-1603415526960-f7e0328c63b1?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80",
-      topRated: false,
-      level: "Level 2 ⭐⭐",
-    },
-    rating: 4.8,
-    reviews: "54",
-    price: 35,
-    duration: "3 days",
-    hasConsultation: false,
-  },
-];
+import { EmptyProject } from "@/components/browse/EmptyProject";
 
 export default async function MarketplacePage() {
   const projects = await getAvailableProjects();
@@ -387,7 +240,11 @@ export default async function MarketplacePage() {
         </div>
 
         {/* Projects */}
-        <ProjectCard projects={projects} />
+        {projects.length <= 0 ? (
+          <EmptyProject />
+        ) : (
+          <ProjectCard projects={projects} />
+        )}
       </div>
     </div>
   );

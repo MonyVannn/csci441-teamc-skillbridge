@@ -6,8 +6,15 @@ import { getAvailableProjects } from "@/lib/actions/project";
 import { ProjectCard } from "@/components/browse/ProjectCard";
 import { EmptyProject } from "@/components/browse/EmptyProject";
 
-export default async function MarketplacePage() {
+export default async function MarketplacePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
   const projects = await getAvailableProjects();
+  const query = (await searchParams).query;
+
+  console.log("query: ", query);
 
   return (
     <div className="min-h-screen bg-white">

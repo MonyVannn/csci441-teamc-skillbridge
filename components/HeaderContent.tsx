@@ -8,7 +8,7 @@ import {
   Plus,
   ScanFace,
 } from "lucide-react";
-import { usePathname, useSearchParams, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import { UserExperience } from "./setting/UserExperience";
@@ -25,22 +25,9 @@ interface HeaderContentProps {
 
 const HeaderContent: React.FC<HeaderContentProps> = ({ user }) => {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const { replace } = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   if (pathname.startsWith("/sign-in")) return null;
-
-  const handleSearch = (term: string) => {
-    const params = new URLSearchParams(searchParams);
-    if (term) {
-      params.set("query", term);
-    } else {
-      params.delete("query");
-    }
-
-    replace(`${pathname}?${params.toString()}`);
-  };
 
   return (
     <header className="bg-[#121212] border-b py-4 px-8 flex items-center justify-between">

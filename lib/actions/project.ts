@@ -4,11 +4,13 @@ import { currentUser } from "@clerk/nextjs/server";
 import { Prisma } from "@prisma/client";
 import prisma from "../prisma";
 
-export async function getAvailableProjects() {
+export async function getAvailableProjects(query: string) {
+  console.log(query);
   try {
     const availableProjects = await prisma.project.findMany({
       where: {
         status: { not: "ARCHIVED" },
+        title: { contains: query, mode: "insensitive" },
       },
       include: {
         businessOwner: {

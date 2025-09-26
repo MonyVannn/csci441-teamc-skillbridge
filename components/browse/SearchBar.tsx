@@ -2,7 +2,7 @@
 
 import { Search } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import { Input } from "../ui/input";
 
 export function SearchBar() {
@@ -11,21 +11,13 @@ export function SearchBar() {
   const searchParams = useSearchParams();
   const [query, setQuery] = useState(searchParams.get("query") || "");
 
-  const createQueryString = useCallback(
-    (name: string, value: string) => {
-      const params = new URLSearchParams(searchParams.toString());
-      params.set(name, value);
-
-      return params.toString();
-    },
-    [searchParams]
-  );
-
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.currentTarget.value;
     setQuery(value);
-    const newQueryString = createQueryString("query", value);
-    router.push(`${pathname}?${newQueryString}`);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("query", value);
+    params.set("page", "1");
+    router.push(`${pathname}?${params.toString()}`);
   };
 
   return (

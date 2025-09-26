@@ -1,14 +1,12 @@
 "use client";
 import React, { useState } from "react";
 import { Button } from "./ui/button";
-import { Input } from "./ui/input";
 import {
   BriefcaseBusiness,
   FolderClock,
   GraduationCap,
   Plus,
   ScanFace,
-  Search,
 } from "lucide-react";
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
@@ -19,6 +17,7 @@ import { UserInformation } from "./setting/UserInformation";
 import { PostProjectModal } from "./project/PostProjectModal";
 import { User } from "@prisma/client";
 import { UserPostedProjects } from "./setting/UserPostedProject";
+import { SearchBar } from "./browse/SearchBar";
 
 interface HeaderContentProps {
   user: User | null;
@@ -50,16 +49,7 @@ const HeaderContent: React.FC<HeaderContentProps> = ({ user }) => {
         <h1>BRIDGE.</h1>
       </div>
       <div className="text-gray-100 max-w-lg min-w-md">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4" />
-          <Input
-            type="search"
-            placeholder="Search projects"
-            className="pl-10 border-gray-100"
-            onChange={(e) => handleSearch(e.target.value)}
-            defaultValue={searchParams.get("query")?.toString()}
-          />
-        </div>
+        <SearchBar />
       </div>
       <div>
         <SignedOut>

@@ -187,20 +187,29 @@ export function PostProjectModal({
     onOpenChange(false);
   };
 
-  const addSkill = (skill: string) => {
-    if (skill && !selectedSkills.includes(skill)) {
-      const newSkills = [...selectedSkills, skill];
-      setSelectedSkills(newSkills);
-      form.setValue("requiredSkills", newSkills);
-      setSkillInput("");
-    }
-  };
-
-  const removeSkill = (skillToRemove: string) => {
-    const newSkills = selectedSkills.filter((skill) => skill !== skillToRemove);
+const addSkill = (skill: string) => {
+  if (skill && !selectedSkills.includes(skill)) {
+    const newSkills = [...selectedSkills, skill];
     setSelectedSkills(newSkills);
-    form.setValue("requiredSkills", newSkills);
-  };
+    form.setValue("requiredSkills", newSkills, {
+      shouldDirty: true,
+      shouldTouch: true,
+      shouldValidate: true,
+    });
+    setSkillInput("");
+  }
+};
+
+const removeSkill = (skillToRemove: string) => {
+  const newSkills = selectedSkills.filter((s) => s !== skillToRemove);
+  setSelectedSkills(newSkills);
+  form.setValue("requiredSkills", newSkills, {
+    shouldDirty: true,
+    shouldTouch: true,
+    shouldValidate: true,
+  });
+};
+
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
@@ -303,17 +312,25 @@ export function PostProjectModal({
                             <Badge
                               key={skill}
                               variant="secondary"
-                              className="flex items-center gap-1"
+                              className="flex items-center gap-1 pr-1"
                             >
-                              {skill}
-                              <X
-                                className="h-3 w-3 cursor-pointer"
-                                onClick={() => removeSkill(skill)}
-                              />
+                              <span className="pl-1">{skill}</span>
+                              <button
+                                type="button"
+                                aria-label={`Remove ${skill}`}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  removeSkill(skill);
+                                }}
+                                className="inline-flex h-5 w-5 items-center justify-center rounded hover:bg-muted/70 focus:outline-none focus:ring-2 focus:ring-ring"
+                              >
+                                <X className="h-3.5 w-3.5" />
+                              </button>
                             </Badge>
                           ))}
                         </div>
                       )}
+
                     </div>
                   </FormControl>
                   <FormDescription>

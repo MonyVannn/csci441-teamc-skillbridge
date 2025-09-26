@@ -4,10 +4,25 @@ import { currentUser } from "@clerk/nextjs/server";
 import { Prisma } from "@prisma/client";
 import prisma from "../prisma";
 
-export async function getAvailableProjects(query: string) {
-  console.log(query);
+export async function getAvailableProjects(query: string, page: string) {
+  const pageSize = 6;
+  // Determine the skip value based on the presence of a query
+  let skip: number;
+  if (query) {
+    skip = 0; // If there's a query, reset to the first page (skip 0)
+  } else {
+    skip = Math.abs(pageSize * (Number(page) - 1)); // Otherwise, calculate skip based on the provided page
+  }
   try {
+    const totalProjects = await prisma.project.count({
+      where: {
+        status: { not: "ARCHIVED" },
+        title: { contains: query, mode: "insensitive" },
+      },
+    });
     const availableProjects = await prisma.project.findMany({
+      skip: skip,
+      take: pageSize,
       where: {
         status: { not: "ARCHIVED" },
         title: { contains: query, mode: "insensitive" },
@@ -32,7 +47,7 @@ export async function getAvailableProjects(query: string) {
       },
     });
 
-    return availableProjects;
+    return { availableProjects, totalProjects };
   } catch (e) {
     console.error("Error fetching available projects, ", e);
     throw new Error("Failed to fetch available projects.");

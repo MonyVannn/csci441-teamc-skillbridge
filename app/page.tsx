@@ -11,10 +11,8 @@ export default async function MarketplacePage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const projects = await getAvailableProjects();
-  const query = (await searchParams).query;
-
-  console.log("query: ", query);
+  const query = ((await searchParams).query as string) || "";
+  const projects = await getAvailableProjects(query);
 
   return (
     <div className="min-h-screen bg-white">

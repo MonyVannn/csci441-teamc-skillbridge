@@ -12,7 +12,12 @@ export default async function MarketplacePage({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const query = ((await searchParams).query as string) || "";
-  const projects = await getAvailableProjects(query);
+  const page = ((await searchParams).page as string) || "";
+  const { availableProjects, totalProjects } = await getAvailableProjects(
+    query,
+    page
+  );
+  const totalPages = Math.ceil(totalProjects / 6);
 
   return (
     <div className="min-h-screen bg-white">
@@ -245,10 +250,14 @@ export default async function MarketplacePage({
         </div>
 
         {/* Projects */}
-        {projects.length <= 0 ? (
+        {availableProjects.length <= 0 ? (
           <EmptyProject />
         ) : (
-          <ProjectCard projects={projects} />
+          <ProjectCard
+            projects={availableProjects}
+            currentPageProp={Number(page) === 0 ? 1 : Number(page)}
+            totalPagesProp={totalPages}
+          />
         )}
       </div>
     </div>

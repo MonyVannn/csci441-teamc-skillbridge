@@ -1,7 +1,3 @@
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Slider } from "@/components/ui/slider";
-import { Separator } from "@/components/ui/separator";
 import { getAvailableProjects } from "@/lib/actions/project";
 import { ProjectCard } from "@/components/browse/ProjectCard";
 import { EmptyProject } from "@/components/browse/EmptyProject";

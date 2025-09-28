@@ -6,8 +6,10 @@ import Image from "next/image";
 
 //helper checks
 const hasText = (v?: string | null) => typeof v === "string" && v.trim().length > 0;
-const hasArray = (v?: any[]) => Array.isArray(v) && v.length > 0;
 const gt0 = (n?: number | null) => typeof n === "number" && n > 0;
+function hasArray<T>(v?: readonly T[] | null): v is readonly T[] {
+  return Array.isArray(v) && v.length > 0;
+}
 
 interface ProfileHeaderProps {
   user: User;

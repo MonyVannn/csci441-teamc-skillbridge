@@ -54,7 +54,10 @@ export function ProfileSidebar() {
             </Button>
           </div>
           <div>
-            <p>www.skillbridge.com{pathname}</p>
+            <p className="text-sm text-muted-foreground break-all">
+              www.skillbridge.com{pathname}
+            </p>
+
           </div>
         </CardContent>
       </Card>

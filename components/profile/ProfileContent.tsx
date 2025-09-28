@@ -9,6 +9,15 @@ import {
   Clock,
 } from "lucide-react";
 
+// Check if a string has non-empty text and array with at least 1 element
+const hasText = (v?: string | null): v is string =>
+  typeof v === "string" && v.trim().length > 0;
+
+function hasArray<T>(v?: readonly T[] | null): v is readonly T[] {
+  return Array.isArray(v) && v.length > 0;
+}
+
+
 interface ProfileContentProps {
   user: User;
 }
@@ -43,15 +52,23 @@ export function ProfileContent({ user }: ProfileContentProps) {
 
   return (
     <div className="space-y-6 pb-10">
-      {/* About Section */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-lg">About</CardTitle>
-        </CardHeader>
-        <CardContent>
+    {/* About Section */}
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <CardTitle className="text-lg">About</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {/* Show bio if available, otherwise fallback message */}
+        {hasText(user.bio) ? (
           <p className="text-sm leading-relaxed text-pretty">{user.bio}</p>
-        </CardContent>
-      </Card>
+        ) : (
+          <p className="text-sm text-muted-foreground">
+            No information provided by the user.
+          </p>
+        )}
+      </CardContent>
+    </Card>
+
 
       {/* Experience Section */}
       <Card>

@@ -10,8 +10,13 @@ import {
 } from "lucide-react";
 
 // Check if a string has non-empty text and array with at least 1 element
-const hasText = (v?: string | null) => typeof v === "string" && v.trim().length > 0;
-const hasArray = (v?: any[]) => Array.isArray(v) && v.length > 0;
+const hasText = (v?: string | null): v is string =>
+  typeof v === "string" && v.trim().length > 0;
+
+function hasArray<T>(v?: readonly T[] | null): v is readonly T[] {
+  return Array.isArray(v) && v.length > 0;
+}
+
 
 interface ProfileContentProps {
   user: User;
@@ -47,22 +52,23 @@ export function ProfileContent({ user }: ProfileContentProps) {
 
   return (
     <div className="space-y-6 pb-10">
-      {/* About Section */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-lg">About</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {/* Show bio if available, otherwise fallback message */}
-          {hasText(user.bio) ? (
-            <p className="text-sm leading-relaxed text-pretty">{user.bio}</p>
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              No information provided by the user.
-            </p>
-          )}
-        </CardContent>
-      </Card>
+    {/* About Section */}
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <CardTitle className="text-lg">About</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {/* Show bio if available, otherwise fallback message */}
+        {hasText(user.bio) ? (
+          <p className="text-sm leading-relaxed text-pretty">{user.bio}</p>
+        ) : (
+          <p className="text-sm text-muted-foreground">
+            No information provided by the user.
+          </p>
+        )}
+      </CardContent>
+    </Card>
+
 
       {/* Experience Section */}
       <Card>
@@ -184,34 +190,29 @@ export function ProfileContent({ user }: ProfileContentProps) {
                       <h3 className="font-semibold text-balance">
                         {project.title}
                       </h3>
-                      {/* Only show if industry exists */}
-                      {hasText(project.industry) && (
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className="text-sm text-muted-foreground">
-                            {formatStatus(project.industry)}
-                          </span>
-                        </div>
-                      )}
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-sm text-muted-foreground">
+                          {formatStatus(project.industry)}
+                        </span>
+                      </div>
                     </div>
                   </div>
 
-                  {/* Clock / duration (only show if startDate exists) */}
-                  {project.startDate && (
-                    <div className="flex items-center gap-1 text-sm text-muted-foreground mt-2">
-                      <Clock className="h-3 w-3" />
-                      <span>
-                        {formatDate(project.startDate)} -{" "}
-                        {project.endDate ? formatDate(project.endDate) : "Present"}
-                      </span>
-                    </div>
-                  )}
+                  <div className="flex items-center gap-1 text-sm text-muted-foreground mt-2">
+                    <Clock className="h-3 w-3" />
+                    <span>
+                      {formatDate(project.startDate)} -{" "}
+                      {project.endDate
+                        ? formatDate(project.endDate)
+                        : "Present"}
+                    </span>
+                  </div>
 
                   <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
                     {project.description}
                   </p>
 
-      +           {/* Only show tags if array has items */}
-      +           {hasArray(project.tags) && (
+                  {project.tags.length > 0 && (
                     <div className="flex flex-wrap gap-2 mt-3">
                       {project.tags.map((skill, skillIndex) => (
                         <span

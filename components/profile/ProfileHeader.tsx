@@ -4,6 +4,13 @@ import { User } from "@prisma/client";
 import { MapPin, Award, Clock, Briefcase } from "lucide-react";
 import Image from "next/image";
 
+//helper checks
+const hasText = (v?: string | null) => typeof v === "string" && v.trim().length > 0;
+const gt0 = (n?: number | null) => typeof n === "number" && n > 0;
+function hasArray<T>(v?: readonly T[] | null): v is readonly T[] {
+  return Array.isArray(v) && v.length > 0;
+}
+
 interface ProfileHeaderProps {
   user: User;
 }
@@ -45,11 +52,14 @@ export function ProfileHeader({ user }: ProfileHeaderProps) {
               {user.intro}
             </p>
 
+            {/* Address - hide if empty */}
             <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
-              <div className="flex items-center gap-1">
-                <MapPin className="h-4 w-4" />
-                {user.address}
-              </div>
+              {hasText(user.address) && (
+                <div className="flex items-center gap-1">
+                  <MapPin className="h-4 w-4" />
+                  {user.address}
+                </div>
+              )}
             </div>
 
             {/* Badges and Stats Section */}
@@ -89,41 +99,39 @@ export function ProfileHeader({ user }: ProfileHeaderProps) {
               )}
 
               {/* Stats */}
-              <div className="flex items-center gap-6 text-sm">
-                <div className="flex items-center gap-1">
-                  <Clock className="h-4 w-4 text-blue-600" />
-                  <span className="font-medium">
-                    {user.totalHoursContributed.toLocaleString()}
-                  </span>
-                  <span className="text-muted-foreground">
-                    hours contributed
-                  </span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Briefcase className="h-4 w-4 text-green-600" />
-                  <span className="font-medium">{user.projectsCompleted}</span>
-                  <span className="text-muted-foreground">
-                    projects completed
-                  </span>
-                </div>
-              </div>
+              {(gt0(user.totalHoursContributed) || gt0(user.projectsCompleted)) && (
+                  <div className="flex items-center gap-6 text-sm">
+                    {gt0(user.totalHoursContributed) && (
+                      <div className="flex items-center gap-1">
+                        <Clock className="h-4 w-4 text-blue-600" />
+                        <span className="font-medium">{user.totalHoursContributed.toLocaleString()}</span>
+                        <span className="text-muted-foreground">hours contributed</span>
+                      </div>
+                    )}
+                    {gt0(user.projectsCompleted) && (
+                      <div className="flex items-center gap-1">
+                        <Briefcase className="h-4 w-4 text-green-600" />
+                        <span className="font-medium">{user.projectsCompleted}</span>
+                        <span className="text-muted-foreground">projects completed</span>
+                      </div>
+                    )}
+                  </div>
+                )}
 
               {/* Industries */}
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium">Industries:</span>
-                <div className="flex gap-1">
-                  {user.industriesExperienced.map((industry) => (
-                    <Badge
-                      key={industry}
-                      variant="secondary"
-                      className="text-xs"
-                    >
-                      {industry}
-                    </Badge>
-                  ))}
-                </div>
+              {hasArray(user.industriesExperienced) && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium">Industries:</span>
+                    <div className="flex gap-1">
+                      {user.industriesExperienced.map((industry) => (
+                        <Badge key={industry} variant="secondary" className="text-xs">
+                          {industry}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
-            </div>
           </div>
         </div>
       </div>

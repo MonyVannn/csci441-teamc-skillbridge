@@ -99,8 +99,8 @@ const formSchema = z
       .max(1000, "Description must be less than 1000 characters"),
     responsibilities: z
       .string()
-      .min(10, "Responsibilites must be at least 10 characters")
-      .max(1000, "Responsibilites must be less than 1000 characters"),
+      .min(10, "Responsibilities must be at least 10 characters")
+      .max(1000, "Responsibilities must be less than 1000 characters"),
     deliverables: z
       .string()
       .min(10, "Deliverables must be at least 10 characters")

@@ -180,7 +180,7 @@ export function UserPostedProjects() {
       title: "",
       description: "",
       responsibilities: "",
-      deliverables: ",",
+      deliverables: "",
       requiredSkills: [],
       skillInput: "",
       category: "",

@@ -112,7 +112,9 @@ const formSchema = z
     }),
     applicationDeadline: z.date({
       error: (iss) =>
-        iss.input == null ? "Application deadline is required" : "Invalid application deadline",
+        iss.input == null
+          ? "Application deadline is required"
+          : "Invalid application deadline",
     }),
 
     budget: z.number().min(0, "Budget must be a positive number"),
@@ -187,29 +189,28 @@ export function PostProjectModal({
     onOpenChange(false);
   };
 
-const addSkill = (skill: string) => {
-  if (skill && !selectedSkills.includes(skill)) {
-    const newSkills = [...selectedSkills, skill];
+  const addSkill = (skill: string) => {
+    if (skill && !selectedSkills.includes(skill)) {
+      const newSkills = [...selectedSkills, skill];
+      setSelectedSkills(newSkills);
+      form.setValue("requiredSkills", newSkills, {
+        shouldDirty: true,
+        shouldTouch: true,
+        shouldValidate: true,
+      });
+      setSkillInput("");
+    }
+  };
+
+  const removeSkill = (skillToRemove: string) => {
+    const newSkills = selectedSkills.filter((s) => s !== skillToRemove);
     setSelectedSkills(newSkills);
     form.setValue("requiredSkills", newSkills, {
       shouldDirty: true,
       shouldTouch: true,
       shouldValidate: true,
     });
-    setSkillInput("");
-  }
-};
-
-const removeSkill = (skillToRemove: string) => {
-  const newSkills = selectedSkills.filter((s) => s !== skillToRemove);
-  setSelectedSkills(newSkills);
-  form.setValue("requiredSkills", newSkills, {
-    shouldDirty: true,
-    shouldTouch: true,
-    shouldValidate: true,
-  });
-};
-
+  };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
@@ -330,7 +331,6 @@ const removeSkill = (skillToRemove: string) => {
                           ))}
                         </div>
                       )}
-
                     </div>
                   </FormControl>
                   <FormDescription>

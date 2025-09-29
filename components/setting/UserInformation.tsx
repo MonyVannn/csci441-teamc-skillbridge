@@ -201,11 +201,13 @@ export function UserInformation() {
                       <Briefcase className="w-3 h-3 mr-1" />
                       {displayData.role}
                     </Badge>
+                  {displayData.role !== "BUSINESS_OWNER" && (
                     <Badge
                       variant={displayData.occupied ? "default" : "outline"}
                     >
                       {displayData.occupied ? "Available" : "Busy"}
                     </Badge>
+                  )}
                   </div>
                 </div>
               </div>
@@ -300,6 +302,7 @@ export function UserInformation() {
                   </p>
                 )}
               </div>
+            {displayData.role !== "BUSINESS_OWNER" && (
               <div>
                 <Label className="text-sm font-semibold">Status</Label>
                 {isEditing ? (
@@ -323,6 +326,8 @@ export function UserInformation() {
                   </p>
                 )}
               </div>
+            )}
+
             </div>
           </div>
 

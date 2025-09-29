@@ -132,8 +132,16 @@ export function UserInformation() {
       <div className="flex items-center justify-between">
         <div className="space-y-1">
           <h1 className="font-bold text-gray-900 flex items-center gap-2">
-            User Information
+            {!userData ? (
+              <span>Loading...</span>
+            ) : userData.role === "BUSINESS_OWNER" ? (
+              "Organization Information"
+            ) : (
+              "User Information"
+            )}
           </h1>
+
+
         </div>
         <div className="flex gap-2 mr-5">
           {isEditing ? (

@@ -62,6 +62,9 @@ export async function getAvailableProjects(
             imageUrl: true,
             firstName: true,
             lastName: true,
+            address: true,
+            bio: true,
+            intro: true,
           },
         },
         assignedStudent: {
@@ -72,6 +75,10 @@ export async function getAvailableProjects(
             lastName: true,
           },
         },
+        applications: true,
+      },
+      orderBy: {
+        createdAt: "desc",
       },
     });
 

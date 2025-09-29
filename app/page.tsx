@@ -37,7 +37,10 @@ export default async function MarketplacePage({
           <EmptyProject />
         ) : (
           <ProjectCard
-            projects={availableProjects}
+            projects={availableProjects.map(({ applications, ...project }) => ({
+              ...project,
+              applications: [],
+            }))}
             currentPageProp={Number(page) === 0 ? 1 : Number(page)}
             totalPagesProp={totalPages}
           />

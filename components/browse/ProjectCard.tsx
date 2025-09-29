@@ -14,8 +14,18 @@ import {
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
+  Dot,
 } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "../ui/sheet";
+import { formatDistanceToNow } from "date-fns";
 
 interface ProjectCardProps {
   projects: AvailableProject[];
@@ -129,86 +139,189 @@ export function ProjectCard({
       </div>
       <div className="grid grid-cols-3 gap-4 p-6">
         {projects.map((project) => (
-          <Card
-            key={project.id}
-            className="overflow-hidden border border-gray-200 hover:shadow-lg transition-shadow cursor-pointer"
-          >
-            {/* Thumbnail */}
-            <div className="relative group">
-              <Image
-                src={"/placeholder.jpg"}
-                alt={project.title}
-                width={1000}
-                height={1000}
-                className="w-full h-52 object-cover -mt-6"
-              />
-            </div>
+          <Sheet key={project.id}>
+            <SheetTrigger className="text-left">
+              <Card className="overflow-hidden border border-gray-200 hover:shadow-lg transition-shadow cursor-pointer">
+                {/* Thumbnail */}
+                <div className="relative group">
+                  <Image
+                    src={"/placeholder.jpg"}
+                    alt={project.title}
+                    width={1000}
+                    height={1000}
+                    className="w-full h-52 object-cover -mt-6"
+                  />
+                </div>
 
-            {/* Card Content */}
-            <div className="px-4 -mt-4">
-              <div className="mb-4 flex items-center gap-1">
-                <Badge className="bg-[#695DCC]">
-                  {project.category.replaceAll("_", " ")}
-                </Badge>
-                <Badge className="bg-[#695DCC]">{project.scope}</Badge>
-              </div>
-              {/* Project Title */}
-              <h3 className="text-lg font-bold text-gray-900 mb-3 line-clamp-2 leading-relaxed">
-                {project.title}
-              </h3>
-              <div className="h-20 overflow-clip">
-                <p className="text-sm text-gray-700 line-clamp-3">
-                  {project.description}
-                </p>
-              </div>
-
-              <div className="flex items-center gap-1 mt-5 overflow-scroll">
-                {project.requiredSkills.map((skill) => (
-                  <Badge key={skill} variant={"outline"}>
-                    {skill}
-                  </Badge>
-                ))}
-              </div>
-
-              {/* Price */}
-              <div className="mt-5">
-                <div className="text-sm">
-                  <h3 className="font-bold text-gray-900 ">
-                    ${project.budget} /{" "}
-                    {project.startDate && project.estimatedEndDate
-                      ? Math.ceil(
-                          (new Date(project.estimatedEndDate).getTime() -
-                            new Date(project.startDate).getTime()) /
-                            (1000 * 3600 * 24)
-                        ) + " days"
-                      : "N/A"}
+                {/* Card Content */}
+                <div className="px-4 -mt-4">
+                  <div className="mb-4 flex items-center gap-1">
+                    <Badge className="bg-[#695DCC]">
+                      {project.category.replaceAll("_", " ")}
+                    </Badge>
+                    <Badge className="bg-[#695DCC]">{project.scope}</Badge>
+                  </div>
+                  {/* Project Title */}
+                  <h3 className="text-lg font-bold text-gray-900 mb-3 line-clamp-2 leading-relaxed">
+                    {project.title}
                   </h3>
-                  <h3>Deadline {formatDate(project.applicationDeadline)}</h3>
+                  <div className="h-20 overflow-clip">
+                    <p className="text-sm text-gray-700 line-clamp-3">
+                      {project.description}
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-1 mt-5 overflow-scroll">
+                    {project.requiredSkills.map((skill) => (
+                      <Badge key={skill} variant={"outline"}>
+                        {skill}
+                      </Badge>
+                    ))}
+                  </div>
+
+                  {/* Price */}
+                  <div className="mt-5">
+                    <div className="text-sm">
+                      <h3 className="font-bold text-gray-900 ">
+                        ${project.budget} /{" "}
+                        {project.startDate && project.estimatedEndDate
+                          ? Math.ceil(
+                              (new Date(project.estimatedEndDate).getTime() -
+                                new Date(project.startDate).getTime()) /
+                                (1000 * 3600 * 24)
+                            ) + " days"
+                          : "N/A"}
+                      </h3>
+                      <h3>
+                        Deadline {formatDate(project.applicationDeadline)}
+                      </h3>
+                    </div>
+                  </div>
+
+                  <Separator className="my-5" />
+
+                  {/* Seller Info */}
+                  <div className="flex items-center gap-2 mb-2">
+                    <Avatar className="h-6 w-6">
+                      <AvatarImage
+                        src={
+                          project.businessOwner.imageUrl || "/placeholder.svg"
+                        }
+                      />
+                      <AvatarFallback>
+                        {project.businessOwner.firstName?.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="text-sm font-semibold text-gray-900">
+                      {project.businessOwner.firstName}{" "}
+                      {project.businessOwner.lastName}
+                    </span>
+                  </div>
+                  <h3 className="text-sm text-gray-500">
+                    {formatDate(new Date(project.estimatedEndDate))}
+                  </h3>
+                </div>
+              </Card>
+            </SheetTrigger>
+            <SheetContent className="min-w-[800px]">
+              <SheetHeader>
+                <SheetTitle>
+                  <div className="flex items-center gap-2 mb-2">
+                    <Avatar className="h-10 w-10 rounded-none">
+                      <AvatarImage
+                        src={
+                          project.businessOwner.imageUrl || "/placeholder.svg"
+                        }
+                      />
+                      <AvatarFallback>
+                        {project.businessOwner.firstName?.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <h3 className="font-bold text-gray-900 capitalize">
+                      {project.businessOwner.firstName}{" "}
+                      {project.businessOwner.lastName}
+                    </h3>
+                  </div>
+                </SheetTitle>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <SheetDescription className="text-2xl font-bold text-gray-900 mt-2">
+                      {project.title}
+                    </SheetDescription>
+                    <div className="flex items-center">
+                      <SheetDescription className="font-medium">
+                        {project.businessOwner.address}
+                      </SheetDescription>
+                      <Dot className="h-6 w-6 text-muted-foreground" />
+                      <SheetDescription className="font-medium">
+                        {formatDistanceToNow(new Date(project.createdAt), {
+                          addSuffix: true,
+                        })}
+                      </SheetDescription>
+                      <Dot className="h-6 w-6 text-muted-foreground" />
+                      <SheetDescription className="font-medium">
+                        {project.applications?.length} applicants
+                      </SheetDescription>
+                    </div>
+                  </div>
+                  <Button className="bg-[#695DCC] font-semibold">
+                    Apply Now
+                  </Button>
+                </div>
+              </SheetHeader>
+              <div className="w-full grid flex-1 auto-rows-min gap-6 overflow-y-auto px-4">
+                <h2 className="font-semibold text-xl text-gray-900">
+                  About the project
+                </h2>
+                <div className="text-sm">
+                  <h3 className="font-semibold text-gray-900">About Us</h3>
+                  <p className="text-gray-900 mt-5 text-justify">
+                    {project.businessOwner.bio}
+                  </p>
+                  <p className="text-gray-900 text-justify">
+                    {project.businessOwner.intro}
+                  </p>
+                </div>
+                <div className="text-sm">
+                  <h3 className="font-semibold text-gray-900">Description</h3>
+                  <p className="text-gray-900 mt-5 text-justify">
+                    {project.description}
+                  </p>
+                </div>
+                <div className="text-sm">
+                  <h3 className="font-semibold text-gray-900">
+                    Skills & Qualifications
+                  </h3>
+                  <p className="text-gray-900 mt-5">
+                    To successfully complete this project, applicants should
+                    demonstrate proficiency in the following areas:
+                  </p>
+                  <div className="flex items-center gap-1 mt-3">
+                    {project.requiredSkills.map((skill) => (
+                      <Badge key={skill} variant={"outline"}>
+                        {skill}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+                <div className="text-sm">
+                  <h3 className="font-semibold text-gray-900">Compensation</h3>
+                  <p className="text-gray-900 mt-5 text-justify">
+                    This project offers a budget of{" "}
+                    <span className="font-semibold">${project.budget}</span>{" "}
+                    provided by the business owner as compensation for
+                    successful completion of the work. This amount is intended
+                    to reflect the scope, timeline, and expected deliverables of
+                    the project. The actual budget allocated may take into
+                    consideration a variety of factors, including but not
+                    limited to the complexity of the required skills, the
+                    estimated time commitment, and the market value of similar
+                    work.
+                  </p>
                 </div>
               </div>
-
-              <Separator className="my-5" />
-
-              {/* Seller Info */}
-              <div className="flex items-center gap-2 mb-2">
-                <Avatar className="h-6 w-6">
-                  <AvatarImage
-                    src={project.businessOwner.imageUrl || "/placeholder.svg"}
-                  />
-                  <AvatarFallback>
-                    {project.businessOwner.firstName?.charAt(0)}
-                  </AvatarFallback>
-                </Avatar>
-                <span className="text-sm font-semibold text-gray-900">
-                  {project.businessOwner.firstName}{" "}
-                  {project.businessOwner.lastName}
-                </span>
-              </div>
-              <h3 className="text-sm text-gray-500">
-                {formatDate(new Date(project.estimatedEndDate))}
-              </h3>
-            </div>
-          </Card>
+            </SheetContent>
+          </Sheet>
         ))}
       </div>
     </div>

@@ -19,6 +19,9 @@ export type AvailableProject = {
     imageUrl: string | null;
     firstName?: string | null;
     lastName?: string | null;
+    address?: string | null;
+    bio?: string | null;
+    intro?: string | null;
   };
 
   assignedStudent?: {
@@ -27,4 +30,6 @@ export type AvailableProject = {
     firstName?: string | null;
     lastName?: string | null;
   } | null;
+
+  applications?: [] | null;
 };

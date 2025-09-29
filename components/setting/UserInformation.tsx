@@ -140,8 +140,6 @@ export function UserInformation() {
               "User Information"
             )}
           </h1>
-
-
         </div>
         <div className="flex gap-2 mr-5">
           {isEditing ? (
@@ -327,7 +325,6 @@ export function UserInformation() {
               )}
             </div>
           )}
-
             </div>
           </div>
 

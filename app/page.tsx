@@ -10,9 +10,18 @@ export default async function MarketplacePage({
 }) {
   const query = ((await searchParams).query as string) || "";
   const page = ((await searchParams).page as string) || "";
+  const categories = ((await searchParams).categories as string) || "";
+  const scopes = ((await searchParams).scopes as string) || "";
+  const minBudget = ((await searchParams).minBudget as string) || "";
+  const maxBudget = ((await searchParams).maxbudget as string) || "";
+
   const { availableProjects, totalProjects } = await getAvailableProjects(
     query,
-    page
+    page,
+    categories,
+    scopes,
+    minBudget,
+    maxBudget
   );
   const totalPages = Math.ceil(totalProjects / 6);
 

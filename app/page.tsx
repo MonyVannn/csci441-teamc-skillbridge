@@ -13,7 +13,7 @@ export default async function MarketplacePage({
   const categories = ((await searchParams).categories as string) || "";
   const scopes = ((await searchParams).scopes as string) || "";
   const minBudget = ((await searchParams).minBudget as string) || "";
-  const maxbudget = ((await searchParams).maxbudget as string) || "";
+  const maxBudget = ((await searchParams).maxbudget as string) || "";
 
   const { availableProjects, totalProjects } = await getAvailableProjects(
     query,
@@ -21,7 +21,7 @@ export default async function MarketplacePage({
     categories,
     scopes,
     minBudget,
-    maxbudget
+    maxBudget
   );
   const totalPages = Math.ceil(totalProjects / 6);
 

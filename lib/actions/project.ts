@@ -12,7 +12,6 @@ export async function getAvailableProjects(
   minBudget: string,
   maxBudget: string
 ) {
-  console.log("fiters: ", categories, scopes, minBudget, maxBudget);
   const pageSize = 6;
   // Determine the skip value based on the presence of a query
   let skip: number;

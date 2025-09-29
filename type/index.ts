@@ -2,6 +2,8 @@ export type AvailableProject = {
   id: string;
   title: string;
   description: string;
+  responsibilities: string | null;
+  deliverables: string | null;
   requiredSkills: string[];
   category: string;
   scope: string;
@@ -31,5 +33,5 @@ export type AvailableProject = {
     lastName?: string | null;
   } | null;
 
-  applications?: [] | null;
+  applications?: [];
 };

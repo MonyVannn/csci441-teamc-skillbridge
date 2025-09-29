@@ -49,6 +49,8 @@ export function UserPostedProjects() {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
+    responsibilities: "",
+    deliverables: "",
     requiredSkills: [] as string[],
     skillInput: "",
     category: "" as ProjectCategory | "",
@@ -79,6 +81,8 @@ export function UserPostedProjects() {
     setFormData({
       title: "",
       description: "",
+      responsibilities: "",
+      deliverables: "",
       requiredSkills: [],
       skillInput: "",
       category: "",
@@ -97,6 +101,8 @@ export function UserPostedProjects() {
     setFormData({
       title: project.title,
       description: project.description,
+      responsibilities: project.responsibilities || "",
+      deliverables: project.deliverables || "",
       requiredSkills: project.requiredSkills,
       skillInput: "",
       category: project.category,
@@ -131,6 +137,8 @@ export function UserPostedProjects() {
     const projectData: Prisma.ProjectCreateInput = {
       title: formData.title,
       description: formData.description,
+      responsibilities: formData.responsibilities,
+      deliverables: formData.deliverables,
       requiredSkills: formData.requiredSkills,
       category: formData.category as ProjectCategory,
       scope: formData.scope as ProjectScope,
@@ -171,6 +179,8 @@ export function UserPostedProjects() {
     setFormData({
       title: "",
       description: "",
+      responsibilities: "",
+      deliverables: ",",
       requiredSkills: [],
       skillInput: "",
       category: "",
@@ -249,6 +259,8 @@ export function UserPostedProjects() {
               disabled={
                 !formData.title ||
                 !formData.description ||
+                !formData.responsibilities ||
+                !formData.deliverables ||
                 !formData.category ||
                 !formData.scope ||
                 !formData.startDate ||
@@ -300,7 +312,48 @@ export function UserPostedProjects() {
             onChange={(e) =>
               setFormData((prev) => ({ ...prev, description: e.target.value }))
             }
-            placeholder="Describe your project requirements, goals, and expectations..."
+            placeholder="Describe your project details and requirements..."
+            rows={4}
+            className="border-gray-100 focus:border-blue-500 focus:ring-blue-500 resize-none bg-white"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label
+            htmlFor="responsibilities"
+            className="text-sm font-medium text-gray-700"
+          >
+            Applicant Responsibilities
+          </Label>
+          <Textarea
+            id="responsibilities"
+            value={formData.responsibilities}
+            onChange={(e) =>
+              setFormData((prev) => ({
+                ...prev,
+                responsibilities: e.target.value,
+              }))
+            }
+            placeholder="Describe the applicant's responsibilities..."
+            rows={4}
+            className="border-gray-100 focus:border-blue-500 focus:ring-blue-500 resize-none bg-white"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label
+            htmlFor="deliverables"
+            className="text-sm font-medium text-gray-700"
+          >
+            Project Deliverables
+          </Label>
+          <Textarea
+            id="deliverables"
+            value={formData.deliverables}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, deliverables: e.target.value }))
+            }
+            placeholder="Describe your project deliverables, goal, expectation..."
             rows={4}
             className="border-gray-100 focus:border-blue-500 focus:ring-blue-500 resize-none bg-white"
           />

@@ -290,6 +290,36 @@ export function ProjectCard({
                 </div>
                 <div className="text-sm">
                   <h3 className="font-semibold text-gray-900">
+                    Responsibilities
+                  </h3>
+                  <ul className="text-gray-900 mt-5 list-disc list-inside ml-4">
+                    {project.responsibilities
+                      ?.split(/-/)
+                      .map((responsibility) => {
+                        const cleanText = responsibility.trim();
+                        return (
+                          cleanText && ( // skip empty strings
+                            <li key={cleanText}>{cleanText}</li>
+                          )
+                        );
+                      })}
+                  </ul>
+                </div>
+                <div className="text-sm">
+                  <h3 className="font-semibold text-gray-900">Deliverables</h3>
+                  <ul className="text-gray-900 mt-5 list-disc list-inside ml-4">
+                    {project.deliverables?.split(/-/).map((deliverable) => {
+                      const cleanText = deliverable.trim();
+                      return (
+                        cleanText && ( // skip empty strings
+                          <li key={cleanText}>{cleanText}</li>
+                        )
+                      );
+                    })}
+                  </ul>
+                </div>
+                <div className="text-sm">
+                  <h3 className="font-semibold text-gray-900">
                     Skills & Qualifications
                   </h3>
                   <p className="text-gray-900 mt-5">

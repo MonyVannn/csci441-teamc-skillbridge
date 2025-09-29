@@ -97,6 +97,14 @@ const formSchema = z
       .string()
       .min(10, "Description must be at least 10 characters")
       .max(1000, "Description must be less than 1000 characters"),
+    responsibilities: z
+      .string()
+      .min(10, "Responsibilities must be at least 10 characters")
+      .max(1000, "Responsibilities must be less than 1000 characters"),
+    deliverables: z
+      .string()
+      .min(10, "Deliverables must be at least 10 characters")
+      .max(1000, "Deliverables must be less than 1000 characters"),
     requiredSkills: z
       .array(z.string())
       .min(1, "At least one skill is required"),
@@ -148,6 +156,8 @@ export function PostProjectModal({
     defaultValues: {
       title: "",
       description: "",
+      responsibilities: "",
+      deliverables: "",
       requiredSkills: [],
       startDate: undefined,
       estimatedEndDate: undefined,
@@ -266,6 +276,47 @@ export function PostProjectModal({
                 </FormItem>
               )}
             />
+
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="responsibilities"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Responsibilities *</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Describe applicant's responsibilities in detail..."
+                        className="min-h-[100px]"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="deliverables"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Deliverables *</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Describe your deliverables in detail..."
+                        className="min-h-[100px]"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <p className="text-sm text-muted-foreground -mt-4">
+              Start a new responsibility & deliverables with dash
+              (&apos;-&apos;)
+            </p>
 
             <FormField
               control={form.control}

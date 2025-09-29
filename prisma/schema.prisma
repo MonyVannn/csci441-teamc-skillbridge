@@ -129,15 +129,17 @@ enum UserRole {
 }
 
 model Project {
-  id             String          @id @default(auto()) @map("_id") @db.ObjectId
-  title          String
-  description    String
+  id               String          @id @default(auto()) @map("_id") @db.ObjectId
+  title            String
+  description      String
+  responsibilities String?
+  deliverables     String?
   // Skills/Requirements: Array of strings for simplicity, or a separate `Skill` model if needed.
   // For now, let's go with a simple array.
-  requiredSkills String[]        @default([])
-  category       ProjectCategory // Enum for broad categories
-  scope          ProjectScope // Enum for difficulty/scope
-  status         ProjectStatus   @default(OPEN)
+  requiredSkills   String[]        @default([])
+  category         ProjectCategory // Enum for broad categories
+  scope            ProjectScope // Enum for difficulty/scope
+  status           ProjectStatus   @default(OPEN)
 
   startDate           DateTime // When the project is intended to begin
   estimatedEndDate    DateTime // When the project is expected to finish

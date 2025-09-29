@@ -1,10 +1,17 @@
 "use server";
 
 import { currentUser } from "@clerk/nextjs/server";
-import { Prisma } from "@prisma/client";
+import { Prisma, ProjectCategory, ProjectScope } from "@prisma/client";
 import prisma from "../prisma";
 
-export async function getAvailableProjects(query: string, page: string) {
+export async function getAvailableProjects(
+  query: string,
+  page: string,
+  categories: string,
+  scopes: string,
+  minBudget: string,
+  maxBudget: string
+) {
   const pageSize = 6;
   // Determine the skip value based on the presence of a query
   let skip: number;
@@ -13,11 +20,26 @@ export async function getAvailableProjects(query: string, page: string) {
   } else {
     skip = Math.abs(pageSize * (Number(page) - 1)); // Otherwise, calculate skip based on the provided page
   }
+
+  const categoryList =
+    categories.length > 0
+      ? (categories.split(",") as ProjectCategory[])
+      : undefined;
+
+  const scopeList =
+    scopes.length > 0 ? (scopes.split(",") as ProjectScope[]) : undefined;
+
   try {
     const totalProjects = await prisma.project.count({
       where: {
         status: { not: "ARCHIVED" },
         title: { contains: query, mode: "insensitive" },
+        category: { in: categoryList },
+        scope: { in: scopeList },
+        budget: {
+          gte: minBudget ? Number(minBudget) : undefined,
+          lte: maxBudget ? Number(maxBudget) : undefined,
+        },
       },
     });
     const availableProjects = await prisma.project.findMany({
@@ -26,6 +48,12 @@ export async function getAvailableProjects(query: string, page: string) {
       where: {
         status: { not: "ARCHIVED" },
         title: { contains: query, mode: "insensitive" },
+        category: { in: categoryList },
+        scope: { in: scopeList },
+        budget: {
+          gte: minBudget ? Number(minBudget) : undefined,
+          lte: maxBudget ? Number(maxBudget) : undefined,
+        },
       },
       include: {
         businessOwner: {

@@ -18,6 +18,7 @@ import { PostProjectModal } from "./project/PostProjectModal";
 import { User } from "@prisma/client";
 import { UserPostedProjects } from "./setting/UserPostedProject";
 import { SearchBar } from "./browse/SearchBar";
+import { UserApplications } from "./setting/UserApplication";
 
 interface HeaderContentProps {
   user: User | null;
@@ -86,6 +87,15 @@ const HeaderContent: React.FC<HeaderContentProps> = ({ user }) => {
               >
                 <UserEducation />
               </UserButton.UserProfilePage>
+              {user?.role === "USER" && (
+                <UserButton.UserProfilePage
+                  label="Applications"
+                  url="applications"
+                  labelIcon={<FolderClock className="w-4 h-4" />}
+                >
+                  <UserApplications />
+                </UserButton.UserProfilePage>
+              )}
               {user?.role === "BUSINESS_OWNER" && (
                 <UserButton.UserProfilePage
                   label="Posted Projects"

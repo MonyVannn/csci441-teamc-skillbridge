@@ -3,6 +3,38 @@
 import { currentUser } from "@clerk/nextjs/server";
 import prisma from "../prisma";
 
+export async function getApplicationsByUserId() {
+  const user = await currentUser();
+
+  if (!user) throw new Error("Not authenticated.");
+
+  try {
+    const existingUser = await prisma.user.findFirst({
+      where: { clerkId: user.id },
+    });
+
+    if (!existingUser) throw new Error("User not found.");
+
+    const applications = await prisma.application.findMany({
+      where: {
+        applicantId: existingUser.id,
+      },
+      include: {
+        project: {
+          include: {
+            businessOwner: true,
+          },
+        },
+      },
+    });
+
+    return applications;
+  } catch (e) {
+    console.error("Error fetching applications: ", e);
+    throw new Error("Failed to fetch applications");
+  }
+}
+
 export async function createApplication(
   projectId: string,
   coverLetter: string
@@ -59,5 +91,39 @@ export async function isApplied(projectId: string, userId?: string) {
   } catch (e) {
     console.error("Error checking application status: ", e);
     return false;
+  }
+}
+
+export async function withdrawApplication(applicationId: string) {
+  const user = await currentUser();
+
+  if (!user) throw new Error("Not authenticated.");
+
+  try {
+    const existingUser = await prisma.user.findFirst({
+      where: { clerkId: user.id },
+    });
+
+    if (!existingUser) throw new Error("User not found.");
+
+    const application = await prisma.application.findFirst({
+      where: {
+        id: applicationId,
+        applicantId: existingUser.id,
+      },
+    });
+
+    if (!application) throw new Error("Application not found.");
+
+    await prisma.application.delete({
+      where: {
+        id: applicationId,
+      },
+    });
+
+    return { success: true };
+  } catch (e) {
+    console.error("Error withdrawing application: ", e);
+    throw new Error("Failed to withdraw application");
   }
 }

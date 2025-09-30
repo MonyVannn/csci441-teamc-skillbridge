@@ -26,6 +26,7 @@ import {
   SheetTrigger,
 } from "../ui/sheet";
 import { formatDistanceToNow } from "date-fns";
+import { ApplyButton } from "../application/ApplyButton";
 
 interface ProjectCardProps {
   projects: AvailableProject[];
@@ -264,12 +265,10 @@ export function ProjectCard({
                       </SheetDescription>
                     </div>
                   </div>
-                  <Button className="bg-[#695DCC] font-semibold">
-                    Apply Now
-                  </Button>
+                  <ApplyButton project={project} />
                 </div>
               </SheetHeader>
-              <div className="w-full grid flex-1 auto-rows-min gap-6 overflow-y-auto px-4">
+              <div className="grid flex-1 auto-rows-min gap-6 overflow-y-auto px-4 pb-10">
                 <h2 className="font-semibold text-xl text-gray-900">
                   About the project
                 </h2>
@@ -326,9 +325,9 @@ export function ProjectCard({
                     To successfully complete this project, applicants should
                     demonstrate proficiency in the following areas:
                   </p>
-                  <div className="flex items-center gap-1 mt-3">
+                  <div className="w-[500px] space-y-1 mt-3">
                     {project.requiredSkills.map((skill) => (
-                      <Badge key={skill} variant={"outline"}>
+                      <Badge key={skill} variant={"outline"} className="mr-1">
                         {skill}
                       </Badge>
                     ))}

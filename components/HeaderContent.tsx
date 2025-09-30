@@ -7,6 +7,7 @@ import {
   GraduationCap,
   Plus,
   ScanFace,
+  ScrollText,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
@@ -16,9 +17,10 @@ import { UserEducation } from "./setting/UserEducation";
 import { UserInformation } from "./setting/UserInformation";
 import { PostProjectModal } from "./project/PostProjectModal";
 import { User } from "@prisma/client";
-import { UserPostedProjects } from "./setting/UserPostedProject";
+import { OrganizationPostedProjects } from "./setting/OrganizationPostedProject";
 import { SearchBar } from "./browse/SearchBar";
 import { UserApplications } from "./setting/UserApplication";
+import { OrganizationApplication } from "./setting/OrganizationApplication";
 
 interface HeaderContentProps {
   user: User | null;
@@ -53,7 +55,7 @@ const HeaderContent: React.FC<HeaderContentProps> = ({ user }) => {
               <div>
                 <Button
                   onClick={() => setIsModalOpen(true)}
-                  className="flex items-center gap-2 px-6 py-3 bg-[#1DBF9F] hover:bg-[#1DBF9F]/80 font-medium"
+                  className="flex items-center gap-2 px-6 py-3 bg-[#695DCC] hover:bg-[#695DCC]/80 font-medium"
                 >
                   <Plus className="h-5 w-5" />
                   Post a Project
@@ -91,7 +93,7 @@ const HeaderContent: React.FC<HeaderContentProps> = ({ user }) => {
                 <UserButton.UserProfilePage
                   label="Applications"
                   url="applications"
-                  labelIcon={<FolderClock className="w-4 h-4" />}
+                  labelIcon={<ScrollText className="w-4 h-4" />}
                 >
                   <UserApplications />
                 </UserButton.UserProfilePage>
@@ -102,7 +104,16 @@ const HeaderContent: React.FC<HeaderContentProps> = ({ user }) => {
                   url="projects"
                   labelIcon={<FolderClock className="w-4 h-4" />}
                 >
-                  <UserPostedProjects />
+                  <OrganizationPostedProjects />
+                </UserButton.UserProfilePage>
+              )}
+              {user?.role === "BUSINESS_OWNER" && (
+                <UserButton.UserProfilePage
+                  label="Applications"
+                  url="applications"
+                  labelIcon={<ScrollText className="w-4 h-4" />}
+                >
+                  <OrganizationApplication />
                 </UserButton.UserProfilePage>
               )}
             </UserButton>

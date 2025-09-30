@@ -40,7 +40,7 @@ import {
 import { useUser } from "@clerk/nextjs";
 import { getUserByClerkId } from "@/lib/actions/user";
 
-export function UserPostedProjects() {
+export function OrganizationPostedProjects() {
   const user = useUser();
   const [projects, setProjects] = useState<Project[]>();
   const [editingId, setEditingId] = useState<string | null>(null);

@@ -132,7 +132,13 @@ export function UserInformation() {
       <div className="flex items-center justify-between">
         <div className="space-y-1">
           <h1 className="font-bold text-gray-900 flex items-center gap-2">
-            User Information
+            {!userData ? (
+              <span>Loading...</span>
+            ) : userData.role === "BUSINESS_OWNER" ? (
+              "Organization Information"
+            ) : (
+              "User Information"
+            )}
           </h1>
         </div>
         <div className="flex gap-2 mr-5">
@@ -193,11 +199,13 @@ export function UserInformation() {
                       <Briefcase className="w-3 h-3 mr-1" />
                       {displayData.role}
                     </Badge>
+                  {displayData.role !== "BUSINESS_OWNER" && (
                     <Badge
                       variant={displayData.occupied ? "default" : "outline"}
                     >
                       {displayData.occupied ? "Available" : "Busy"}
                     </Badge>
+                  )}
                   </div>
                 </div>
               </div>
@@ -292,29 +300,31 @@ export function UserInformation() {
                   </p>
                 )}
               </div>
-              <div>
-                <Label className="text-sm font-semibold">Status</Label>
-                {isEditing ? (
-                  <Select
-                    value={editingData.occupied ? "Available" : "Busy"}
-                    onValueChange={(value) =>
-                      handleInputChange("occupied", value === "Available")
-                    }
-                  >
-                    <SelectTrigger className="mt-2">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Available">Available</SelectItem>
-                      <SelectItem value="Busy">Busy</SelectItem>
-                    </SelectContent>
-                  </Select>
-                ) : (
-                  <p className="text-sm mt-2 text-muted-foreground">
-                    {displayData.occupied ? "Available" : "Busy"}
-                  </p>
-                )}
-              </div>
+          {displayData.role !== "BUSINESS_OWNER" && (
+            <div>
+              <Label className="text-sm font-semibold">Status</Label>
+              {isEditing ? (
+                <Select
+                  value={editingData.occupied ? "Available" : "Busy"}
+                  onValueChange={(value) =>
+                    handleInputChange("occupied", value === "Available")
+                  }
+                >
+                  <SelectTrigger className="mt-2">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Available">Available</SelectItem>
+                    <SelectItem value="Busy">Busy</SelectItem>
+                  </SelectContent>
+                </Select>
+              ) : (
+                <p className="text-sm mt-2 text-muted-foreground">
+                  {displayData.occupied ? "Available" : "Busy"}
+                </p>
+              )}
+            </div>
+          )}
             </div>
           </div>
 
@@ -393,53 +403,58 @@ export function UserInformation() {
             )}
           </div>
 
-          <Separator className="my-5" />
+          {displayData.role !== "BUSINESS_OWNER" && (
+            <>
+              <Separator className="my-5" />
 
-          {/* Skills Card */}
-          <div>
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold">Skills</h3>
-              {isEditing && (
-                <Button size="sm" variant="outline" onClick={addSkill}>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Skill
-                </Button>
-              )}
-            </div>
-          </div>
-          <div className="mt-5">
-            {displayData.skills.length === 0 ? (
-              <p className="text-muted-foreground">No skills added</p>
-            ) : (
-              <div className="flex flex-wrap gap-2">
-                {displayData.skills.map((skill, index) => (
-                  <div key={index} className="flex items-center gap-1">
-                    {isEditing ? (
-                      <div className="flex items-center bg-secondary rounded-md">
-                        <Input
-                          value={skill}
-                          onChange={(e) => updateSkill(index, e.target.value)}
-                          className="w-32 h-8 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
-                        />
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => removeSkill(index)}
-                          className="h-8 w-8 p-0 hover:bg-red-100 hover:text-red-300"
-                        >
-                          <X className="w-3 h-3" />
-                        </Button>
-                      </div>
-                    ) : (
-                      <Badge variant="secondary">{skill}</Badge>
-                    )}
-                  </div>
-                ))}
+              {/* Skills Card */}
+              <div>
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-semibold">Skills</h3>
+                  {isEditing && (
+                    <Button size="sm" variant="outline" onClick={addSkill}>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Skill
+                    </Button>
+                  )}
+                </div>
               </div>
-            )}
-          </div>
+              <div className="mt-5">
+                {displayData.skills.length === 0 ? (
+                  <p className="text-muted-foreground">No skills added</p>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {displayData.skills.map((skill, index) => (
+                      <div key={index} className="flex items-center gap-1">
+                        {isEditing ? (
+                          <div className="flex items-center bg-secondary rounded-md">
+                            <Input
+                              value={skill}
+                              onChange={(e) => updateSkill(index, e.target.value)}
+                              className="w-32 h-8 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
+                            />
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => removeSkill(index)}
+                              className="h-8 w-8 p-0 hover:bg-red-100 hover:text-red-300"
+                            >
+                              <X className="w-3 h-3" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <Badge variant="secondary">{skill}</Badge>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </>
+          )}
         </>
       )}
     </div>
   );
 }
+

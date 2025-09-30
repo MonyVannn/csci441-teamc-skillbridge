@@ -9,7 +9,7 @@ export async function createApplication(
 ) {
   const user = await currentUser();
 
-  if (!user) throw new Error("Not aunthenticated.");
+  if (!user) throw new Error("Not authenticated.");
 
   try {
     const existingUser = await prisma.user.findFirst({

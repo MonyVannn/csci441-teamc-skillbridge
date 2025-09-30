@@ -35,6 +35,65 @@ export async function getApplicationsByUserId() {
   }
 }
 
+export async function getApplicationByProjectId(projectId: string) {
+  const user = await currentUser();
+
+  if (!user) throw new Error("Not authenticated.");
+
+  try {
+    const existingUser = await prisma.user.findFirst({
+      where: { clerkId: user.id },
+    });
+
+    if (!existingUser) throw new Error("User not found.");
+
+    const applications = await prisma.application.findMany({
+      where: {
+        projectId: projectId,
+      },
+      include: {
+        applicant: true,
+      },
+    });
+
+    return applications;
+  } catch (e) {
+    console.error("Error fetching applications by project ID: ", e);
+    throw new Error("Failed to fetch applications");
+  }
+}
+
+export async function getApplicationsForAllOwnerProjects() {
+  const user = await currentUser();
+
+  if (!user) throw new Error("Not authenticated.");
+
+  try {
+    const existingUser = await prisma.user.findFirst({
+      where: { clerkId: user.id },
+    });
+
+    if (!existingUser) throw new Error("User not found.");
+
+    const applications = await prisma.application.findMany({
+      where: {
+        project: {
+          businessOwnerId: existingUser.id,
+        },
+      },
+      include: {
+        applicant: true,
+        project: true,
+      },
+    });
+
+    return applications;
+  } catch (e) {
+    console.error("Error fetching applications for owner projects: ", e);
+    throw new Error("Failed to fetch applications");
+  }
+}
+
 export async function createApplication(
   projectId: string,
   coverLetter: string

@@ -43,7 +43,7 @@ export function ApplyButton({ project }: ApplyButtonProps) {
       await createApplication(project.id, formData.coverLetter);
       setIsAppliedButton(false);
       setOpenDialog(false);
-      formData.coverLetter = "";
+      setFormData(prev => ({ ...prev, coverLetter: "" }));
     } catch (error) {
       console.error("Failed to submit application:", error);
     }

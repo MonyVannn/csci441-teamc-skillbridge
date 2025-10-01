@@ -145,9 +145,23 @@ export async function approveApplication(applicationId: string) {
       where: {
         id: applicationId,
       },
+      include: {
+        project: {
+          include: {
+            businessOwner: true,
+          },
+        },
+      },
     });
 
     if (!application) throw new Error("Application not found.");
+    if (
+      !application.project ||
+      !application.project.businessOwner ||
+      application.project.businessOwner.id !== existingUser.id
+    ) {
+      throw new Error("You do not have permission to approve this application.");
+    }
 
     const updatedApplication = await prisma.application.update({
       where: {

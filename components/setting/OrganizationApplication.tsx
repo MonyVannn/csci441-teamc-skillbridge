@@ -4,6 +4,13 @@ import { useEffect, useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { format } from "date-fns";
 import {
   LoaderCircle,
@@ -37,6 +44,7 @@ interface ApplicationDetails {
   project: {
     id: string;
     title: string;
+    status: string;
   };
 }
 
@@ -45,6 +53,7 @@ export function OrganizationApplication() {
     ApplicationDetails[] | undefined
   >();
   const [isLoading, setIsLoading] = useState(true);
+  const [groupBy, setGroupBy] = useState<"project" | "status">("status");
 
   useEffect(() => {
     async function loadAllApplications() {
@@ -69,7 +78,7 @@ export function OrganizationApplication() {
   }, []);
 
   // Group applications by project title using useMemo for efficiency
-  const groupedApplications = useMemo(() => {
+  const groupedByProject = useMemo(() => {
     if (!applications) return {};
     return applications.reduce((acc, app) => {
       const { title } = app.project;
@@ -80,6 +89,21 @@ export function OrganizationApplication() {
       return acc;
     }, {} as Record<string, ApplicationDetails[]>);
   }, [applications]);
+
+  // Group applications by project status using useMemo for efficiency
+  const groupedByStatus = useMemo(() => {
+    if (!applications) return {};
+    return applications.reduce((acc, app) => {
+      const status = app.project.status;
+      if (!acc[status]) {
+        acc[status] = [];
+      }
+      acc[status].push(app);
+      return acc;
+    }, {} as Record<string, ApplicationDetails[]>);
+  }, [applications]);
+
+  const groupedApplications = groupBy === "status" ? groupedByStatus : groupedByProject;
 
   const handleUpdateStatus = async (
     applicationId: string,
@@ -120,6 +144,31 @@ export function OrganizationApplication() {
     }
   };
 
+  const getProjectStatusColor = (status: string) => {
+    switch (status) {
+      case "OPEN":
+        return "bg-green-100 text-green-700 border-green-200";
+      case "IN_PROGRESS":
+        return "bg-blue-100 text-blue-700 border-blue-200";
+      case "COMPLETED":
+        return "bg-gray-100 text-gray-700 border-gray-200";
+      case "CANCELLED":
+        return "bg-red-100 text-red-700 border-red-200";
+      case "ASSIGNED":
+        return "bg-purple-100 text-purple-700 border-purple-200";
+      case "IN_REVIEW":
+        return "bg-yellow-100 text-yellow-700 border-yellow-200";
+      case "ARCHIVED":
+        return "bg-slate-100 text-slate-700 border-slate-200";
+      default:
+        return "bg-gray-100 text-gray-700 border-gray-200";
+    }
+  };
+
+  const formatProjectStatus = (status: string) => {
+    return status.replace(/_/g, " ");
+  };
+
   return (
     <div>
       <div className="space-y-1">
@@ -129,6 +178,23 @@ export function OrganizationApplication() {
         </p>
       </div>
       <Separator className="my-5" />
+      
+      {/* Group By Selector */}
+      {!isLoading && applications && applications.length > 0 && (
+        <div className="mb-6 flex items-center gap-3">
+          <label className="text-sm font-medium text-gray-700">Group by:</label>
+          <Select value={groupBy} onValueChange={(value: "project" | "status") => setGroupBy(value)}>
+            <SelectTrigger className="w-[200px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="status">Project Status</SelectItem>
+              <SelectItem value="project">Project Name</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
       <div>
         {isLoading ? (
           <div className="text-center py-12 text-gray-500">
@@ -144,19 +210,27 @@ export function OrganizationApplication() {
           </div>
         ) : (
           <div className="space-y-8">
-            {/* Map over the grouped projects */}
+            {/* Map over the grouped items */}
             {Object.entries(groupedApplications).map(
-              ([projectTitle, projectApps]) => (
-                <div key={projectTitle}>
+              ([groupKey, groupApps]) => (
+                <div key={groupKey}>
                   <div className="flex items-center gap-3 mb-4">
                     <FolderKanban className="h-6 w-6 text-gray-700" />
                     <h2 className="font-bold text-xl text-gray-800">
-                      {projectTitle}
+                      {groupBy === "status" ? formatProjectStatus(groupKey) : groupKey}
                     </h2>
+                    {groupBy === "status" && (
+                      <Badge
+                        variant="secondary"
+                        className={`text-xs ${getProjectStatusColor(groupKey)}`}
+                      >
+                        {groupApps.length} {groupApps.length === 1 ? "application" : "applications"}
+                      </Badge>
+                    )}
                   </div>
                   <div className="space-y-4">
-                    {/* Map over the applications for each project */}
-                    {projectApps.map((app) => (
+                    {/* Map over the applications for each group */}
+                    {groupApps.map((app) => (
                       <div
                         key={app.id}
                         className="p-4 border border-gray-200 rounded-lg bg-white ml-2"
@@ -178,17 +252,36 @@ export function OrganizationApplication() {
                                     }`.toUpperCase() || "?"}
                                   </AvatarFallback>
                                 </Avatar>
-                                <h3 className="font-semibold text-gray-900">
-                                  {app.applicant.firstName}{" "}
-                                  {app.applicant.lastName}
-                                </h3>
-                                <Link
-                                  href={`/profile/${app.applicant.clerkId}`}
-                                >
-                                  <Button size={"icon"} variant={"ghost"}>
-                                    <SquareArrowOutUpRight className="h-4 w-4" />
-                                  </Button>
-                                </Link>
+                                <div className="flex flex-col">
+                                  <div className="flex items-center gap-2">
+                                    <h3 className="font-semibold text-gray-900">
+                                      {app.applicant.firstName}{" "}
+                                      {app.applicant.lastName}
+                                    </h3>
+                                    <Link
+                                      href={`/profile/${app.applicant.clerkId}`}
+                                    >
+                                      <Button size={"icon"} variant={"ghost"}>
+                                        <SquareArrowOutUpRight className="h-4 w-4" />
+                                      </Button>
+                                    </Link>
+                                  </div>
+                                  {groupBy === "status" && (
+                                    <p className="text-sm text-gray-600">
+                                      Project: {app.project.title}
+                                    </p>
+                                  )}
+                                  {groupBy === "project" && (
+                                    <Badge
+                                      variant="secondary"
+                                      className={`text-xs w-fit ${getProjectStatusColor(
+                                        app.project.status
+                                      )}`}
+                                    >
+                                      {formatProjectStatus(app.project.status)}
+                                    </Badge>
+                                  )}
+                                </div>
                               </div>
                               {app.status === "PENDING" && (
                                 <div className="flex items-center gap-2 flex-shrink-0 w-full sm:w-auto">

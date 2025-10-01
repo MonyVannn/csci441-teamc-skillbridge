@@ -26,6 +26,16 @@ export async function getApplicationsByUserId() {
           },
         },
       },
+      orderBy: [
+        {
+          project: {
+            status: "asc",
+          },
+        },
+        {
+          appliedAt: "desc",
+        },
+      ],
     });
 
     return applications;
@@ -85,6 +95,16 @@ export async function getApplicationsForAllOwnerProjects() {
         applicant: true,
         project: true,
       },
+      orderBy: [
+        {
+          project: {
+            status: "asc",
+          },
+        },
+        {
+          appliedAt: "desc",
+        },
+      ],
     });
 
     return applications;

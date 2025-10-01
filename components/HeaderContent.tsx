@@ -24,7 +24,7 @@ import { OrganizationApplication } from "./setting/OrganizationApplication";
 
 interface HeaderContentProps {
   user: User | null;
-  totalUnrespondedApplications: number;
+  totalUnrespondedApplications: number | null;
 }
 
 const HeaderContent: React.FC<HeaderContentProps> = ({
@@ -72,11 +72,12 @@ const HeaderContent: React.FC<HeaderContentProps> = ({
             )}
 
             <div className="relative pt-2">
-              {totalUnrespondedApplications > 0 && (
-                <div className="absolute top-0 -right-2 w-5 h-5 z-50 bg-red-400 rounded-full text-white font-bold text-xs flex items-center justify-center">
-                  {totalUnrespondedApplications}
-                </div>
-              )}
+              {totalUnrespondedApplications &&
+                totalUnrespondedApplications > 0 && (
+                  <div className="absolute top-0 -right-2 w-5 h-5 z-50 bg-red-400 rounded-full text-white font-bold text-xs flex items-center justify-center">
+                    {totalUnrespondedApplications}
+                  </div>
+                )}
               <UserButton>
                 <UserButton.UserProfilePage
                   label="Bio"

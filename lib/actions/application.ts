@@ -127,6 +127,82 @@ export async function createApplication(
   }
 }
 
+export async function approveApplication(applicationId: string) {
+  const user = await currentUser();
+
+  if (!user) throw new Error("Not authenticated.");
+
+  try {
+    const existingUser = await prisma.user.findFirst({
+      where: { clerkId: user.id },
+    });
+
+    if (!existingUser) throw new Error("User not found.");
+    if (existingUser.role !== "BUSINESS_OWNER")
+      throw new Error("Only business owners can approve applications.");
+
+    const application = await prisma.application.findFirst({
+      where: {
+        id: applicationId,
+      },
+    });
+
+    if (!application) throw new Error("Application not found.");
+
+    const updatedApplication = await prisma.application.update({
+      where: {
+        id: application.id,
+      },
+      data: {
+        status: "ACCEPTED",
+      },
+    });
+
+    return updatedApplication;
+  } catch (e) {
+    console.error("Error approving application: ", e);
+    throw new Error("Failed to approve application");
+  }
+}
+
+export async function rejectApplication(applicationId: string) {
+  const user = await currentUser();
+
+  if (!user) throw new Error("Not authenticated.");
+
+  try {
+    const existingUser = await prisma.user.findFirst({
+      where: { clerkId: user.id },
+    });
+
+    if (!existingUser) throw new Error("User not found.");
+    if (existingUser.role !== "BUSINESS_OWNER")
+      throw new Error("Only business owners can reject applications.");
+
+    const application = await prisma.application.findFirst({
+      where: {
+        id: applicationId,
+      },
+    });
+
+    if (!application) throw new Error("Application not found.");
+
+    const updatedApplication = await prisma.application.update({
+      where: {
+        id: application.id,
+      },
+      data: {
+        status: "REJECTED",
+      },
+    });
+
+    return updatedApplication;
+  } catch (e) {
+    console.error("Error rejecting application: ", e);
+    throw new Error("Failed to reject application");
+  }
+}
+
 export async function isApplied(projectId: string, userId?: string) {
   const user = userId ? { id: userId } : await currentUser();
 

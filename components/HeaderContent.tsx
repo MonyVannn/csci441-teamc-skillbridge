@@ -72,9 +72,11 @@ const HeaderContent: React.FC<HeaderContentProps> = ({
             )}
 
             <div className="relative pt-2">
-              <div className="absolute top-0 -right-2 w-5 h-5 z-50 bg-red-400 rounded-full text-white font-bold text-xs flex items-center justify-center">
-                {totalUnrespondedApplications}
-              </div>
+              {totalUnrespondedApplications > 0 && (
+                <div className="absolute top-0 -right-2 w-5 h-5 z-50 bg-red-400 rounded-full text-white font-bold text-xs flex items-center justify-center">
+                  {totalUnrespondedApplications}
+                </div>
+              )}
               <UserButton>
                 <UserButton.UserProfilePage
                   label="Bio"

@@ -24,7 +24,7 @@ import { OrganizationApplication } from "./setting/OrganizationApplication";
 
 interface HeaderContentProps {
   user: User | null;
-  totalUnrespondedApplications: number | 0;
+  totalUnrespondedApplications: number;
 }
 
 const HeaderContent: React.FC<HeaderContentProps> = ({

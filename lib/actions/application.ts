@@ -1,6 +1,7 @@
 "use server";
 
 import { currentUser } from "@clerk/nextjs/server";
+import { revalidatePath } from "next/cache";
 import prisma from "../prisma";
 
 export async function getApplicationsByUserId() {
@@ -94,6 +95,38 @@ export async function getApplicationsForAllOwnerProjects() {
   }
 }
 
+export async function getTotalUnrespondedApplication() {
+  const user = await currentUser();
+
+  if (!user) throw new Error("Not authenticated.");
+
+  try {
+    const existingUser = await prisma.user.findFirst({
+      where: { clerkId: user.id },
+    });
+
+    if (!existingUser) throw new Error("User not found.");
+    if (existingUser.role !== "BUSINESS_OWNER")
+      throw new Error(
+        "Only business owners can view unresponded applications."
+      );
+
+    const count = await prisma.application.count({
+      where: {
+        project: {
+          businessOwnerId: existingUser.id,
+        },
+        status: "PENDING",
+      },
+    });
+
+    return count;
+  } catch (e) {
+    console.error("Error fetching unresponded applications count: ", e);
+    throw new Error("Failed to fetch unresponded applications count");
+  }
+}
+
 export async function createApplication(
   projectId: string,
   coverLetter: string
@@ -160,17 +193,21 @@ export async function approveApplication(applicationId: string) {
       !application.project.businessOwner ||
       application.project.businessOwner.id !== existingUser.id
     ) {
-      throw new Error("You do not have permission to approve this application.");
+      throw new Error(
+        "You do not have permission to approve this application."
+      );
     }
 
     const updatedApplication = await prisma.application.update({
       where: {
-        id: application.id,
+        id: applicationId,
       },
       data: {
         status: "ACCEPTED",
       },
     });
+
+    revalidatePath("/");
 
     return updatedApplication;
   } catch (e) {
@@ -203,12 +240,14 @@ export async function rejectApplication(applicationId: string) {
 
     const updatedApplication = await prisma.application.update({
       where: {
-        id: application.id,
+        id: applicationId,
       },
       data: {
         status: "REJECTED",
       },
     });
+
+    revalidatePath("/");
 
     return updatedApplication;
   } catch (e) {

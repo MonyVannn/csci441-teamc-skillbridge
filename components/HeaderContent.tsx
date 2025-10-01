@@ -24,9 +24,13 @@ import { OrganizationApplication } from "./setting/OrganizationApplication";
 
 interface HeaderContentProps {
   user: User | null;
+  totalUnrespondedApplications: number | null;
 }
 
-const HeaderContent: React.FC<HeaderContentProps> = ({ user }) => {
+const HeaderContent: React.FC<HeaderContentProps> = ({
+  user,
+  totalUnrespondedApplications,
+}) => {
   const pathname = usePathname();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -67,56 +71,64 @@ const HeaderContent: React.FC<HeaderContentProps> = ({ user }) => {
               </div>
             )}
 
-            <UserButton>
-              <UserButton.UserProfilePage
-                label="Bio"
-                url="bio"
-                labelIcon={<ScanFace className="w-4 h-4" />}
-              >
-                <UserInformation />
-              </UserButton.UserProfilePage>
-              <UserButton.UserProfilePage
-                label="Experience"
-                url="experience"
-                labelIcon={<BriefcaseBusiness className="w-4 h-4" />}
-              >
-                <UserExperience />
-              </UserButton.UserProfilePage>
-              <UserButton.UserProfilePage
-                label="Education"
-                url="education"
-                labelIcon={<GraduationCap className="w-4 h-4" />}
-              >
-                <UserEducation />
-              </UserButton.UserProfilePage>
-              {user?.role === "USER" && (
+            <div className="relative pt-2">
+              {totalUnrespondedApplications &&
+                totalUnrespondedApplications > 0 && (
+                  <div className="absolute top-0 -right-2 w-5 h-5 z-50 bg-red-400 rounded-full text-white font-bold text-xs flex items-center justify-center">
+                    {totalUnrespondedApplications}
+                  </div>
+                )}
+              <UserButton>
                 <UserButton.UserProfilePage
-                  label="Applications"
-                  url="applications"
-                  labelIcon={<ScrollText className="w-4 h-4" />}
+                  label="Bio"
+                  url="bio"
+                  labelIcon={<ScanFace className="w-4 h-4" />}
                 >
-                  <UserApplications />
+                  <UserInformation />
                 </UserButton.UserProfilePage>
-              )}
-              {user?.role === "BUSINESS_OWNER" && (
                 <UserButton.UserProfilePage
-                  label="Posted Projects"
-                  url="projects"
-                  labelIcon={<FolderClock className="w-4 h-4" />}
+                  label="Experience"
+                  url="experience"
+                  labelIcon={<BriefcaseBusiness className="w-4 h-4" />}
                 >
-                  <OrganizationPostedProjects />
+                  <UserExperience />
                 </UserButton.UserProfilePage>
-              )}
-              {user?.role === "BUSINESS_OWNER" && (
                 <UserButton.UserProfilePage
-                  label="Applications"
-                  url="applications"
-                  labelIcon={<ScrollText className="w-4 h-4" />}
+                  label="Education"
+                  url="education"
+                  labelIcon={<GraduationCap className="w-4 h-4" />}
                 >
-                  <OrganizationApplication />
+                  <UserEducation />
                 </UserButton.UserProfilePage>
-              )}
-            </UserButton>
+                {user?.role === "USER" && (
+                  <UserButton.UserProfilePage
+                    label="Applications"
+                    url="applications"
+                    labelIcon={<ScrollText className="w-4 h-4" />}
+                  >
+                    <UserApplications />
+                  </UserButton.UserProfilePage>
+                )}
+                {user?.role === "BUSINESS_OWNER" && (
+                  <UserButton.UserProfilePage
+                    label="Posted Projects"
+                    url="projects"
+                    labelIcon={<FolderClock className="w-4 h-4" />}
+                  >
+                    <OrganizationPostedProjects />
+                  </UserButton.UserProfilePage>
+                )}
+                {user?.role === "BUSINESS_OWNER" && (
+                  <UserButton.UserProfilePage
+                    label="Applications"
+                    url="applications"
+                    labelIcon={<ScrollText className="w-4 h-4" />}
+                  >
+                    <OrganizationApplication />
+                  </UserButton.UserProfilePage>
+                )}
+              </UserButton>
+            </div>
           </div>
         </SignedIn>
       </div>

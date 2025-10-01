@@ -168,9 +168,11 @@ export function OrganizationApplication() {
                                 <Avatar className="rounded-lg">
                                   <AvatarImage
                                     src={app.applicant.imageUrl || ""}
-                                    alt="@evilrabbit"
+                                    alt={`${app.applicant.firstName ?? ""} ${app.applicant.lastName ?? ""}`.trim()}
                                   />
-                                  <AvatarFallback>ER</AvatarFallback>
+                                  <AvatarFallback>
+                                    {`${(app.applicant.firstName?.[0] ?? "")}${(app.applicant.lastName?.[0] ?? "")}`.toUpperCase() || "?"}
+                                  </AvatarFallback>
                                 </Avatar>
                                 <h3 className="font-semibold text-gray-900">
                                   {app.applicant.firstName}{" "}

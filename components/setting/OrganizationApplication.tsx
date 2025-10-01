@@ -13,8 +13,13 @@ import {
   FolderKanban,
   SquareArrowOutUpRight,
 } from "lucide-react";
-import { getApplicationsForAllOwnerProjects } from "@/lib/actions/application";
+import {
+  approveApplication,
+  getApplicationsForAllOwnerProjects,
+  rejectApplication,
+} from "@/lib/actions/application";
 import Link from "next/link";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
 // Updated interface to include project details for each application
 interface ApplicationDetails {
@@ -27,6 +32,7 @@ interface ApplicationDetails {
     clerkId: string;
     firstName: string | null;
     lastName: string | null;
+    imageUrl: string | null;
   };
   project: {
     id: string;
@@ -80,6 +86,8 @@ export function OrganizationApplication() {
     newStatus: "ACCEPTED" | "REJECTED"
   ) => {
     const originalApplications = applications;
+    const app = applications?.find((app) => app.id === applicationId);
+
     setApplications((prev) =>
       prev?.map((app) =>
         app.id === applicationId ? { ...app, status: newStatus } : app
@@ -87,10 +95,10 @@ export function OrganizationApplication() {
     );
 
     try {
-      if (newStatus === "ACCEPTED") {
-        // TODO: call an action
+      if (newStatus === "ACCEPTED" && app) {
+        await approveApplication(applicationId);
       } else {
-        // TODO: call an action
+        await rejectApplication(applicationId);
       }
     } catch (error) {
       console.error(`Failed to update application status:`, error);
@@ -155,8 +163,17 @@ export function OrganizationApplication() {
                       >
                         <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
                           <div className="flex-1 space-y-3">
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center justify-between">
                               <div className="flex items-center gap-2 flex-wrap">
+                                <Avatar className="rounded-lg">
+                                  <AvatarImage
+                                    src={app.applicant.imageUrl || ""}
+                                    alt={`${app.applicant.firstName ?? ""} ${app.applicant.lastName ?? ""}`.trim()}
+                                  />
+                                  <AvatarFallback>
+                                    {`${(app.applicant.firstName?.[0] ?? "")}${(app.applicant.lastName?.[0] ?? "")}`.toUpperCase() || "?"}
+                                  </AvatarFallback>
+                                </Avatar>
                                 <h3 className="font-semibold text-gray-900">
                                   {app.applicant.firstName}{" "}
                                   {app.applicant.lastName}
@@ -169,6 +186,29 @@ export function OrganizationApplication() {
                                   </Button>
                                 </Link>
                               </div>
+                              {app.status === "PENDING" && (
+                                <div className="flex items-center gap-2 flex-shrink-0 w-full sm:w-auto">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() =>
+                                      handleUpdateStatus(app.id, "REJECTED")
+                                    }
+                                    className="w-1/2 sm:w-auto text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
+                                  >
+                                    <X className="mr-2 h-4 w-4" /> Reject
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    onClick={() =>
+                                      handleUpdateStatus(app.id, "ACCEPTED")
+                                    }
+                                    className="w-1/2 sm:w-auto bg-green-600 hover:bg-green-700 text-white"
+                                  >
+                                    <Check className="mr-2 h-4 w-4" /> Approve
+                                  </Button>
+                                </div>
+                              )}
                               {app.status !== "PENDING" && (
                                 <Badge
                                   className={getStatusBadgeVariant(app.status)}
@@ -188,29 +228,6 @@ export function OrganizationApplication() {
                               {format(new Date(app.appliedAt), "MMMM d, yyyy")}
                             </p>
                           </div>
-                          {app.status === "PENDING" && (
-                            <div className="flex items-center gap-2 flex-shrink-0 w-full sm:w-auto">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() =>
-                                  handleUpdateStatus(app.id, "REJECTED")
-                                }
-                                className="w-1/2 sm:w-auto text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
-                              >
-                                <X className="mr-2 h-4 w-4" /> Reject
-                              </Button>
-                              <Button
-                                size="sm"
-                                onClick={() =>
-                                  handleUpdateStatus(app.id, "ACCEPTED")
-                                }
-                                className="w-1/2 sm:w-auto bg-green-600 hover:bg-green-700 text-white"
-                              >
-                                <Check className="mr-2 h-4 w-4" /> Approve
-                              </Button>
-                            </div>
-                          )}
                         </div>
                       </div>
                     ))}

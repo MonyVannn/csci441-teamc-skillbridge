@@ -3,6 +3,7 @@
 import { currentUser, UserJSON } from "@clerk/nextjs/server";
 import prisma from "../prisma";
 import { Education, Experience, User } from "@prisma/client";
+import { revalidatePath } from "next/cache";
 
 export async function isAuthenticated(): Promise<boolean> {
   const user = await currentUser();
@@ -322,6 +323,8 @@ export async function editUserInformation(informationData: User) {
         ...dataWithoutId,
       },
     });
+
+    revalidatePath("/");
 
     console.log("Information updated.", updatedInformation);
   } catch (e) {

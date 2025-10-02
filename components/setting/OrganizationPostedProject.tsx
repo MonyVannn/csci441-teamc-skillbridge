@@ -26,7 +26,6 @@ import {
 import { Separator } from "../ui/separator";
 import {
   Prisma,
-  Project,
   ProjectCategory,
   ProjectScope,
   ProjectStatus,
@@ -39,10 +38,13 @@ import {
 } from "@/lib/actions/project";
 import { useUser } from "@clerk/nextjs";
 import { getUserByClerkId } from "@/lib/actions/user";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { ProjectWithAssignedStudent } from "@/type";
+import Link from "next/link";
 
 export function OrganizationPostedProjects() {
   const user = useUser();
-  const [projects, setProjects] = useState<Project[]>();
+  const [projects, setProjects] = useState<ProjectWithAssignedStudent[]>();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -97,7 +99,7 @@ export function OrganizationPostedProjects() {
     setEditingId(null);
   };
 
-  const handleEditProject = (project: Project) => {
+  const handleEditProject = (project: ProjectWithAssignedStudent) => {
     setFormData({
       title: project.title,
       description: project.description,
@@ -155,7 +157,9 @@ export function OrganizationPostedProjects() {
         const updatedProject = await editProject(projectData, editingId);
         setProjects(
           projects?.map((project) =>
-            project.id === editingId ? updatedProject : project
+            project.id === editingId
+              ? { ...updatedProject, assignedStudent: project.assignedStudent }
+              : project
           )
         );
       } catch (e) {
@@ -164,7 +168,10 @@ export function OrganizationPostedProjects() {
     } else {
       try {
         const newProject = await createProject(projectData);
-        setProjects([newProject, ...(projects || [])]);
+        setProjects([
+          { ...newProject, assignedStudent: null } as ProjectWithAssignedStudent,
+          ...(projects || []),
+        ]);
       } catch (e) {
         console.error("Error adding new project:", e);
       }
@@ -651,7 +658,7 @@ export function OrganizationPostedProjects() {
                           </div>
                         </div>
 
-                        <p className="text-sm text-gray-600 leading-relaxed text-pretty">
+                        <p className="text-sm text-gray-600 leading-relaxed text-pretty line-clamp-3">
                           {project.description}
                         </p>
 
@@ -666,6 +673,30 @@ export function OrganizationPostedProjects() {
                             </Badge>
                           ))}
                         </div>
+                        {(project.assignedStudent &&
+                          (project.status === "ASSIGNED" ||
+                            project.status === "IN_PROGRESS" ||
+                            project.status === "IN_REVIEW")) && (
+                          <div className="flex items-center gap-2">
+                            <p className="text-xs font-semibold">
+                              Assigned to{" "}
+                            </p>
+                            <Link
+                              href={`/profile/${project.assignedStudent.clerkId}`}
+                            >
+                              <Avatar className="w-8 h-8">
+                                <AvatarImage
+                                  src={project.assignedStudent.imageUrl || ""}
+                                  alt={project.assignedStudent.firstName || ""}
+                                />
+                                <AvatarFallback>
+                                  {project.assignedStudent.firstName?.[0]}
+                                  {project.assignedStudent.lastName?.[0]}
+                                </AvatarFallback>
+                              </Avatar>
+                            </Link>
+                          </div>
+                        )}
                       </div>
 
                       <div className="flex items-center gap-2 ml-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200">

@@ -105,6 +105,9 @@ export async function getProjectsByOwnerId() {
 
     const projects = await prisma.project.findMany({
       where: { businessOwnerId: existingUser.id },
+      include: {
+        assignedStudent: true,
+      },
     });
 
     return projects;

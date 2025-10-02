@@ -1,3 +1,9 @@
+import { Project, User } from "@prisma/client";
+
+export type ProjectWithAssignedStudent = Project & {
+  assignedStudent: User | null;
+};
+
 export type AvailableProject = {
   id: string;
   title: string;

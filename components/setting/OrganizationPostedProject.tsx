@@ -158,7 +158,7 @@ export function OrganizationPostedProjects() {
         setProjects(
           projects?.map((project) =>
             project.id === editingId
-              ? { ...updatedProject, assignedStudent: null }
+              ? { ...updatedProject, assignedStudent: project.assignedStudent }
               : project
           )
         );

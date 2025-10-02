@@ -207,6 +207,16 @@ export async function approveApplication(applicationId: string) {
       },
     });
 
+    await prisma.project.update({
+      where: {
+        id: application.projectId,
+      },
+      data: {
+        status: "ASSIGNED",
+        assignedStudentId: application.applicantId,
+      },
+    });
+
     revalidatePath("/");
 
     return updatedApplication;

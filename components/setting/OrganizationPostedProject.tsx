@@ -169,7 +169,7 @@ export function OrganizationPostedProjects() {
       try {
         const newProject = await createProject(projectData);
         setProjects([
-          { ...newProject, assignedStudent: null },
+          { ...newProject, assignedStudent: null } as ProjectWithAssignedStudent,
           ...(projects || []),
         ]);
       } catch (e) {

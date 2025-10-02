@@ -673,24 +673,25 @@ export function OrganizationPostedProjects() {
                             </Badge>
                           ))}
                         </div>
-                        {(project.status === "ASSIGNED" ||
-                          project.status === "IN_PROGRESS" ||
-                          project.status === "IN_REVIEW") && (
+                        {(project.assignedStudent &&
+                          (project.status === "ASSIGNED" ||
+                            project.status === "IN_PROGRESS" ||
+                            project.status === "IN_REVIEW")) && (
                           <div className="flex items-center gap-2">
                             <p className="text-xs font-semibold">
                               Assigned to{" "}
                             </p>
                             <Link
-                              href={`/profile/${project.assignedStudent?.clerkId}`}
+                              href={`/profile/${project.assignedStudent.clerkId}`}
                             >
                               <Avatar className="w-8 h-8">
                                 <AvatarImage
-                                  src={project.assignedStudent?.imageUrl || ""}
-                                  alt={project.assignedStudent?.firstName || ""}
+                                  src={project.assignedStudent.imageUrl || ""}
+                                  alt={project.assignedStudent.firstName || ""}
                                 />
                                 <AvatarFallback>
-                                  {project.assignedStudent?.firstName?.[0]}
-                                  {project.assignedStudent?.lastName?.[0]}
+                                  {project.assignedStudent.firstName?.[0]}
+                                  {project.assignedStudent.lastName?.[0]}
                                 </AvatarFallback>
                               </Avatar>
                             </Link>

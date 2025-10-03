@@ -89,7 +89,6 @@ export function ProjectDetail({ project, timeline }: ProjectDetailProps) {
       await updateProjectStatus(project.id, pendingStatus);
       setIsDialogOpen(false);
       setPendingStatus(null);
-      router.refresh();
     } catch (error) {
       console.error("Failed to update project status:", error);
     } finally {

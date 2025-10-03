@@ -24,6 +24,7 @@ export type AvailableProject = {
 
   businessOwner: {
     id: string;
+    clerkId?: string;
     imageUrl: string | null;
     firstName?: string | null;
     lastName?: string | null;
@@ -34,6 +35,7 @@ export type AvailableProject = {
 
   assignedStudent?: {
     id: string;
+    clerkId?: string;
     imageUrl: string | null;
     firstName?: string | null;
     lastName?: string | null;

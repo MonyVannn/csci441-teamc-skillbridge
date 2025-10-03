@@ -151,8 +151,14 @@ model Project {
 
   isPublic Boolean @default(true) // All projects are public by default
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  assignedAt   DateTime? // When a student was assigned
+  inProgressAt DateTime? // When work actually started
+  inReviewAt   DateTime? // When project moved to review
+  completedAt  DateTime? // When project was marked complete
+  cancelledAt  DateTime? // When project was cancelled
+  archivedAt   DateTime? // When project was archived
 
   // Relationships
   businessOwnerId String @db.ObjectId // ID of the User (BUSINESS_OWNER) who posted this project

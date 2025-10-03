@@ -117,6 +117,135 @@ export async function getProjectsByOwnerId() {
   }
 }
 
+export async function getProjectByProjectId(projectId: string) {
+  try {
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+      include: {
+        businessOwner: {
+          select: {
+            id: true,
+            imageUrl: true,
+            firstName: true,
+            lastName: true,
+            address: true,
+            bio: true,
+            intro: true,
+          },
+        },
+        assignedStudent: {
+          select: {
+            id: true,
+            imageUrl: true,
+            firstName: true,
+            lastName: true,
+            bio: true,
+            skills: true,
+          },
+        },
+        applications: {
+          select: {
+            updatedAt: true,
+            status: true,
+          },
+        },
+      },
+    });
+
+    if (!project) throw new Error("Project not found.");
+
+    return project;
+  } catch (e) {
+    console.error("Error fetching project data, ", e);
+    throw new Error("Failed to fetch project data.");
+  }
+}
+
+export async function getProjectTimelineByProjectId(
+  projectId: string,
+  applicantId: string
+) {
+  try {
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+      select: {
+        createdAt: true,
+        assignedAt: true,
+        inProgressAt: true,
+        inReviewAt: true,
+        completedAt: true,
+        status: true,
+      },
+    });
+
+    if (!project) throw new Error("Project not found.");
+
+    const application = await prisma.application.findUnique({
+      where: {
+        projectId_applicantId: {
+          projectId: projectId,
+          applicantId: applicantId,
+        },
+      },
+    });
+
+    if (!application) throw new Error("Application not found.");
+
+    const projectTimelineData = [
+      {
+        date: new Date(application?.updatedAt).toLocaleDateString(),
+        title: "Application Submitted",
+        content: "User submitted their application for this project.",
+      },
+      {
+        date: project.assignedAt
+          ? new Date(project.assignedAt).toLocaleDateString()
+          : "Pending",
+        title: "Assigned",
+        content:
+          "Project has been assigned to the selected student after careful review of all applications.",
+      },
+      {
+        date: project.inProgressAt
+          ? new Date(project.inProgressAt).toLocaleDateString()
+          : "Pending",
+        title: "In Progress",
+        content: "Student has officially begun working on the project.",
+      },
+      {
+        date: project.inReviewAt
+          ? new Date(project.inReviewAt).toLocaleDateString()
+          : "Pending",
+        title: "In Review",
+        content: "The student has submitted their completed work for review.",
+      },
+      {
+        date: project.completedAt
+          ? new Date(project.completedAt).toLocaleDateString()
+          : "Pending",
+        title: "Completed",
+        content:
+          "Project has been successfully completed and approved by the business owner.",
+      },
+    ].filter((entry, index) => {
+      const statusOrder = [
+        "APPLICATION_SUBMITTED",
+        "ASSIGNED",
+        "IN_PROGRESS",
+        "IN_REVIEW",
+        "COMPLETED",
+      ];
+      const currentStatusIndex = statusOrder.indexOf(project.status);
+      return index <= currentStatusIndex;
+    });
+
+    return projectTimelineData;
+  } catch (e) {
+    console.error("Error fetching project timeline, ", e);
+    throw new Error("Failed to fetch project timeline.");
+  }
+}
+
 export async function createProject(projectData: Prisma.ProjectCreateInput) {
   const user = await currentUser();
 

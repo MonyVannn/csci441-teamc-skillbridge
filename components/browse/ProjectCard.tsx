@@ -143,7 +143,6 @@ export function ProjectCard({
           <Sheet key={project.id}>
             <SheetTrigger className="text-left">
               <Card className="overflow-hidden border border-gray-200 hover:shadow-lg transition-shadow cursor-pointer">
-                {/* Thumbnail */}
                 <div className="relative group">
                   <Image
                     src={"/placeholder.jpg"}

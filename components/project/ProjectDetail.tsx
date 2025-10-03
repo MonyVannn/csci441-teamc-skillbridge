@@ -144,14 +144,14 @@ export function ProjectDetail({ project, timeline }: ProjectDetailProps) {
           height={1080}
           className="h-[100px] rounded-tl-lg rounded-tr-lg"
         />
-        <Avatar className="absolute top-18 left-3 w-16 h-16 border-4 border-background">
+        <Avatar className="absolute top-[72px] left-3 w-16 h-16 border-4 border-background">
           <AvatarImage src={project.assignedStudent?.imageUrl || ""} />
           <AvatarFallback className="text-2xl bg-muted">
             {project.assignedStudent?.firstName}
             {project.assignedStudent?.lastName}
           </AvatarFallback>
         </Avatar>
-        <h1 className="absolute top-25 left-20 font-semibold text-lg">
+        <h1 className="absolute left-20 font-semibold text-lg">
           {project.assignedStudent?.firstName}{" "}
           {project.assignedStudent?.lastName}
         </h1>

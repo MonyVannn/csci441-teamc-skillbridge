@@ -214,6 +214,7 @@ export async function approveApplication(applicationId: string) {
       data: {
         status: "ASSIGNED",
         assignedStudentId: application.applicantId,
+        assignedAt: new Date(),
       },
     });
 

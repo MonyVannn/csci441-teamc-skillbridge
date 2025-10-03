@@ -22,6 +22,7 @@ import {
   LoaderCircle,
   DollarSign,
   Clock,
+  SquareArrowOutUpRight,
 } from "lucide-react";
 import { Separator } from "../ui/separator";
 import {
@@ -169,7 +170,10 @@ export function OrganizationPostedProjects() {
       try {
         const newProject = await createProject(projectData);
         setProjects([
-          { ...newProject, assignedStudent: null } as ProjectWithAssignedStudent,
+          {
+            ...newProject,
+            assignedStudent: null,
+          } as ProjectWithAssignedStudent,
           ...(projects || []),
         ]);
       } catch (e) {
@@ -610,9 +614,16 @@ export function OrganizationPostedProjects() {
                       <div className="flex-1 space-y-3">
                         <div className="space-y-2">
                           <div className="flex items-center justify-between">
-                            <h3 className="font-semibold text-gray-900 text-balance">
-                              {project.title}
-                            </h3>
+                            <div className="flex items-center gap-4">
+                              <h3 className="font-semibold text-gray-900 text-balance">
+                                {project.title}
+                              </h3>
+                              <Link href={`/project/${project.id}`}>
+                                <Button size={"icon"} variant={"ghost"}>
+                                  <SquareArrowOutUpRight className="h-4 w-4" />
+                                </Button>
+                              </Link>
+                            </div>
                             <div className="flex items-center gap-2">
                               <Badge
                                 variant="secondary"
@@ -673,30 +684,32 @@ export function OrganizationPostedProjects() {
                             </Badge>
                           ))}
                         </div>
-                        {(project.assignedStudent &&
+                        {project.assignedStudent &&
                           (project.status === "ASSIGNED" ||
                             project.status === "IN_PROGRESS" ||
-                            project.status === "IN_REVIEW")) && (
-                          <div className="flex items-center gap-2">
-                            <p className="text-xs font-semibold">
-                              Assigned to{" "}
-                            </p>
-                            <Link
-                              href={`/profile/${project.assignedStudent.clerkId}`}
-                            >
-                              <Avatar className="w-8 h-8">
-                                <AvatarImage
-                                  src={project.assignedStudent.imageUrl || ""}
-                                  alt={project.assignedStudent.firstName || ""}
-                                />
-                                <AvatarFallback>
-                                  {project.assignedStudent.firstName?.[0]}
-                                  {project.assignedStudent.lastName?.[0]}
-                                </AvatarFallback>
-                              </Avatar>
-                            </Link>
-                          </div>
-                        )}
+                            project.status === "IN_REVIEW") && (
+                            <div className="flex items-center gap-2">
+                              <p className="text-xs font-semibold">
+                                Assigned to{" "}
+                              </p>
+                              <Link
+                                href={`/profile/${project.assignedStudent.clerkId}`}
+                              >
+                                <Avatar className="w-8 h-8">
+                                  <AvatarImage
+                                    src={project.assignedStudent.imageUrl || ""}
+                                    alt={
+                                      project.assignedStudent.firstName || ""
+                                    }
+                                  />
+                                  <AvatarFallback>
+                                    {project.assignedStudent.firstName?.[0]}
+                                    {project.assignedStudent.lastName?.[0]}
+                                  </AvatarFallback>
+                                </Avatar>
+                              </Link>
+                            </div>
+                          )}
                       </div>
 
                       <div className="flex items-center gap-2 ml-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200">

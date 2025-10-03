@@ -8,6 +8,20 @@ import { Dot } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ApplyButton } from "../application/ApplyButton";
 import { Separator } from "../ui/separator";
+import { Button } from "../ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../ui/dialog";
+import { useState } from "react";
+import { updateProjectStatus } from "@/lib/actions/project";
+import { useRouter } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
+import { ProjectStatus } from "@prisma/client";
 
 interface ProjectDetailProps {
   project: AvailableProject;
@@ -15,6 +29,80 @@ interface ProjectDetailProps {
 }
 
 export function ProjectDetail({ project, timeline }: ProjectDetailProps) {
+  const router = useRouter();
+  const { user } = useUser();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [pendingStatus, setPendingStatus] = useState<ProjectStatus | null>(
+    null
+  );
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  const getStatusChangeMessage = () => {
+    switch (project.status) {
+      case "ASSIGNED":
+        return {
+          title: "Begin the Project",
+          description:
+            "You are about to begin working on this project. The project status will be changed to 'In Progress'. Are you ready to start?",
+          buttonText: "Begin Project",
+          nextStatus: "IN_PROGRESS",
+        };
+      case "IN_PROGRESS":
+        return {
+          title: "Begin Reviewing Process",
+          description:
+            "You are about to submit your work for review. The project status will be changed to 'In Review'. Make sure all deliverables are completed.",
+          buttonText: "Submit for Review",
+          nextStatus: "IN_REVIEW",
+        };
+      default:
+        return null;
+    }
+  };
+
+  const handleStatusChangeClick = () => {
+    const statusInfo = getStatusChangeMessage();
+    if (statusInfo) {
+      setPendingStatus(statusInfo.nextStatus as ProjectStatus);
+      setIsDialogOpen(true);
+    }
+  };
+
+  const handleMarkAsCompleted = async () => {
+    setIsUpdating(true);
+    try {
+      await updateProjectStatus(project.id, "COMPLETED");
+      setIsDialogOpen(false);
+      setPendingStatus(null);
+    } catch (error) {
+      console.error("Failed to update project status:", error);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleConfirmStatusChange = async () => {
+    if (!pendingStatus) return;
+
+    setIsUpdating(true);
+    try {
+      await updateProjectStatus(project.id, pendingStatus);
+      setIsDialogOpen(false);
+      setPendingStatus(null);
+    } catch (error) {
+      console.error("Failed to update project status:", error);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleCancelStatusChange = () => {
+    setIsDialogOpen(false);
+    setPendingStatus(null);
+  };
+
+  const statusInfo = getStatusChangeMessage();
+
   return (
     <div className="p-12 grid grid-cols-4 gap-8">
       <div className="col-span-3 w-full">
@@ -169,7 +257,6 @@ export function ProjectDetail({ project, timeline }: ProjectDetailProps) {
           <Separator className="my-5" />
           <section className="p-4 border rounded-xl shadow-md">
             <h1 className="text-lg font-semibold">
-              {" "}
               {project.status.replace("_", " ")}
             </h1>
             <div className="w-full h-4 rounded-full bg-muted mt-1">
@@ -182,11 +269,32 @@ export function ProjectDetail({ project, timeline }: ProjectDetailProps) {
                     : project.status === "IN_REVIEW"
                     ? "w-3/4"
                     : project.status === "COMPLETED"
-                    ? "w-full"
+                    ? "w-full rounded-full"
                     : "w-0"
                 }`}
               />
             </div>
+            {user?.id === project.assignedStudent?.clerkId && statusInfo && (
+              <Button
+                size={"sm"}
+                variant={"outline"}
+                className="w-full rounded-full mt-5"
+                onClick={handleStatusChangeClick}
+              >
+                {statusInfo.buttonText}
+              </Button>
+            )}
+            {user?.id === project.businessOwner.clerkId &&
+              project.status === "IN_REVIEW" && (
+                <Button
+                  size={"sm"}
+                  variant={"outline"}
+                  className="w-full rounded-full mt-5"
+                  onClick={handleMarkAsCompleted}
+                >
+                  Mark as completed
+                </Button>
+              )}
             <div className="bg-background mt-8">
               <h1 className="text-lg font-semibold">Project Timeline</h1>
               <div className="relative mx-auto max-w-4xl">
@@ -218,6 +326,32 @@ export function ProjectDetail({ project, timeline }: ProjectDetailProps) {
           </section>
         </div>
       </div>
+
+      {/* Confirmation Dialog */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{statusInfo?.title}</DialogTitle>
+            <DialogDescription>{statusInfo?.description}</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={handleCancelStatusChange}
+              disabled={isUpdating}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleConfirmStatusChange}
+              disabled={isUpdating}
+              className="bg-[#1DBF9F] hover:bg-[#1DBF9F]/80"
+            >
+              {isUpdating ? "Updating..." : statusInfo?.buttonText}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

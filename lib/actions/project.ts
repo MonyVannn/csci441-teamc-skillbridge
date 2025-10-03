@@ -1,8 +1,14 @@
 "use server";
 
 import { currentUser } from "@clerk/nextjs/server";
-import { Prisma, ProjectCategory, ProjectScope } from "@prisma/client";
+import {
+  Prisma,
+  ProjectCategory,
+  ProjectScope,
+  ProjectStatus,
+} from "@prisma/client";
 import prisma from "../prisma";
+import { revalidatePath } from "next/cache";
 
 export async function getAvailableProjects(
   query: string,
@@ -125,6 +131,7 @@ export async function getProjectByProjectId(projectId: string) {
         businessOwner: {
           select: {
             id: true,
+            clerkId: true,
             imageUrl: true,
             firstName: true,
             lastName: true,
@@ -136,6 +143,7 @@ export async function getProjectByProjectId(projectId: string) {
         assignedStudent: {
           select: {
             id: true,
+            clerkId: true,
             imageUrl: true,
             firstName: true,
             lastName: true,
@@ -193,7 +201,7 @@ export async function getProjectTimelineByProjectId(
 
     const projectTimelineData = [
       {
-        date: new Date(application?.updatedAt).toLocaleDateString(),
+        date: new Date(application?.appliedAt).toLocaleDateString(),
         title: "Application Submitted",
         content: "User submitted their application for this project.",
       },
@@ -339,5 +347,74 @@ export async function deleteProject(projectId: string) {
   } catch (e) {
     console.error("Error deleting project, ", e);
     throw new Error("Failed to delete project.");
+  }
+}
+
+export async function updateProjectStatus(
+  projectId: string,
+  newStatus: ProjectStatus
+) {
+  const user = await currentUser();
+
+  if (!user) throw new Error("Not authenticated.");
+
+  try {
+    const existingUser = await prisma.user.findFirst({
+      where: { clerkId: user.id },
+    });
+
+    if (!existingUser) throw new Error("User not found.");
+
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+    });
+
+    if (!project) throw new Error("Project not found.");
+
+    // Verify the user is either the business owner or the assigned student
+    const isOwner = project.businessOwnerId === existingUser.id;
+    const isAssignedStudent = project.assignedStudentId === existingUser.id;
+
+    if (!isOwner && !isAssignedStudent) {
+      throw new Error(
+        "You do not have permission to update this project status."
+      );
+    }
+
+    // Prepare update data with the appropriate timestamp
+    const updateData: {
+      status: ProjectStatus;
+      inProgressAt?: Date;
+      inReviewAt?: Date;
+      completedAt?: Date;
+    } = {
+      status: newStatus,
+    };
+
+    // Set the appropriate timestamp based on the new status
+    switch (newStatus) {
+      case "IN_PROGRESS":
+        updateData.inProgressAt = new Date();
+        break;
+      case "IN_REVIEW":
+        updateData.inReviewAt = new Date();
+        break;
+      case "COMPLETED":
+        updateData.completedAt = new Date();
+        break;
+    }
+
+    const updatedProject = await prisma.project.update({
+      where: { id: projectId },
+      data: updateData,
+    });
+
+    // Revalidate the project page to reflect the status change
+    revalidatePath(`/project/${projectId}`);
+
+    return updatedProject;
+  } catch (e) {
+    console.error("Error updating project status: ", e);
+    throw new Error("Failed to update project status.");
   }
 }

@@ -687,7 +687,8 @@ export function OrganizationPostedProjects() {
                         {project.assignedStudent &&
                           (project.status === "ASSIGNED" ||
                             project.status === "IN_PROGRESS" ||
-                            project.status === "IN_REVIEW") && (
+                            project.status === "IN_REVIEW" ||
+                            project.status === "COMPLETED") && (
                             <div className="flex items-center gap-2">
                               <p className="text-xs font-semibold">
                                 Assigned to{" "}

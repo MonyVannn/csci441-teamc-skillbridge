@@ -427,7 +427,7 @@ export async function updateProjectStatus(
         });
 
         // Check and update all badges
-        await updateUserBadges(project.assignedStudentId, "PROJECT_COMPLETED");
+        await updateUserBadges(project.assignedStudentId);
 
         console.log(
           `Badges and stats updated for user ${project.assignedStudentId}. Hours awarded: ${hoursAwarded}`

@@ -1,11 +1,9 @@
 "use server";
 
-import { currentUser } from "@clerk/nextjs/server";
 import {
   SkillLevelBadge,
   SpecializationBadge,
   EngagementBadge,
-  ProjectCategory,
 } from "@prisma/client";
 import prisma from "../prisma";
 
@@ -314,7 +312,11 @@ export async function incrementUserStats(
 
     if (!user) throw new Error("User not found");
 
-    const updateData: any = {};
+    const updateData: {
+      projectsCompleted?: number;
+      totalHoursContributed?: number;
+      industriesExperienced?: string[];
+    } = {};
 
     // Increment projects completed
     if (stats.projectsCompleted) {
@@ -362,8 +364,7 @@ export async function incrementUserStats(
  * Call this after major events like project completion
  */
 export async function updateUserBadges(
-  userId: string,
-  triggerEvent: BadgeEvent
+  userId: string
 ): Promise<BadgeUpdateResult> {
   try {
     // Get current user stats

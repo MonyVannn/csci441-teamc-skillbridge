@@ -9,6 +9,11 @@ import {
 } from "@prisma/client";
 import prisma from "../prisma";
 import { revalidatePath } from "next/cache";
+import {
+  incrementUserStats,
+  updateUserBadges,
+  getProjectScopeHours,
+} from "./badge";
 
 export async function getAvailableProjects(
   query: string,
@@ -408,6 +413,30 @@ export async function updateProjectStatus(
       where: { id: projectId },
       data: updateData,
     });
+
+    // If project is being marked as completed, update student badges and stats
+    if (newStatus === "COMPLETED" && project.assignedStudentId) {
+      try {
+        // Calculate hours based on project scope
+        const hoursAwarded = await getProjectScopeHours(project.scope);
+
+        // Increment the student's stats
+        await incrementUserStats(project.assignedStudentId, {
+          projectsCompleted: 1,
+          hoursContributed: hoursAwarded,
+        });
+
+        // Check and update all badges
+        await updateUserBadges(project.assignedStudentId);
+
+        console.log(
+          `Badges and stats updated for user ${project.assignedStudentId}. Hours awarded: ${hoursAwarded}`
+        );
+      } catch (badgeError) {
+        // Log the error but don't fail the status update
+        console.error("Error updating badges:", badgeError);
+      }
+    }
 
     // Revalidate the project page to reflect the status change
     revalidatePath(`/project/${projectId}`);

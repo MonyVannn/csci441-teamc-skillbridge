@@ -19,7 +19,6 @@ import {
 } from "../ui/dialog";
 import { useState } from "react";
 import { updateProjectStatus } from "@/lib/actions/project";
-import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { ProjectStatus } from "@prisma/client";
 
@@ -29,7 +28,6 @@ interface ProjectDetailProps {
 }
 
 export function ProjectDetail({ project, timeline }: ProjectDetailProps) {
-  const router = useRouter();
   const { user } = useUser();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [pendingStatus, setPendingStatus] = useState<ProjectStatus | null>(
@@ -345,7 +343,7 @@ export function ProjectDetail({ project, timeline }: ProjectDetailProps) {
             <Button
               onClick={handleConfirmStatusChange}
               disabled={isUpdating}
-              className="bg-[#1DBF9F] hover:bg-[#1DBF9F]/80"
+              className="bg-[#695DCC] hover:bg-[#695DCC]/80"
             >
               {isUpdating ? "Updating..." : statusInfo?.buttonText}
             </Button>

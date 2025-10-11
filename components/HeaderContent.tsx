@@ -20,7 +20,7 @@ import { User } from "@prisma/client";
 import { OrganizationPostedProjects } from "./setting/OrganizationPostedProject";
 import { SearchBar } from "./browse/SearchBar";
 import { UserApplications } from "./setting/UserApplication";
-import { OrganizationApplication } from "./setting/OrganizationApplication"
+import { OrganizationApplication } from "./setting/OrganizationApplication";
 
 interface HeaderContentProps {
   user: User | null;
@@ -38,8 +38,8 @@ const HeaderContent: React.FC<HeaderContentProps> = ({
 
   return (
     <header className="bg-[#121212] border-b py-4 px-8 flex items-center justify-between">
-      <div className="text-gray-100 text-2xl font-black -space-y-2">
-        <Link href="/">
+      <div className="text-gray-100 text-2xl font-black">
+        <Link href="/" className="-space-y-2">
           <h1>SKILL</h1>
           <h1>BRIDGE.</h1>
         </Link>
@@ -50,7 +50,7 @@ const HeaderContent: React.FC<HeaderContentProps> = ({
       <div>
         <SignedOut>
           <Link href="/sign-in">
-            <Button className="cursor-pointer bg-[#1DBF9F] hover:bg-[#1DBF9F]/80 font-bold">
+            <Button className="cursor-pointer bg-[#695DCC] hover:bg-[#695DCC]/80 font-bold">
               Sign Up
             </Button>
           </Link>

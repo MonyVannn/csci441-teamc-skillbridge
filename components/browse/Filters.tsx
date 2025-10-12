@@ -27,7 +27,7 @@ export function Filters() {
   const [budgetRange, setBudgetRange] = useState<[number, number]>(() => {
     const min = searchParams.get("minBudget");
     const max = searchParams.get("maxBudget");
-    return [min ? parseInt(min, 10) : 5, max ? parseInt(max, 10) : 1000];
+    return [min ? parseInt(min, 10) : 5, max ? parseInt(max, 10) : 5000];
   });
 
   // Update URL when filters change
@@ -52,7 +52,7 @@ export function Filters() {
       params.delete("minBudget");
     }
 
-    if (budgetRange[1] < 1000) {
+    if (budgetRange[1] < 5000) {
       params.set("maxBudget", budgetRange[1].toString());
     } else {
       params.delete("maxBudget");
@@ -98,13 +98,13 @@ export function Filters() {
   const clearAllFilters = () => {
     setSelectedCategories([]);
     setSelectedScopes([]);
-    setBudgetRange([5, 1000]);
+    setBudgetRange([5, 5000]);
   };
 
   return (
     <div className="w-80 border-r border-gray-200 p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="font-semibold text-gray-900">Filters</h2>
+        <h2 className="text-lg font-semibold text-gray-900">Filters</h2>
         <Button
           variant="ghost"
           size="sm"
@@ -117,33 +117,58 @@ export function Filters() {
 
       {/* Category Filters */}
       <div className="space-y-3">
-        <h3 className="text-sm font-semibold text-gray-900">Category</h3>
+        <h3 className="font-medium text-gray-900">Category</h3>
         <div className="space-y-2 max-h-96 overflow-y-auto">
-          {Object.keys(ProjectCategory).map((categoryKey) => {
-            const displayText = categoryKey
-              .replace(/_/g, " ")
-              .replace(
-                /\w\S*/g,
-                (txt) =>
-                  txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
-              )
-              .replace("Ui Ux Design", "UI/UX Design");
+          {Object.keys(ProjectCategory)
+            .sort((a, b) => {
+              const aDisplay = a
+                .replace(/_/g, " ")
+                .replace(
+                  /\w\S*/g,
+                  (txt) =>
+                    txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
+                )
+                .replace("Ui Ux Design", "UI/UX Design");
 
-            return (
-              <div key={categoryKey} className="flex items-center space-x-2">
-                <Checkbox
-                  id={categoryKey}
-                  checked={selectedCategories.includes(categoryKey)}
-                  onCheckedChange={(checked) =>
-                    handleCategoryChange(categoryKey, !!checked)
-                  }
-                />
-                <label htmlFor={categoryKey} className="text-sm text-gray-700">
-                  {displayText}
-                </label>
-              </div>
-            );
-          })}
+              const bDisplay = b
+                .replace(/_/g, " ")
+                .replace(
+                  /\w\S*/g,
+                  (txt) =>
+                    txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
+                )
+                .replace("Ui Ux Design", "UI/UX Design");
+
+              return aDisplay.localeCompare(bDisplay);
+            })
+            .map((categoryKey) => {
+              const displayText = categoryKey
+                .replace(/_/g, " ")
+                .replace(
+                  /\w\S*/g,
+                  (txt) =>
+                    txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
+                )
+                .replace("Ui Ux Design", "UI/UX Design");
+
+              return (
+                <div key={categoryKey} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={categoryKey}
+                    checked={selectedCategories.includes(categoryKey)}
+                    onCheckedChange={(checked) =>
+                      handleCategoryChange(categoryKey, !!checked)
+                    }
+                  />
+                  <label
+                    htmlFor={categoryKey}
+                    className="text-sm text-gray-700"
+                  >
+                    {displayText}
+                  </label>
+                </div>
+              );
+            })}
         </div>
       </div>
 
@@ -151,7 +176,7 @@ export function Filters() {
 
       {/* Scope Filters */}
       <div className="space-y-3">
-        <h3 className="text-sm font-semibold text-gray-900">Scope</h3>
+        <h3 className="font-medium text-gray-900">Scope</h3>
         <div className="space-y-2">
           {Object.keys(ProjectScope).map((scope) => {
             const displayText = scope
@@ -182,20 +207,20 @@ export function Filters() {
 
       {/* Budget Filter */}
       <div className="space-y-3">
-        <h3 className="text-sm font-semibold text-gray-900">Budget</h3>
+        <h3 className="font-medium text-gray-900">Budget</h3>
         <div className="space-y-4">
           <div className="px-2">
             <Slider
               value={budgetRange}
               onValueChange={handleBudgetChange}
-              max={1000}
+              max={5000}
               min={5}
               step={5}
               className="w-full"
             />
             <div className="flex justify-between text-xs text-gray-500 mt-1">
               <span>$5</span>
-              <span>$1000+</span>
+              <span>$5000+</span>
             </div>
           </div>
           <div className="flex gap-2">
@@ -221,7 +246,7 @@ export function Filters() {
                 onChange={(e) =>
                   setBudgetRange([
                     budgetRange[0],
-                    parseInt(e.target.value) || 1000,
+                    parseInt(e.target.value) || 5000,
                   ])
                 }
                 className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md text-sm"

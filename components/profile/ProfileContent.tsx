@@ -8,6 +8,7 @@ import {
   FolderOpen,
   Clock,
 } from "lucide-react";
+import Link from "next/link";
 
 // Check if a string has non-empty text and array with at least 1 element
 const hasText = (v?: string | null): v is string =>
@@ -240,6 +241,34 @@ export function ProfileContent({ user }: ProfileContentProps) {
           </Card>
         </>
       )}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="text-lg">Links</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {user.socialLinks.length > 0 ? (
+            user.socialLinks.map((link) => (
+              <div key={link.url} className="flex gap-4">
+                <div>
+                  <span className="text-sm font-semibold">{link.type}</span>
+                  <Link
+                    href={link.url}
+                    target={"_blank"}
+                    rel="noopener noreferrer"
+                    className="text-sm text-blue-500 hover:underline"
+                  >
+                    {link.url}
+                  </Link>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div>
+              <p className="text-sm text-muted-foreground">No link provided.</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

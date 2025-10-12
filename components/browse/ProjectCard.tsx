@@ -164,7 +164,7 @@ export function ProjectCard({
                     <Badge className="bg-[#695DCC]">{project.scope}</Badge>
                   </div>
                   {/* Project Title */}
-                  <h3 className="text-lg font-bold text-gray-900 mb-3 line-clamp-2 leading-relaxed">
+                  <h3 className="text-lg font-bold text-gray-900 mb-3 line-clamp-1 overflow-clip leading-relaxed">
                     {project.title}
                   </h3>
                   <div className="h-20 overflow-clip">

@@ -153,7 +153,6 @@ export function ProjectCard({
                     width={1000}
                     height={1000}
                     className="w-full h-52 object-cover -mt-6"
-                    unoptimized
                   />
                 </div>
 

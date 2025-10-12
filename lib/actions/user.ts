@@ -29,6 +29,28 @@ export async function getUser() {
   }
 }
 
+export async function getUserOrNull() {
+  const user = await currentUser();
+
+  if (!user) return null;
+
+  try {
+    const currentUser = await prisma.user.findFirst({
+      where: { clerkId: user.id },
+    });
+
+    if (!currentUser) {
+      console.error("User authenticated with Clerk but not found in database");
+      return null;
+    }
+
+    return currentUser;
+  } catch (e) {
+    console.error("Error fetching user information, ", e);
+    return null;
+  }
+}
+
 export async function getUserByClerkId(userId: string) {
   try {
     const user = await prisma.user.findFirst({

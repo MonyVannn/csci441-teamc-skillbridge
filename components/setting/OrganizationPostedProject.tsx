@@ -1,12 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import {
   Select,
   SelectContent,
@@ -43,26 +53,89 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { ProjectWithAssignedStudent } from "@/type";
 import Link from "next/link";
 
+// Zod schema for form validation
+const projectFormSchema = z
+  .object({
+    title: z
+      .string()
+      .min(1, "Title is required")
+      .max(100, "Title must be less than 100 characters"),
+    description: z
+      .string()
+      .min(10, "Description must be at least 10 characters")
+      .max(1000, "Description must be less than 1000 characters"),
+    responsibilities: z
+      .string()
+      .min(10, "Responsibilities must be at least 10 characters")
+      .max(1000, "Responsibilities must be less than 1000 characters"),
+    deliverables: z
+      .string()
+      .min(10, "Deliverables must be at least 10 characters")
+      .max(1000, "Deliverables must be less than 1000 characters"),
+    requiredSkills: z
+      .array(z.string())
+      .min(1, "At least one skill is required"),
+    category: z.enum(ProjectCategory, {
+      message: "Category is required",
+    }),
+    scope: z.enum(ProjectScope, {
+      message: "Scope is required",
+    }),
+    startDate: z.string().min(1, "Start date is required"),
+    estimatedEndDate: z.string().min(1, "End date is required"),
+    applicationDeadline: z.string().min(1, "Application deadline is required"),
+    budget: z.number().min(0, "Budget must be a positive number"),
+    isPublic: z.boolean(),
+  })
+  .refine(
+    (data) => {
+      const start = new Date(data.startDate);
+      const end = new Date(data.estimatedEndDate);
+      return end > start;
+    },
+    {
+      message: "End date must be after start date",
+      path: ["estimatedEndDate"],
+    }
+  )
+  .refine(
+    (data) => {
+      const deadline = new Date(data.applicationDeadline);
+      const start = new Date(data.startDate);
+      return deadline <= start;
+    },
+    {
+      message: "Application deadline must be before or on start date",
+      path: ["applicationDeadline"],
+    }
+  );
+
+type ProjectFormData = z.infer<typeof projectFormSchema>;
+
 export function OrganizationPostedProjects() {
   const user = useUser();
   const [projects, setProjects] = useState<ProjectWithAssignedStudent[]>();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    responsibilities: "",
-    deliverables: "",
-    requiredSkills: [] as string[],
-    skillInput: "",
-    category: "" as ProjectCategory | "",
-    scope: "" as ProjectScope | "",
-    startDate: "",
-    estimatedEndDate: "",
-    applicationDeadline: "",
-    budget: "",
-    isPublic: true,
+  const [skillInput, setSkillInput] = useState("");
+
+  const form = useForm<ProjectFormData>({
+    resolver: zodResolver(projectFormSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+      responsibilities: "",
+      deliverables: "",
+      requiredSkills: [],
+      category: undefined,
+      scope: undefined,
+      startDate: "",
+      estimatedEndDate: "",
+      applicationDeadline: "",
+      budget: 0,
+      isPublic: true,
+    },
   });
 
   useEffect(() => {
@@ -81,33 +154,32 @@ export function OrganizationPostedProjects() {
   }, []);
 
   const handleAddProject = () => {
-    setFormData({
+    form.reset({
       title: "",
       description: "",
       responsibilities: "",
       deliverables: "",
       requiredSkills: [],
-      skillInput: "",
-      category: "",
-      scope: "",
+      category: undefined,
+      scope: undefined,
       startDate: "",
       estimatedEndDate: "",
       applicationDeadline: "",
-      budget: "",
+      budget: 0,
       isPublic: true,
     });
+    setSkillInput("");
     setIsAddingNew(true);
     setEditingId(null);
   };
 
   const handleEditProject = (project: ProjectWithAssignedStudent) => {
-    setFormData({
+    form.reset({
       title: project.title,
       description: project.description,
       responsibilities: project.responsibilities || "",
       deliverables: project.deliverables || "",
       requiredSkills: project.requiredSkills,
-      skillInput: "",
       category: project.category,
       scope: project.scope,
       startDate: project.startDate.toISOString().split("T")[0],
@@ -115,9 +187,10 @@ export function OrganizationPostedProjects() {
       applicationDeadline: project.applicationDeadline
         .toISOString()
         .split("T")[0],
-      budget: project.budget.toString(),
+      budget: project.budget,
       isPublic: project.isPublic,
     });
+    setSkillInput("");
     setEditingId(project.id);
     setIsAddingNew(false);
   };
@@ -131,26 +204,26 @@ export function OrganizationPostedProjects() {
     }
   };
 
-  const handleSaveProject = async () => {
+  const handleSaveProject = async (data: ProjectFormData) => {
     if (!user.isSignedIn) return;
 
     const dbUser = await getUserByClerkId(user.user.id);
     if (!dbUser) return;
 
     const projectData: Prisma.ProjectCreateInput = {
-      title: formData.title,
-      description: formData.description,
-      responsibilities: formData.responsibilities,
-      deliverables: formData.deliverables,
-      requiredSkills: formData.requiredSkills,
-      category: formData.category as ProjectCategory,
-      scope: formData.scope as ProjectScope,
-      startDate: new Date(formData.startDate),
-      estimatedEndDate: new Date(formData.estimatedEndDate),
-      applicationDeadline: new Date(formData.applicationDeadline),
-      budget: Number.parseFloat(formData.budget),
+      title: data.title,
+      description: data.description,
+      responsibilities: data.responsibilities,
+      deliverables: data.deliverables,
+      requiredSkills: data.requiredSkills,
+      category: data.category,
+      scope: data.scope,
+      startDate: new Date(data.startDate),
+      estimatedEndDate: new Date(data.estimatedEndDate),
+      applicationDeadline: new Date(data.applicationDeadline),
+      budget: data.budget,
       businessOwner: { connect: { id: dbUser.id } },
-      isPublic: formData.isPublic,
+      isPublic: data.isPublic,
     };
 
     if (editingId) {
@@ -187,43 +260,39 @@ export function OrganizationPostedProjects() {
   const handleCancel = () => {
     setEditingId(null);
     setIsAddingNew(false);
-    setFormData({
+    setSkillInput("");
+    form.reset({
       title: "",
       description: "",
       responsibilities: "",
       deliverables: "",
       requiredSkills: [],
-      skillInput: "",
-      category: "",
-      scope: "",
+      category: undefined,
+      scope: undefined,
       startDate: "",
       estimatedEndDate: "",
       applicationDeadline: "",
-      budget: "",
+      budget: 0,
       isPublic: true,
     });
   };
 
   const addSkill = () => {
-    if (
-      formData.skillInput.trim() &&
-      !formData.requiredSkills.includes(formData.skillInput.trim())
-    ) {
-      setFormData((prev) => ({
-        ...prev,
-        requiredSkills: [...prev.requiredSkills, prev.skillInput.trim()],
-        skillInput: "",
-      }));
+    if (skillInput.trim()) {
+      const currentSkills = form.getValues("requiredSkills");
+      if (!currentSkills.includes(skillInput.trim())) {
+        form.setValue("requiredSkills", [...currentSkills, skillInput.trim()]);
+        setSkillInput("");
+      }
     }
   };
 
   const removeSkill = (skillToRemove: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      requiredSkills: prev.requiredSkills.filter(
-        (skill) => skill !== skillToRemove
-      ),
-    }));
+    const currentSkills = form.getValues("requiredSkills");
+    form.setValue(
+      "requiredSkills",
+      currentSkills.filter((skill) => skill !== skillToRemove)
+    );
   };
 
   const formatDateRange = (startDate: Date, endDate: Date) => {
@@ -257,316 +326,332 @@ export function OrganizationPostedProjects() {
 
   const renderProjectForm = () => (
     <div className="p-6 bg-[#1DBF9F]/5 border-l-4 border-[#1DBF9F]">
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h3 className="font-bold text-gray-900 flex items-center gap-2">
-            {editingId ? "Edit Project" : "Add New Project"}
-          </h3>
-          <div className="flex gap-2">
-            <Button
-              onClick={handleSaveProject}
-              size="sm"
-              className="bg-[#1DBF9F] hover:bg-[#1DBF9F]/80 text-white"
-              disabled={
-                !formData.title ||
-                !formData.description ||
-                !formData.responsibilities ||
-                !formData.deliverables ||
-                !formData.category ||
-                !formData.scope ||
-                !formData.startDate ||
-                !formData.estimatedEndDate ||
-                !formData.applicationDeadline ||
-                !formData.budget
-              }
-            >
-              Save
-            </Button>
-            <Button
-              onClick={handleCancel}
-              variant="outline"
-              size="sm"
-              className="border-gray-300 text-gray-700 hover:bg-gray-50 bg-white"
-            >
-              Cancel
-            </Button>
-          </div>
-        </div>
-
-        {/* Project Title */}
-        <div className="space-y-2">
-          <Label htmlFor="title" className="text-sm font-medium text-gray-700">
-            Project Title
-          </Label>
-          <Input
-            id="title"
-            value={formData.title}
-            onChange={(e) =>
-              setFormData((prev) => ({ ...prev, title: e.target.value }))
-            }
-            placeholder="e.g. E-commerce Website Development"
-            className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 bg-white"
-          />
-        </div>
-
-        {/* Description */}
-        <div className="space-y-2">
-          <Label
-            htmlFor="description"
-            className="text-sm font-medium text-gray-700"
-          >
-            Project Description
-          </Label>
-          <Textarea
-            id="description"
-            value={formData.description}
-            onChange={(e) =>
-              setFormData((prev) => ({ ...prev, description: e.target.value }))
-            }
-            placeholder="Describe your project details and requirements..."
-            rows={4}
-            className="border-gray-100 focus:border-blue-500 focus:ring-blue-500 resize-none bg-white"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label
-            htmlFor="responsibilities"
-            className="text-sm font-medium text-gray-700"
-          >
-            Applicant Responsibilities
-          </Label>
-          <Textarea
-            id="responsibilities"
-            value={formData.responsibilities}
-            onChange={(e) =>
-              setFormData((prev) => ({
-                ...prev,
-                responsibilities: e.target.value,
-              }))
-            }
-            placeholder="Describe the applicant's responsibilities..."
-            rows={4}
-            className="border-gray-100 focus:border-blue-500 focus:ring-blue-500 resize-none bg-white"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label
-            htmlFor="deliverables"
-            className="text-sm font-medium text-gray-700"
-          >
-            Project Deliverables
-          </Label>
-          <Textarea
-            id="deliverables"
-            value={formData.deliverables}
-            onChange={(e) =>
-              setFormData((prev) => ({ ...prev, deliverables: e.target.value }))
-            }
-            placeholder="Describe your project deliverables, goal, expectation..."
-            rows={4}
-            className="border-gray-100 focus:border-blue-500 focus:ring-blue-500 resize-none bg-white"
-          />
-        </div>
-
-        {/* Required Skills */}
-        <div className="space-y-2">
-          <Label className="text-sm font-medium text-gray-700">
-            Required Skills
-          </Label>
-          <div className="flex gap-2">
-            <Input
-              value={formData.skillInput}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, skillInput: e.target.value }))
-              }
-              placeholder="Add a skill..."
-              className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 bg-white"
-              onKeyPress={(e) =>
-                e.key === "Enter" && (e.preventDefault(), addSkill())
-              }
-            />
-            <Button
-              type="button"
-              onClick={addSkill}
-              variant="outline"
-              className="border-gray-300 text-gray-700 hover:bg-gray-50 bg-white"
-            >
-              Add
-            </Button>
-          </div>
-          <div className="flex flex-wrap gap-2 mt-2">
-            {formData.requiredSkills.map((skill) => (
-              <Badge
-                key={skill}
-                variant="secondary"
-                className="bg-blue-100 text-blue-700 border-blue-200 cursor-pointer"
-                onClick={() => removeSkill(skill)}
+      <Form {...form}>
+        <form
+          onSubmit={form.handleSubmit(handleSaveProject)}
+          className="space-y-6"
+        >
+          <div className="flex items-center justify-between">
+            <h3 className="font-bold text-gray-900 flex items-center gap-2">
+              {editingId ? "Edit Project" : "Add New Project"}
+            </h3>
+            <div className="flex gap-2">
+              <Button
+                type="submit"
+                size="sm"
+                className="bg-[#1DBF9F] hover:bg-[#1DBF9F]/80 text-white"
               >
-                {skill} ×
-              </Badge>
-            ))}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Category */}
-          <div className="space-y-2">
-            <Label className="text-sm font-medium text-gray-700">
-              Category
-            </Label>
-            <Select
-              value={formData.category}
-              onValueChange={(value) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  category: value as ProjectCategory,
-                }))
-              }
-            >
-              <SelectTrigger className="w-full border-gray-200 focus:border-blue-500 focus:ring-blue-500 bg-white">
-                <SelectValue placeholder="Select category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={ProjectCategory.WEB_DEVELOPMENT}>
-                  Web Development
-                </SelectItem>
-                <SelectItem value={ProjectCategory.MOBILE_DEVELOPMENT}>
-                  Mobile Development
-                </SelectItem>
-                <SelectItem value={ProjectCategory.DATA_SCIENCE}>
-                  Data Science
-                </SelectItem>
-                <SelectItem value={ProjectCategory.OTHER}>Other</SelectItem>
-              </SelectContent>
-            </Select>
+                Save
+              </Button>
+              <Button
+                type="button"
+                onClick={handleCancel}
+                variant="outline"
+                size="sm"
+                className="border-gray-300 text-gray-700 hover:bg-gray-50 bg-white"
+              >
+                Cancel
+              </Button>
+            </div>
           </div>
 
-          {/* Scope */}
-          <div className="space-y-2">
-            <Label className="text-sm font-medium text-gray-700">
-              Project Scope
-            </Label>
-            <Select
-              value={formData.scope}
-              onValueChange={(value) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  scope: value as ProjectScope,
-                }))
-              }
-            >
-              <SelectTrigger className="w-full border-gray-200 focus:border-blue-500 focus:ring-blue-500 bg-white">
-                <SelectValue placeholder="Select scope" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={ProjectScope.BEGINNER}>
-                  Small (1-2 weeks)
-                </SelectItem>
-                <SelectItem value={ProjectScope.INTERMEDIATE}>
-                  Medium (1-2 months)
-                </SelectItem>
-                <SelectItem value={ProjectScope.ADVANCED}>
-                  Large (3-6 months)
-                </SelectItem>
-                <SelectItem value={ProjectScope.EXPERT}>
-                  Enterprise (6+ months)
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Budget */}
-          <div className="space-y-2">
-            <Label
-              htmlFor="budget"
-              className="text-sm font-medium text-gray-700"
-            >
-              Budget ($)
-            </Label>
-            <Input
-              id="budget"
-              type="number"
-              value={formData.budget}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, budget: e.target.value }))
-              }
-              placeholder="e.g. 5000"
-              className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 bg-white"
-            />
-          </div>
-        </div>
-
-        {/* Date Range */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="space-y-2">
-            <Label className="text-sm font-medium text-gray-700">
-              Start Date
-            </Label>
-            <Input
-              type="date"
-              value={formData.startDate}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, startDate: e.target.value }))
-              }
-              className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 bg-white"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label className="text-sm font-medium text-gray-700">
-              Estimated End Date
-            </Label>
-            <Input
-              type="date"
-              value={formData.estimatedEndDate}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  estimatedEndDate: e.target.value,
-                }))
-              }
-              className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 bg-white"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label className="text-sm font-medium text-gray-700">
-              Application Deadline
-            </Label>
-            <Input
-              type="date"
-              value={formData.applicationDeadline}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  applicationDeadline: e.target.value,
-                }))
-              }
-              className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 bg-white"
-            />
-          </div>
-        </div>
-
-        {/* Public Project Checkbox */}
-        <div className="flex items-center space-x-2">
-          <Checkbox
-            id="isPublic"
-            checked={formData.isPublic}
-            onCheckedChange={(checked) =>
-              setFormData((prev) => ({ ...prev, isPublic: checked as boolean }))
-            }
-            className="border-gray-300 bg-white"
+          {/* Project Title */}
+          <FormField
+            control={form.control}
+            name="title"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-medium text-gray-700">
+                  Project Title
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    placeholder="e.g. E-commerce Website Development"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-          <Label
-            htmlFor="isPublic"
-            className="text-sm text-gray-700 cursor-pointer"
-          >
-            Make this project publicly visible
-          </Label>
-        </div>
-      </div>
+
+          {/* Description */}
+          <FormField
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-medium text-gray-700">
+                  Project Description
+                </FormLabel>
+                <FormControl>
+                  <Textarea
+                    {...field}
+                    placeholder="Describe your project details and requirements..."
+                    rows={4}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* Responsibilities */}
+          <FormField
+            control={form.control}
+            name="responsibilities"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-medium text-gray-700">
+                  Applicant Responsibilities
+                </FormLabel>
+                <FormControl>
+                  <Textarea
+                    {...field}
+                    placeholder="Describe the applicant's responsibilities..."
+                    rows={4}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* Deliverables */}
+          <FormField
+            control={form.control}
+            name="deliverables"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-medium text-gray-700">
+                  Project Deliverables
+                </FormLabel>
+                <FormControl>
+                  <Textarea
+                    {...field}
+                    placeholder="Describe your project deliverables, goal, expectation..."
+                    rows={4}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* Required Skills */}
+          <FormField
+            control={form.control}
+            name="requiredSkills"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-medium text-gray-700">
+                  Required Skills
+                </FormLabel>
+                <div className="flex gap-2">
+                  <Input
+                    value={skillInput}
+                    onChange={(e) => setSkillInput(e.target.value)}
+                    placeholder="Add a skill..."
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        addSkill();
+                      }
+                    }}
+                  />
+                  <Button
+                    type="button"
+                    onClick={addSkill}
+                    variant="outline"
+                    className="border-gray-300 text-gray-700 hover:bg-gray-50 bg-white"
+                  >
+                    Add
+                  </Button>
+                </div>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {field.value.map((skill) => (
+                    <Badge
+                      key={skill}
+                      variant="secondary"
+                      className="cursor-pointer"
+                      onClick={() => removeSkill(skill)}
+                    >
+                      {skill} ×
+                    </Badge>
+                  ))}
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Category */}
+            <FormField
+              control={form.control}
+              name="category"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-gray-700">
+                    Category
+                  </FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select category" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value={ProjectCategory.WEB_DEVELOPMENT}>
+                        Web Development
+                      </SelectItem>
+                      <SelectItem value={ProjectCategory.MOBILE_DEVELOPMENT}>
+                        Mobile Development
+                      </SelectItem>
+                      <SelectItem value={ProjectCategory.DATA_SCIENCE}>
+                        Data Science
+                      </SelectItem>
+                      <SelectItem value={ProjectCategory.OTHER}>
+                        Other
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Scope */}
+            <FormField
+              control={form.control}
+              name="scope"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-gray-700">
+                    Project Scope
+                  </FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select scope" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value={ProjectScope.BEGINNER}>
+                        Small (1-2 weeks)
+                      </SelectItem>
+                      <SelectItem value={ProjectScope.INTERMEDIATE}>
+                        Medium (1-2 months)
+                      </SelectItem>
+                      <SelectItem value={ProjectScope.ADVANCED}>
+                        Large (3-6 months)
+                      </SelectItem>
+                      <SelectItem value={ProjectScope.EXPERT}>
+                        Enterprise (6+ months)
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Budget */}
+            <FormField
+              control={form.control}
+              name="budget"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-gray-700">
+                    Budget ($)
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      placeholder="e.g. 5000"
+                      type="number"
+                      onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                        field.onChange(Number.parseFloat(e.target.value))
+                      }
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          {/* Date Range */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <FormField
+              control={form.control}
+              name="startDate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-gray-700">
+                    Start Date
+                  </FormLabel>
+                  <FormControl>
+                    <Input {...field} type="date" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="estimatedEndDate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-gray-700">
+                    Estimated End Date
+                  </FormLabel>
+                  <FormControl>
+                    <Input {...field} type="date" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="applicationDeadline"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-gray-700">
+                    Application Deadline
+                  </FormLabel>
+                  <FormControl>
+                    <Input {...field} type="date" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          {/* Public Project Checkbox */}
+          <FormField
+            control={form.control}
+            name="isPublic"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-center space-x-2 space-y-0">
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+                <FormLabel className="text-sm text-gray-700 cursor-pointer !mt-0">
+                  Make this project publicly visible
+                </FormLabel>
+              </FormItem>
+            )}
+          />
+        </form>
+      </Form>
     </div>
   );
 

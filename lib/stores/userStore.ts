@@ -18,14 +18,3 @@ export const useUserAuth = () => {
   };
 };
 
-/**
- * Alternative: Get just the authentication status
- */
-export const useIsAuthenticated = () => {
-  const { isSignedIn, isLoaded } = useAuth();
-
-  return {
-    isAuthenticated: isSignedIn ?? false,
-    isLoading: !isLoaded,
-  };
-};

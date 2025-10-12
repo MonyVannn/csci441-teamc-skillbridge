@@ -49,7 +49,7 @@ const HeaderContent: React.FC<HeaderContentProps> = ({
       </div>
       <div>
         <SignedOut>
-          <Link href="/sign-in">
+          <Link href="/sign-up">
             <Button className="cursor-pointer bg-[#695DCC] hover:bg-[#695DCC]/80 font-bold">
               Sign Up
             </Button>

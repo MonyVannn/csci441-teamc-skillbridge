@@ -250,7 +250,7 @@ export function ProfileContent({ user }: ProfileContentProps) {
             user.socialLinks.map((link) => (
               <div key={link.url} className="flex gap-4">
                 <div>
-                  <h1 className="text-sm font-semibold">{link.type}</h1>
+                  <span className="text-sm font-semibold">{link.type}</span>
                   <Link
                     href={link.url}
                     target={"_blank"}

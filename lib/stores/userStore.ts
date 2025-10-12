@@ -17,4 +17,3 @@ export const useUserAuth = () => {
     userId: user?.id,
   };
 };
-

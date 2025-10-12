@@ -1,7 +1,8 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import {
+  ArrowRight,
   BriefcaseBusiness,
   FolderClock,
   GraduationCap,
@@ -11,7 +12,7 @@ import {
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
+import { SignedIn, SignedOut, UserButton, useUser } from "@clerk/nextjs";
 import { UserExperience } from "./setting/UserExperience";
 import { UserEducation } from "./setting/UserEducation";
 import { UserInformation } from "./setting/UserInformation";
@@ -21,6 +22,7 @@ import { OrganizationPostedProjects } from "./setting/OrganizationPostedProject"
 import { SearchBar } from "./browse/SearchBar";
 import { UserApplications } from "./setting/UserApplication";
 import { OrganizationApplication } from "./setting/OrganizationApplication";
+import { getUserByClerkId } from "@/lib/actions/user";
 
 interface HeaderContentProps {
   user: User | null;
@@ -28,13 +30,25 @@ interface HeaderContentProps {
 }
 
 const HeaderContent: React.FC<HeaderContentProps> = ({
-  user,
+  user: serverUser,
   totalUnrespondedApplications,
 }) => {
   const pathname = usePathname();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { user: clerkUser, isLoaded } = useUser();
+  const [dbUser, setDbUser] = useState<User | null>(serverUser);
 
-  if (pathname.startsWith("/sign-in")) return null;
+  useEffect(() => {
+    // When Clerk user loads and we have their ID, fetch the database user
+    if (isLoaded && clerkUser?.id && !dbUser) {
+      getUserByClerkId(clerkUser.id).then((user) => {
+        if (user) setDbUser(user);
+      });
+    }
+  }, [isLoaded, clerkUser?.id]);
+
+  if (pathname.startsWith("/sign-in") || pathname.startsWith("/sign-up"))
+    return null;
 
   return (
     <header className="bg-[#121212] border-b py-4 px-8 flex items-center justify-between">
@@ -57,7 +71,7 @@ const HeaderContent: React.FC<HeaderContentProps> = ({
         </SignedOut>
         <SignedIn>
           <div className="flex items-center gap-10">
-            {user?.role === "BUSINESS_OWNER" && (
+            {dbUser?.role === "BUSINESS_OWNER" && (
               <div>
                 <Button
                   onClick={() => setIsModalOpen(true)}
@@ -88,7 +102,7 @@ const HeaderContent: React.FC<HeaderContentProps> = ({
                 >
                   <UserInformation />
                 </UserButton.UserProfilePage>
-                {user?.role === "USER" && (
+                {dbUser?.role === "USER" && (
                   <UserButton.UserProfilePage
                     label="Experience"
                     url="experience"
@@ -97,7 +111,7 @@ const HeaderContent: React.FC<HeaderContentProps> = ({
                     <UserExperience />
                   </UserButton.UserProfilePage>
                 )}
-                {user?.role === "USER" && (
+                {dbUser?.role === "USER" && (
                   <UserButton.UserProfilePage
                     label="Education"
                     url="education"
@@ -106,7 +120,7 @@ const HeaderContent: React.FC<HeaderContentProps> = ({
                     <UserEducation />
                   </UserButton.UserProfilePage>
                 )}
-                {user?.role === "USER" && (
+                {dbUser?.role === "USER" && (
                   <UserButton.UserProfilePage
                     label="Applications"
                     url="applications"
@@ -115,7 +129,7 @@ const HeaderContent: React.FC<HeaderContentProps> = ({
                     <UserApplications />
                   </UserButton.UserProfilePage>
                 )}
-                {user?.role === "BUSINESS_OWNER" && (
+                {dbUser?.role === "BUSINESS_OWNER" && (
                   <UserButton.UserProfilePage
                     label="Posted Projects"
                     url="projects"
@@ -124,7 +138,7 @@ const HeaderContent: React.FC<HeaderContentProps> = ({
                     <OrganizationPostedProjects />
                   </UserButton.UserProfilePage>
                 )}
-                {user?.role === "BUSINESS_OWNER" && (
+                {dbUser?.role === "BUSINESS_OWNER" && (
                   <UserButton.UserProfilePage
                     label="Applications"
                     url="applications"
@@ -133,6 +147,11 @@ const HeaderContent: React.FC<HeaderContentProps> = ({
                     <OrganizationApplication />
                   </UserButton.UserProfilePage>
                 )}
+                <UserButton.UserProfileLink
+                  url={`/profile/${dbUser?.clerkId}`}
+                  label="Go to profile page"
+                  labelIcon={<ArrowRight className="w-4 h-4" />}
+                />
               </UserButton>
             </div>
           </div>

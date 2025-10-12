@@ -57,9 +57,9 @@ export async function createUser(userData: UserJSON) {
       data: {
         clerkId: userData.id,
         email: email,
-        firstName: userData.first_name,
-        lastName: userData.last_name,
-        imageUrl: userData.image_url,
+        firstName: userData.first_name || null,
+        lastName: userData.last_name || null,
+        imageUrl: userData.image_url || null,
         role: "USER", // Default to USER for new sign-ups
         occupied: false, // Default
         totalHoursContributed: 0, // Default
@@ -84,6 +84,34 @@ export async function createUser(userData: UserJSON) {
   }
 }
 
+export async function updateUser(userData: UserJSON) {
+  if (
+    !Array.isArray(userData.email_addresses) ||
+    userData.email_addresses.length === 0 ||
+    !userData.email_addresses[0]?.email_address
+  ) {
+    throw new Error("User data is missing a valid email address.");
+  }
+  const email = userData.email_addresses[0].email_address;
+
+  try {
+    const updatedUser = await prisma.user.update({
+      where: { clerkId: userData.id },
+      data: {
+        email: email,
+        firstName: userData.first_name || null,
+        lastName: userData.last_name || null,
+        imageUrl: userData.image_url || null,
+      },
+    });
+
+    console.log("User updated in DB:", updatedUser.email);
+    return updatedUser;
+  } catch (error) {
+    console.error("Error updating user in DB:", error);
+    throw new Error("Failed to update user in the database.");
+  }
+}
 // Experience
 export async function getExperience() {
   const user = await currentUser();

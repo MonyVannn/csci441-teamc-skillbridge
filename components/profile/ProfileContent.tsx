@@ -254,6 +254,7 @@ export function ProfileContent({ user }: ProfileContentProps) {
                   <Link
                     href={link.url}
                     target={"_blank"}
+                    rel="noopener noreferrer"
                     className="text-sm text-blue-500 hover:underline"
                   >
                     {link.url}

@@ -28,6 +28,7 @@ import {
 import { formatDistanceToNow } from "date-fns";
 import { ApplyButton } from "../application/ApplyButton";
 import { useUserAuth } from "@/lib/stores/userStore";
+import { getCategoryThumbnail } from "@/lib/categoryThumbnails";
 
 interface ProjectCardProps {
   projects: AvailableProject[];
@@ -147,11 +148,12 @@ export function ProjectCard({
               <Card className="overflow-hidden border border-gray-200 hover:shadow-lg transition-shadow cursor-pointer">
                 <div className="relative group">
                   <Image
-                    src={"/placeholder.jpg"}
+                    src={getCategoryThumbnail(project.category)}
                     alt={project.title}
                     width={1000}
                     height={1000}
                     className="w-full h-52 object-cover -mt-6"
+                    unoptimized
                   />
                 </div>
 

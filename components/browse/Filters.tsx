@@ -104,7 +104,7 @@ export function Filters() {
   return (
     <div className="w-80 border-r border-gray-200 p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-gray-900">Filters</h2>
+        <h2 className="font-semibold text-gray-900">Filters</h2>
         <Button
           variant="ghost"
           size="sm"
@@ -117,8 +117,8 @@ export function Filters() {
 
       {/* Category Filters */}
       <div className="space-y-3">
-        <h3 className="font-medium text-gray-900">Category</h3>
-        <div className="space-y-2">
+        <h3 className="text-sm font-semibold text-gray-900">Category</h3>
+        <div className="space-y-2 max-h-96 overflow-y-auto">
           {Object.keys(ProjectCategory).map((categoryKey) => {
             const displayText = categoryKey
               .replace(/_/g, " ")
@@ -151,7 +151,7 @@ export function Filters() {
 
       {/* Scope Filters */}
       <div className="space-y-3">
-        <h3 className="font-medium text-gray-900">Scope</h3>
+        <h3 className="text-sm font-semibold text-gray-900">Scope</h3>
         <div className="space-y-2">
           {Object.keys(ProjectScope).map((scope) => {
             const displayText = scope
@@ -182,7 +182,7 @@ export function Filters() {
 
       {/* Budget Filter */}
       <div className="space-y-3">
-        <h3 className="font-medium text-gray-900">Budget</h3>
+        <h3 className="text-sm font-semibold text-gray-900">Budget</h3>
         <div className="space-y-4">
           <div className="px-2">
             <Slider

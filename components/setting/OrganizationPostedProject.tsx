@@ -221,8 +221,7 @@ export function OrganizationPostedProjects() {
       startDate: new Date(data.startDate),
       estimatedEndDate: new Date(data.estimatedEndDate),
       applicationDeadline: new Date(data.applicationDeadline),
-      budget:
-        typeof data.budget === "string" ? parseFloat(data.budget) : data.budget,
+      budget: data.budget,
       businessOwner: { connect: { id: dbUser.id } },
       isPublic: data.isPublic,
     };

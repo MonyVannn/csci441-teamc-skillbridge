@@ -119,6 +119,9 @@ export async function getProjectsByOwnerId() {
       include: {
         assignedStudent: true,
       },
+      orderBy: {
+        createdAt: "desc",
+      },
     });
 
     return projects;
@@ -278,6 +281,11 @@ export async function createProject(projectData: Prisma.ProjectCreateInput) {
     });
 
     console.log("Project successfully created.");
+
+    // Revalidate homepage and settings page
+    revalidatePath("/");
+    revalidatePath("/settings");
+
     return project;
   } catch (e) {
     console.error("Error creating new project, ", e);
@@ -315,6 +323,10 @@ export async function editProject(
       data: projectData,
     });
 
+    // Revalidate homepage and settings page
+    revalidatePath("/");
+    revalidatePath("/settings");
+
     return project;
   } catch (e) {
     console.error("Error updating project data, ", e);
@@ -347,6 +359,10 @@ export async function deleteProject(projectId: string) {
     await prisma.project.delete({
       where: { id: projectId },
     });
+
+    // Revalidate homepage and settings page
+    revalidatePath("/");
+    revalidatePath("/settings");
 
     return project;
   } catch (e) {

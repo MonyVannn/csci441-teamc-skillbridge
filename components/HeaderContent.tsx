@@ -88,20 +88,24 @@ const HeaderContent: React.FC<HeaderContentProps> = ({
                 >
                   <UserInformation />
                 </UserButton.UserProfilePage>
-                <UserButton.UserProfilePage
-                  label="Experience"
-                  url="experience"
-                  labelIcon={<BriefcaseBusiness className="w-4 h-4" />}
-                >
-                  <UserExperience />
-                </UserButton.UserProfilePage>
-                <UserButton.UserProfilePage
-                  label="Education"
-                  url="education"
-                  labelIcon={<GraduationCap className="w-4 h-4" />}
-                >
-                  <UserEducation />
-                </UserButton.UserProfilePage>
+                {user?.role === "USER" && (
+                  <UserButton.UserProfilePage
+                    label="Experience"
+                    url="experience"
+                    labelIcon={<BriefcaseBusiness className="w-4 h-4" />}
+                  >
+                    <UserExperience />
+                  </UserButton.UserProfilePage>
+                )}
+                {user?.role === "USER" && (
+                  <UserButton.UserProfilePage
+                    label="Education"
+                    url="education"
+                    labelIcon={<GraduationCap className="w-4 h-4" />}
+                  >
+                    <UserEducation />
+                  </UserButton.UserProfilePage>
+                )}
                 {user?.role === "USER" && (
                   <UserButton.UserProfilePage
                     label="Applications"

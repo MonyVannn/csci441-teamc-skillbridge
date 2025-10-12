@@ -571,7 +571,7 @@ export function OrganizationPostedProjects() {
                       placeholder="e.g. 5000"
                       type="number"
                       onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                        field.onChange(Number.parseFloat(e.target.value) || 0)
+                        field.onChange(Number.parseFloat(e.target.value))
                       }
                     />
                   </FormControl>

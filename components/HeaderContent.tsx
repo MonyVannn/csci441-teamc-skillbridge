@@ -45,7 +45,7 @@ const HeaderContent: React.FC<HeaderContentProps> = ({
         if (user) setDbUser(user);
       });
     }
-  }, [isLoaded, clerkUser?.id, dbUser]);
+  }, [isLoaded, clerkUser?.id]);
 
   if (pathname.startsWith("/sign-in") || pathname.startsWith("/sign-up"))
     return null;

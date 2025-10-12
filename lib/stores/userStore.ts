@@ -13,7 +13,7 @@ export const useUserAuth = () => {
   return {
     isAuthenticated: isSignedIn ?? false,
     isLoading: !isLoaded,
-    user: user,
+    user,
     userId: user?.id,
   };
 };

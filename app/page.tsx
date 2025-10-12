@@ -13,7 +13,7 @@ export default async function MarketplacePage({
   const categories = ((await searchParams).categories as string) || "";
   const scopes = ((await searchParams).scopes as string) || "";
   const minBudget = ((await searchParams).minBudget as string) || "";
-  const maxBudget = ((await searchParams).maxbudget as string) || "";
+  const maxBudget = ((await searchParams).maxBudget as string) || "";
 
   const { availableProjects, totalProjects } = await getAvailableProjects(
     query,

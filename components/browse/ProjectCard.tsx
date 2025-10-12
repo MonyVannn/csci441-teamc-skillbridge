@@ -173,7 +173,7 @@ export function ProjectCard({
                     </p>
                   </div>
 
-                  <div className="flex items-center gap-1 mt-5 overflow-scroll">
+                  <div className="flex items-center gap-1 mt-5 overflow-y-clip  overflow-x-scroll">
                     {project.requiredSkills.map((skill) => (
                       <Badge key={skill} variant={"outline"}>
                         {skill}

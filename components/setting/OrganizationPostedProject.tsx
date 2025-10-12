@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -121,7 +121,7 @@ export function OrganizationPostedProjects() {
   const [skillInput, setSkillInput] = useState("");
 
   const form = useForm<ProjectFormData>({
-    resolver: zodResolver(projectFormSchema) as any,
+    resolver: zodResolver(projectFormSchema),
     defaultValues: {
       title: "",
       description: "",
@@ -571,7 +571,7 @@ export function OrganizationPostedProjects() {
                       {...field}
                       placeholder="e.g. 5000"
                       type="number"
-                      onChange={(e) =>
+                      onChange={(e: ChangeEvent<HTMLInputElement>) =>
                         field.onChange(Number.parseFloat(e.target.value) || 0)
                       }
                     />

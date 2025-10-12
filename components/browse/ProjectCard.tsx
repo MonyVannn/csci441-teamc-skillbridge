@@ -27,6 +27,7 @@ import {
 } from "../ui/sheet";
 import { formatDistanceToNow } from "date-fns";
 import { ApplyButton } from "../application/ApplyButton";
+import { useUserAuth } from "@/lib/stores/userStore";
 
 interface ProjectCardProps {
   projects: AvailableProject[];
@@ -42,6 +43,7 @@ export function ProjectCard({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const { isAuthenticated } = useUserAuth();
 
   useEffect(() => {
     router.push(`${pathname}?query=&page=1`);
@@ -264,7 +266,7 @@ export function ProjectCard({
                       </SheetDescription>
                     </div>
                   </div>
-                  <ApplyButton project={project} />
+                  {isAuthenticated && <ApplyButton project={project} />}
                 </div>
               </SheetHeader>
               <div className="grid flex-1 auto-rows-min gap-6 overflow-y-auto px-4 pb-10">

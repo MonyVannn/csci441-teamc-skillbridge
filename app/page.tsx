@@ -2,6 +2,7 @@ import { getAvailableProjects } from "@/lib/actions/project";
 import { ProjectCard } from "@/components/browse/ProjectCard";
 import { EmptyProject } from "@/components/browse/EmptyProject";
 import { Filters } from "@/components/browse/Filters";
+import { getUserOrNull } from "@/lib/actions/user";
 
 export default async function MarketplacePage({
   searchParams,
@@ -24,6 +25,7 @@ export default async function MarketplacePage({
     maxBudget
   );
   const totalPages = Math.ceil(totalProjects / 6);
+  const user = await getUserOrNull();
 
   return (
     <div className="min-h-screen bg-white">
@@ -41,6 +43,7 @@ export default async function MarketplacePage({
               ...project,
               applications: [],
             }))}
+            user={user}
             currentPageProp={Number(page) === 0 ? 1 : Number(page)}
             totalPagesProp={totalPages}
           />

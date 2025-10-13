@@ -216,7 +216,7 @@ export async function getProjectByProjectId(projectId: string) {
 
 export async function getProjectTimelineByProjectId(
   projectId: string,
-  applicantId: string
+  applicantId?: string | null
 ) {
   try {
     const project = await prisma.project.findUnique({
@@ -233,6 +233,17 @@ export async function getProjectTimelineByProjectId(
 
     if (!project) throw new Error("Project not found.");
 
+    // If no applicantId provided or it's empty, return basic timeline
+    if (!applicantId || applicantId.trim() === "") {
+      return [
+        {
+          date: new Date(project.createdAt).toLocaleDateString(),
+          title: "Project Created",
+          content: "Project was created and is open for applications.",
+        },
+      ];
+    }
+
     const application = await prisma.application.findUnique({
       where: {
         projectId_applicantId: {
@@ -242,11 +253,20 @@ export async function getProjectTimelineByProjectId(
       },
     });
 
-    if (!application) throw new Error("Application not found.");
+    // If no application exists, return basic timeline with project creation
+    if (!application) {
+      return [
+        {
+          date: new Date(project.createdAt).toLocaleDateString(),
+          title: "Project Created",
+          content: "Project was created and is open for applications.",
+        },
+      ];
+    }
 
     const projectTimelineData = [
       {
-        date: new Date(application?.appliedAt).toLocaleDateString(),
+        date: new Date(application.appliedAt).toLocaleDateString(),
         title: "Application Submitted",
         content: "User submitted their application for this project.",
       },
@@ -390,11 +410,17 @@ export async function deleteProject(projectId: string) {
     });
 
     if (!project) throw new Error("Project not found.");
-    if (project.status !== "OPEN")
-      throw new Error("Only open projects can be deleted.");
 
-    await prisma.project.delete({
+    // Allow archiving projects that are not already archived or completed
+    if (project.status === "ARCHIVED" || project.status === "COMPLETED") {
+      throw new Error("Cannot archive completed or already archived projects.");
+    }
+
+    await prisma.project.update({
       where: { id: projectId },
+      data: {
+        status: "ARCHIVED",
+      },
     });
 
     // Revalidate homepage and settings page

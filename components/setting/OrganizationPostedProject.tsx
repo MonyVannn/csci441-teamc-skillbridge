@@ -694,13 +694,10 @@ export function OrganizationPostedProjects() {
                         <div className="space-y-2">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-4">
-                              <h3 className="font-semibold text-gray-900 text-balance">
-                                {project.title}
-                              </h3>
                               <Link href={`/project/${project.id}`}>
-                                <Button size={"icon"} variant={"ghost"}>
-                                  <SquareArrowOutUpRight className="h-4 w-4" />
-                                </Button>
+                                <h3 className="font-semibold text-gray-900 line-clamp-1 hover:underline">
+                                  {project.title}
+                                </h3>
                               </Link>
                             </div>
                             <div className="flex items-center gap-2">
@@ -712,10 +709,6 @@ export function OrganizationPostedProjects() {
                               >
                                 {project.status.replace("_", " ")}
                               </Badge>
-                              <div className="flex items-center gap-1 text-sm text-gray-600">
-                                <DollarSign className="h-4 w-4" />
-                                <span>${project.budget.toLocaleString()}</span>
-                              </div>
                             </div>
                           </div>
 
@@ -751,6 +744,10 @@ export function OrganizationPostedProjects() {
                         <p className="text-sm text-gray-600 leading-relaxed text-pretty line-clamp-3">
                           {project.description}
                         </p>
+
+                        <div className="flex items-center gap-1 text-sm text-gray-600 font-semibold">
+                          Budget: ${project.budget.toLocaleString()}
+                        </div>
 
                         <div className="flex flex-wrap gap-2">
                           {project.requiredSkills.map((skill) => (

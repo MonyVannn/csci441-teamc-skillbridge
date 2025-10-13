@@ -174,10 +174,31 @@ export function UserInformation() {
                 <div className="flex-1 space-y-2">
                   {isEditing ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="md:col-span-2">
-                        <h1 className="font-bold text-balance text-muted-foreground">
-                          {displayData.firstName} {displayData.lastName}
-                        </h1>
+                      <div>
+                        <Label className="text-sm font-semibold">
+                          First Name
+                        </Label>
+                        <Input
+                          value={editingData.firstName || ""}
+                          onChange={(e) =>
+                            handleInputChange("firstName", e.target.value)
+                          }
+                          placeholder="Enter first name"
+                          className="mt-2"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-sm font-semibold">
+                          Last Name
+                        </Label>
+                        <Input
+                          value={editingData.lastName || ""}
+                          onChange={(e) =>
+                            handleInputChange("lastName", e.target.value)
+                          }
+                          placeholder="Enter last name"
+                          className="mt-2"
+                        />
                       </div>
                     </div>
                   ) : (
@@ -199,13 +220,13 @@ export function UserInformation() {
                       <Briefcase className="w-3 h-3 mr-1" />
                       {displayData.role}
                     </Badge>
-                  {displayData.role !== "BUSINESS_OWNER" && (
-                    <Badge
-                      variant={displayData.occupied ? "default" : "outline"}
-                    >
-                      {displayData.occupied ? "Available" : "Busy"}
-                    </Badge>
-                  )}
+                    {displayData.role !== "BUSINESS_OWNER" && (
+                      <Badge
+                        variant={displayData.occupied ? "default" : "outline"}
+                      >
+                        {displayData.occupied ? "Available" : "Busy"}
+                      </Badge>
+                    )}
                   </div>
                 </div>
               </div>
@@ -300,31 +321,31 @@ export function UserInformation() {
                   </p>
                 )}
               </div>
-          {displayData.role !== "BUSINESS_OWNER" && (
-            <div>
-              <Label className="text-sm font-semibold">Status</Label>
-              {isEditing ? (
-                <Select
-                  value={editingData.occupied ? "Available" : "Busy"}
-                  onValueChange={(value) =>
-                    handleInputChange("occupied", value === "Available")
-                  }
-                >
-                  <SelectTrigger className="mt-2">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Available">Available</SelectItem>
-                    <SelectItem value="Busy">Busy</SelectItem>
-                  </SelectContent>
-                </Select>
-              ) : (
-                <p className="text-sm mt-2 text-muted-foreground">
-                  {displayData.occupied ? "Available" : "Busy"}
-                </p>
+              {displayData.role !== "BUSINESS_OWNER" && (
+                <div>
+                  <Label className="text-sm font-semibold">Status</Label>
+                  {isEditing ? (
+                    <Select
+                      value={editingData.occupied ? "Available" : "Busy"}
+                      onValueChange={(value) =>
+                        handleInputChange("occupied", value === "Available")
+                      }
+                    >
+                      <SelectTrigger className="mt-2">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Available">Available</SelectItem>
+                        <SelectItem value="Busy">Busy</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <p className="text-sm mt-2 text-muted-foreground">
+                      {displayData.occupied ? "Available" : "Busy"}
+                    </p>
+                  )}
+                </div>
               )}
-            </div>
-          )}
             </div>
           </div>
 
@@ -430,7 +451,9 @@ export function UserInformation() {
                           <div className="flex items-center bg-secondary rounded-md">
                             <Input
                               value={skill}
-                              onChange={(e) => updateSkill(index, e.target.value)}
+                              onChange={(e) =>
+                                updateSkill(index, e.target.value)
+                              }
                               className="w-32 h-8 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
                             />
                             <Button
@@ -457,4 +480,3 @@ export function UserInformation() {
     </div>
   );
 }
-

@@ -505,7 +505,7 @@ export function OrganizationPostedProjects() {
                     <SelectContent className="h-80">
                       {categories.map((category) => (
                         <SelectItem key={category} value={category}>
-                          {category.replace("_", " ")}
+                          {category.replaceAll("_", " ")}
                         </SelectItem>
                       ))}
                     </SelectContent>

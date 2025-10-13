@@ -277,45 +277,46 @@ export function PostProjectModal({
               )}
             />
 
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="responsibilities"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Responsibilities *</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Describe applicant's responsibilities in detail..."
-                        className="min-h-[100px]"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="deliverables"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Deliverables *</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Describe your deliverables in detail..."
-                        className="min-h-[100px]"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+            <FormField
+              control={form.control}
+              name="responsibilities"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Responsibilities *</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="- Describe applicant's responsibilities in detail..."
+                      className="min-h-[100px]"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <p className="text-sm text-muted-foreground -mt-4">
-              Start a new responsibility & deliverables with dash
-              (&apos;-&apos;)
+              Start a new responsibility with a dash (&apos;-&apos;)
+            </p>
+
+            <FormField
+              control={form.control}
+              name="deliverables"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Deliverables *</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="- Describe your deliverables in detail..."
+                      className="min-h-[100px]"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <p className="text-sm text-muted-foreground -mt-4">
+              Start a new deliverable with a dash (&apos;-&apos;)
             </p>
 
             <FormField
@@ -409,10 +410,10 @@ export function PostProjectModal({
                           <SelectValue placeholder="Select category" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent className="h-40">
+                      <SelectContent className="h-80">
                         {categories.map((category) => (
                           <SelectItem key={category} value={category}>
-                            {category.replace("_", " ")}
+                            {category.replaceAll("_", " ")}
                           </SelectItem>
                         ))}
                       </SelectContent>

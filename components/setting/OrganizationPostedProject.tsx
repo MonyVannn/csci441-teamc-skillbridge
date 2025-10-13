@@ -119,6 +119,7 @@ export function OrganizationPostedProjects() {
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [skillInput, setSkillInput] = useState("");
+  const categories = Object.values(ProjectCategory);
 
   const form = useForm<ProjectFormData>({
     resolver: zodResolver(projectFormSchema),
@@ -501,19 +502,12 @@ export function OrganizationPostedProjects() {
                         <SelectValue placeholder="Select category" />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent>
-                      <SelectItem value={ProjectCategory.WEB_DEVELOPMENT}>
-                        Web Development
-                      </SelectItem>
-                      <SelectItem value={ProjectCategory.MOBILE_DEVELOPMENT}>
-                        Mobile Development
-                      </SelectItem>
-                      <SelectItem value={ProjectCategory.DATA_SCIENCE}>
-                        Data Science
-                      </SelectItem>
-                      <SelectItem value={ProjectCategory.OTHER}>
-                        Other
-                      </SelectItem>
+                    <SelectContent className="h-80">
+                      {categories.map((category) => (
+                        <SelectItem key={category} value={category}>
+                          {category.replaceAll("_", " ")}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   <FormMessage />

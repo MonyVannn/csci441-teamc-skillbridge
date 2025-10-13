@@ -248,18 +248,16 @@ export function ProfileContent({ user }: ProfileContentProps) {
         <CardContent className="space-y-6">
           {user.socialLinks.length > 0 ? (
             user.socialLinks.map((link) => (
-              <div key={link.url} className="flex gap-4">
-                <div>
-                  <span className="text-sm font-semibold">{link.type}</span>
-                  <Link
-                    href={link.url}
-                    target={"_blank"}
-                    rel="noopener noreferrer"
-                    className="text-sm text-blue-500 hover:underline"
-                  >
-                    {link.url}
-                  </Link>
-                </div>
+              <div key={link.url}>
+                <p className="text-sm font-semibold">{link.type}</p>
+                <Link
+                  href={link.url}
+                  target={"_blank"}
+                  rel="noopener noreferrer"
+                  className="text-sm text-blue-500 hover:underline"
+                >
+                  {link.url}
+                </Link>
               </div>
             ))
           ) : (

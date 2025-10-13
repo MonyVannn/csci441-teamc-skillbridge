@@ -19,7 +19,7 @@ export default async function ProjectDetailPage({
     project.status !== "OPEN"
       ? await getProjectTimelineByProjectId(
           projectId,
-          project.assignedStudentId || ""
+          project.assignedStudent?.id || null
         )
       : null;
 

@@ -222,108 +222,110 @@ export function ProjectDetail({ project, timeline }: ProjectDetailProps) {
           </div>
         </div>
       </div>
-      <div className="w-full border-l pl-6 relative">
-        <Image
-          src="/bg.jpeg"
-          alt="bg"
-          width={1920}
-          height={1080}
-          className="h-[100px] rounded-tl-lg rounded-tr-lg"
-        />
-        <Avatar className="absolute top-[72px] left-3 w-16 h-16 border-4 border-background">
-          <AvatarImage src={project.assignedStudent?.imageUrl || ""} />
-          <AvatarFallback className="text-2xl bg-muted">
-            {project.assignedStudent?.firstName}
+      {project.assignedStudent && (
+        <div className="w-full border-l pl-6 relative">
+          <Image
+            src="/bg.jpeg"
+            alt="bg"
+            width={1920}
+            height={1080}
+            className="h-[100px] rounded-tl-lg rounded-tr-lg"
+          />
+          <Avatar className="absolute top-[72px] left-3 w-16 h-16 border-4 border-background">
+            <AvatarImage src={project.assignedStudent?.imageUrl || ""} />
+            <AvatarFallback className="text-2xl bg-muted">
+              {project.assignedStudent?.firstName}
+              {project.assignedStudent?.lastName}
+            </AvatarFallback>
+          </Avatar>
+          <h1 className="absolute left-20 font-semibold text-lg">
+            {project.assignedStudent?.firstName}{" "}
             {project.assignedStudent?.lastName}
-          </AvatarFallback>
-        </Avatar>
-        <h1 className="absolute left-20 font-semibold text-lg">
-          {project.assignedStudent?.firstName}{" "}
-          {project.assignedStudent?.lastName}
-        </h1>
-        <div className="mt-10">
-          <p className="text-sm text-muted-foreground">
-            {project.assignedStudent?.bio}
-          </p>
-          <div className="mt-2">
-            {project.assignedStudent?.skills?.map((skill) => (
-              <Badge key={skill} variant={"outline"} className="mr-1">
-                {skill}
-              </Badge>
-            ))}
-          </div>
-          <Separator className="my-5" />
-          <section className="p-4 border rounded-xl shadow-md">
-            <h1 className="text-lg font-semibold">
-              {project.status.replace("_", " ")}
-            </h1>
-            <div className="w-full h-4 rounded-full bg-muted mt-1">
-              <div
-                className={`h-4 rounded-tl-full rounded-bl-full bg-[#695DCC] ${
-                  project.status === "ASSIGNED"
-                    ? "w-1/4"
-                    : project.status === "IN_PROGRESS"
-                    ? "w-1/2"
-                    : project.status === "IN_REVIEW"
-                    ? "w-3/4"
-                    : project.status === "COMPLETED"
-                    ? "w-full rounded-full"
-                    : "w-0"
-                }`}
-              />
+          </h1>
+          <div className="mt-10">
+            <p className="text-sm text-muted-foreground">
+              {project.assignedStudent?.bio}
+            </p>
+            <div className="mt-2">
+              {project.assignedStudent?.skills?.map((skill) => (
+                <Badge key={skill} variant={"outline"} className="mr-1">
+                  {skill}
+                </Badge>
+              ))}
             </div>
-            {user?.id === project.assignedStudent?.clerkId && statusInfo && (
-              <Button
-                size={"sm"}
-                variant={"outline"}
-                className="w-full rounded-full mt-5"
-                onClick={handleStatusChangeClick}
-              >
-                {statusInfo.buttonText}
-              </Button>
-            )}
-            {user?.id === project.businessOwner.clerkId &&
-              project.status === "IN_REVIEW" && (
+            <Separator className="my-5" />
+            <section className="p-4 border rounded-xl shadow-md">
+              <h1 className="text-lg font-semibold">
+                {project.status.replace("_", " ")}
+              </h1>
+              <div className="w-full h-4 rounded-full bg-muted mt-1">
+                <div
+                  className={`h-4 rounded-tl-full rounded-bl-full bg-[#695DCC] ${
+                    project.status === "ASSIGNED"
+                      ? "w-1/4"
+                      : project.status === "IN_PROGRESS"
+                      ? "w-1/2"
+                      : project.status === "IN_REVIEW"
+                      ? "w-3/4"
+                      : project.status === "COMPLETED"
+                      ? "w-full rounded-full"
+                      : "w-0"
+                  }`}
+                />
+              </div>
+              {user?.id === project.assignedStudent?.clerkId && statusInfo && (
                 <Button
                   size={"sm"}
                   variant={"outline"}
                   className="w-full rounded-full mt-5"
-                  onClick={handleMarkAsCompleted}
+                  onClick={handleStatusChangeClick}
                 >
-                  Mark as completed
+                  {statusInfo.buttonText}
                 </Button>
               )}
-            <div className="bg-background mt-8">
-              <h1 className="text-lg font-semibold">Project Timeline</h1>
-              <div className="relative mx-auto max-w-4xl">
-                <Separator
-                  orientation="vertical"
-                  className="bg-muted absolute left-1.5 top-4"
-                />
-                {timeline?.map((entry, index) => (
-                  <div key={index} className="relative mb-10 pl-8">
-                    <div className="bg-[#695DCC] absolute left-0 top-3.5 flex size-3 items-center justify-center rounded-full" />
-                    <h4 className="rounded-xl pt-2 text-sm font-medium tracking-tight ">
-                      {entry.title}
-                    </h4>
+              {user?.id === project.businessOwner.clerkId &&
+                project.status === "IN_REVIEW" && (
+                  <Button
+                    size={"sm"}
+                    variant={"outline"}
+                    className="w-full rounded-full mt-5"
+                    onClick={handleMarkAsCompleted}
+                  >
+                    Mark as completed
+                  </Button>
+                )}
+              <div className="bg-background mt-8">
+                <h1 className="text-lg font-semibold">Project Timeline</h1>
+                <div className="relative mx-auto max-w-4xl">
+                  <Separator
+                    orientation="vertical"
+                    className="bg-muted absolute left-1.5 top-4"
+                  />
+                  {timeline?.map((entry, index) => (
+                    <div key={index} className="relative mb-10 pl-8">
+                      <div className="bg-[#695DCC] absolute left-0 top-3.5 flex size-3 items-center justify-center rounded-full" />
+                      <h4 className="rounded-xl pt-2 text-sm font-medium tracking-tight ">
+                        {entry.title}
+                      </h4>
 
-                    <h5 className="text-sm text-muted-foreground ">
-                      {entry.date}
-                    </h5>
+                      <h5 className="text-sm text-muted-foreground ">
+                        {entry.date}
+                      </h5>
 
-                    <div className="border-none shadow-none mt-2">
-                      <div
-                        className="prose dark:prose-invert text-foreground text-sm"
-                        dangerouslySetInnerHTML={{ __html: entry.content }}
-                      />
+                      <div className="border-none shadow-none mt-2">
+                        <div
+                          className="prose dark:prose-invert text-foreground text-sm"
+                          dangerouslySetInnerHTML={{ __html: entry.content }}
+                        />
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
-          </section>
+            </section>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Confirmation Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

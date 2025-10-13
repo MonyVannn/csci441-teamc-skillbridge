@@ -24,13 +24,9 @@ export async function getAvailableProjects(
   maxBudget: string
 ) {
   const pageSize = 6;
-  // Determine the skip value based on the presence of a query
-  let skip: number;
-  if (query) {
-    skip = 0; // If there's a query, reset to the first page (skip 0)
-  } else {
-    skip = Math.abs(pageSize * (Number(page) - 1)); // Otherwise, calculate skip based on the provided page
-  }
+  // Calculate skip value based on the current page
+  const currentPage = Number(page) || 1;
+  const skip = Math.abs(pageSize * (currentPage - 1));
 
   const categoryList =
     categories.length > 0

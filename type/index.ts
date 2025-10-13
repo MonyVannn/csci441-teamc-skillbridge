@@ -1,4 +1,4 @@
-import { ApplicationStatus, Project, User } from "@prisma/client";
+import { ApplicationStatus, Project, User, UserRole } from "@prisma/client";
 
 export type ProjectWithAssignedStudent = Project & {
   assignedStudent: User | null;
@@ -31,6 +31,7 @@ export type AvailableProject = {
     address?: string | null;
     bio?: string | null;
     intro?: string | null;
+    role?: UserRole | null;
   };
 
   assignedStudent?: {

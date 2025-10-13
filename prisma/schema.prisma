@@ -245,6 +245,7 @@ enum ProjectScope {
 }
 
 enum ProjectStatus {
+  DRAFT // Not yet published
   OPEN // Open for applications
   IN_REVIEW // Applications are being reviewed
   ASSIGNED // Student has been assigned

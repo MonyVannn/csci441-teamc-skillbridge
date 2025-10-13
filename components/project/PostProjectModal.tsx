@@ -166,7 +166,7 @@ export function PostProjectModal({
     },
   });
 
-  const handleSubmit = async (data: FormData) => {
+  const createProjectWithStatus = async (data: FormData, isDraft: boolean) => {
     if (!user.isSignedIn) return;
     const formDataWithSkills = {
       ...data,
@@ -180,14 +180,17 @@ export function PostProjectModal({
 
       const project = await createProject({
         ...formDataWithSkills,
-        status: "OPEN",
-        isPublic: true,
+        status: isDraft ? "DRAFT" : "OPEN",
+        isPublic: !isDraft, // Drafts are private by default
         createdAt: new Date(),
         assignedStudent: undefined,
         businessOwner: { connect: { id: dbUser.id } },
       });
 
-      console.log("Project successfully created, ", project);
+      console.log(
+        isDraft ? "Project saved as draft, " : "Project successfully created, ",
+        project
+      );
     } catch (e) {
       console.error("Failed to create a new project, ", e);
     }
@@ -197,6 +200,19 @@ export function PostProjectModal({
     setSelectedSkills([]);
     setSkillInput("");
     onOpenChange(false);
+  };
+
+  const handleSubmit = async (data: FormData) => {
+    await createProjectWithStatus(data, false);
+  };
+
+  const handleSaveAsDraft = async () => {
+    // Trigger form validation
+    const isValid = await form.trigger();
+    if (isValid) {
+      const data = form.getValues();
+      await createProjectWithStatus(data, true);
+    }
   };
 
   const addSkill = (skill: string) => {
@@ -596,7 +612,7 @@ export function PostProjectModal({
               />
             </div>
 
-            <div className="flex justify-end gap-3 pt-4">
+            <div className="flex justify-between pt-4">
               <Button
                 type="button"
                 variant="outline"
@@ -604,7 +620,16 @@ export function PostProjectModal({
               >
                 Cancel
               </Button>
-              <Button type="submit">Post Project</Button>
+              <div className="flex gap-3">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={handleSaveAsDraft}
+                >
+                  Save as Draft
+                </Button>
+                <Button type="submit">Post Project</Button>
+              </div>
             </div>
           </form>
         </Form>

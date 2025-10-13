@@ -39,7 +39,7 @@ export async function getAvailableProjects(
   try {
     const totalProjects = await prisma.project.count({
       where: {
-        status: { not: "ARCHIVED" },
+        status: { notIn: ["ARCHIVED", "DRAFT"] },
         title: { contains: query, mode: "insensitive" },
         category: { in: categoryList },
         scope: { in: scopeList },
@@ -53,7 +53,7 @@ export async function getAvailableProjects(
       skip: skip,
       take: pageSize,
       where: {
-        status: { not: "ARCHIVED" },
+        status: { notIn: ["ARCHIVED", "DRAFT"] },
         title: { contains: query, mode: "insensitive" },
         category: { in: categoryList },
         scope: { in: scopeList },
@@ -368,8 +368,11 @@ export async function editProject(
     });
 
     if (!project) throw new Error("Project not found.");
-    if (project.status !== "OPEN")
-      throw new Error("Only open project can be deleted");
+
+    // Allow editing only DRAFT and OPEN projects
+    if (project.status !== "OPEN" && project.status !== "DRAFT") {
+      throw new Error("Only draft or open projects can be edited");
+    }
 
     await prisma.project.update({
       where: { id: projectId },
@@ -384,6 +387,47 @@ export async function editProject(
   } catch (e) {
     console.error("Error updating project data, ", e);
     throw new Error("Failed to updated project data.");
+  }
+}
+
+export async function publishDraftProject(projectId: string) {
+  const user = await currentUser();
+
+  if (!user) throw new Error("Not authenticated.");
+
+  try {
+    const existingUser = await prisma.user.findFirst({
+      where: { clerkId: user.id },
+    });
+
+    if (!existingUser) throw new Error("User not found.");
+    if (existingUser.role !== "BUSINESS_OWNER")
+      throw new Error("This role is not allowed to call this function.");
+
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+    });
+
+    if (!project) throw new Error("Project not found.");
+    if (project.status !== "DRAFT")
+      throw new Error("Only draft projects can be published.");
+
+    const publishedProject = await prisma.project.update({
+      where: { id: projectId },
+      data: {
+        status: "OPEN",
+        isPublic: true,
+      },
+    });
+
+    // Revalidate homepage and settings page
+    revalidatePath("/");
+    revalidatePath("/settings");
+
+    return publishedProject;
+  } catch (e) {
+    console.error("Error publishing project, ", e);
+    throw new Error("Failed to publish project.");
   }
 }
 

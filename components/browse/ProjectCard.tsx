@@ -29,15 +29,19 @@ import { formatDistanceToNow } from "date-fns";
 import { ApplyButton } from "../application/ApplyButton";
 import { useUserAuth } from "@/lib/stores/userStore";
 import { getCategoryThumbnail } from "@/lib/categoryThumbnails";
+import { User } from "@prisma/client";
+import { getUserByClerkId } from "@/lib/actions/user";
 
 interface ProjectCardProps {
   projects: AvailableProject[];
+  user: User | null;
   currentPageProp: number;
   totalPagesProp: number;
 }
 
 export function ProjectCard({
   projects,
+  user,
   currentPageProp,
   totalPagesProp,
 }: ProjectCardProps) {
@@ -267,7 +271,9 @@ export function ProjectCard({
                       </SheetDescription>
                     </div>
                   </div>
-                  {isAuthenticated && <ApplyButton project={project} />}
+                  {isAuthenticated && user?.role === "USER" && (
+                    <ApplyButton project={project} />
+                  )}
                 </div>
               </SheetHeader>
               <div className="grid flex-1 auto-rows-min gap-6 overflow-y-auto px-4 pb-10">

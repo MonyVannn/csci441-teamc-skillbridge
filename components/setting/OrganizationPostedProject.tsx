@@ -46,6 +46,7 @@ import {
   deleteProject,
   editProject,
   getProjectsByOwnerId,
+  publishDraftProject,
 } from "@/lib/actions/project";
 import { useUser } from "@clerk/nextjs";
 import { getUserByClerkId } from "@/lib/actions/user";
@@ -119,6 +120,8 @@ export function OrganizationPostedProjects() {
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [skillInput, setSkillInput] = useState("");
+  const [editingProjectStatus, setEditingProjectStatus] =
+    useState<ProjectStatus | null>(null);
   const categories = Object.values(ProjectCategory);
 
   const form = useForm<ProjectFormData>({
@@ -193,6 +196,7 @@ export function OrganizationPostedProjects() {
     });
     setSkillInput("");
     setEditingId(project.id);
+    setEditingProjectStatus(project.status);
     setIsAddingNew(false);
   };
 
@@ -205,7 +209,25 @@ export function OrganizationPostedProjects() {
     }
   };
 
-  const handleSaveProject = async (data: ProjectFormData) => {
+  const handlePublishDraft = async (projectId: string) => {
+    try {
+      const publishedProject = await publishDraftProject(projectId);
+      setProjects(
+        projects?.map((project) =>
+          project.id === projectId
+            ? { ...project, status: "OPEN" as ProjectStatus, isPublic: true }
+            : project
+        )
+      );
+    } catch (e) {
+      console.error("Failed to publish draft:", e);
+    }
+  };
+
+  const saveProjectWithStatus = async (
+    data: ProjectFormData,
+    isDraft: boolean
+  ) => {
     if (!user.isSignedIn) return;
 
     const dbUser = await getUserByClerkId(user.user.id);
@@ -224,7 +246,8 @@ export function OrganizationPostedProjects() {
       applicationDeadline: new Date(data.applicationDeadline),
       budget: data.budget,
       businessOwner: { connect: { id: dbUser.id } },
-      isPublic: data.isPublic,
+      isPublic: isDraft ? false : data.isPublic,
+      status: isDraft ? "DRAFT" : editingProjectStatus || "OPEN",
     };
 
     if (editingId) {
@@ -258,8 +281,21 @@ export function OrganizationPostedProjects() {
     handleCancel();
   };
 
+  const handleSaveProject = async (data: ProjectFormData) => {
+    await saveProjectWithStatus(data, false);
+  };
+
+  const handleSaveAsDraft = async () => {
+    const isValid = await form.trigger();
+    if (isValid) {
+      const data = form.getValues();
+      await saveProjectWithStatus(data, true);
+    }
+  };
+
   const handleCancel = () => {
     setEditingId(null);
+    setEditingProjectStatus(null);
     setIsAddingNew(false);
     setSkillInput("");
     form.reset({
@@ -338,13 +374,6 @@ export function OrganizationPostedProjects() {
             </h3>
             <div className="flex gap-2">
               <Button
-                type="submit"
-                size="sm"
-                className="bg-[#1DBF9F] hover:bg-[#1DBF9F]/80 text-white"
-              >
-                Save
-              </Button>
-              <Button
                 type="button"
                 onClick={handleCancel}
                 variant="outline"
@@ -352,6 +381,23 @@ export function OrganizationPostedProjects() {
                 className="border-gray-300 text-gray-700 hover:bg-gray-50 bg-white"
               >
                 Cancel
+              </Button>
+              {(editingProjectStatus === "DRAFT" || isAddingNew) && (
+                <Button
+                  type="button"
+                  onClick={handleSaveAsDraft}
+                  variant="secondary"
+                  size="sm"
+                >
+                  Save as Draft
+                </Button>
+              )}
+              <Button
+                type="submit"
+                size="sm"
+                className="bg-[#1DBF9F] hover:bg-[#1DBF9F]/80 text-white"
+              >
+                {editingProjectStatus === "DRAFT" ? "Publish" : "Save"}
               </Button>
             </div>
           </div>
@@ -625,25 +671,6 @@ export function OrganizationPostedProjects() {
               )}
             />
           </div>
-
-          {/* Public Project Checkbox */}
-          <FormField
-            control={form.control}
-            name="isPublic"
-            render={({ field }) => (
-              <FormItem className="flex flex-row items-center space-x-2 space-y-0">
-                <FormControl>
-                  <Checkbox
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                </FormControl>
-                <FormLabel className="text-sm text-gray-700 cursor-pointer !mt-0">
-                  Make this project publicly visible
-                </FormLabel>
-              </FormItem>
-            )}
-          />
         </form>
       </Form>
     </div>
@@ -790,6 +817,18 @@ export function OrganizationPostedProjects() {
                       </div>
 
                       <div className="flex items-center gap-2 ml-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                        {project.status === "DRAFT" && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handlePublishDraft(project.id)}
+                            className="h-8 px-3 hover:bg-green-50 hover:text-green-600"
+                            disabled={isAddingNew || editingId !== null}
+                          >
+                            <SquareArrowOutUpRight className="h-4 w-4 mr-1" />
+                            Publish
+                          </Button>
+                        )}
                         <Button
                           variant="ghost"
                           size="sm"

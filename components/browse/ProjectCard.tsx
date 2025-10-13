@@ -267,7 +267,9 @@ export function ProjectCard({
                       </SheetDescription>
                     </div>
                   </div>
-                  {isAuthenticated && <ApplyButton project={project} />}
+                  {isAuthenticated && project.businessOwner.role === "USER" && (
+                    <ApplyButton project={project} />
+                  )}
                 </div>
               </SheetHeader>
               <div className="grid flex-1 auto-rows-min gap-6 overflow-y-auto px-4 pb-10">

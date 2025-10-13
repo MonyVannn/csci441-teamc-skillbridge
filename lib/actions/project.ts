@@ -131,6 +131,43 @@ export async function getProjectsByOwnerId() {
   }
 }
 
+export async function getCompletedProjectsByAssignedStudentId(userId: string) {
+  try {
+    const user = await prisma.user.findFirst({
+      where: { clerkId: userId },
+    });
+
+    if (!user) throw new Error("User not found.");
+
+    const completedProjects = await prisma.project.findMany({
+      where: {
+        assignedStudentId: user.id,
+        status: "COMPLETED",
+      },
+      include: {
+        businessOwner: {
+          select: {
+            id: true,
+            imageUrl: true,
+            firstName: true,
+            lastName: true,
+            address: true,
+            bio: true,
+            intro: true,
+          },
+        },
+      },
+      orderBy: {
+        completedAt: "desc",
+      },
+    });
+
+    return completedProjects;
+  } catch (e) {
+    console.error("Error fetching completed projects, ", e);
+    throw new Error("Failed to fetch completed projects.");
+  }
+}
 export async function getProjectByProjectId(projectId: string) {
   try {
     const project = await prisma.project.findUnique({

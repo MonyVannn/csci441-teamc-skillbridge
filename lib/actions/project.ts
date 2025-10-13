@@ -233,8 +233,8 @@ export async function getProjectTimelineByProjectId(
 
     if (!project) throw new Error("Project not found.");
 
-    // If no applicantId provided or it's empty, return basic timeline
-    if (!applicantId || applicantId.trim() === "") {
+    // If no applicantId provided, return basic timeline
+    if (!applicantId) {
       return [
         {
           date: new Date(project.createdAt).toLocaleDateString(),

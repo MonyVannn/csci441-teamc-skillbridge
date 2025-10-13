@@ -10,11 +10,13 @@ import {
   getApplicationsByUserId,
   withdrawApplication,
 } from "@/lib/actions/application";
+import Link from "next/link";
 
 // Define the shape of the application data the component will work with
 interface Application {
   id: string;
   project: {
+    id: string;
     title: string;
     businessOwner: {
       firstName: string | null;
@@ -41,6 +43,7 @@ export function UserApplications() {
             ...app,
             appliedAt: app.appliedAt.toISOString(),
             project: {
+              id: app.projectId,
               title: app.project.title,
               businessOwner: app.project.businessOwner,
             },
@@ -125,9 +128,11 @@ export function UserApplications() {
                 <div className="flex items-baseline justify-between">
                   <div className="flex-1 space-y-2">
                     <div className="flex items-center justify-between">
-                      <h3 className="font-semibold text-gray-900 text-balance">
-                        {app.project.title}
-                      </h3>
+                      <Link href={`/project/${app.project.id}`}>
+                        <h3 className="font-semibold text-gray-900 text-balance hover:underline">
+                          {app.project.title}
+                        </h3>
+                      </Link>
                       <Badge className={getStatusBadgeVariant(app.status)}>
                         {/* Capitalize first letter */}
                         {app.status.charAt(0) +

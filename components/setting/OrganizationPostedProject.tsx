@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Form,
   FormControl,
@@ -30,7 +29,6 @@ import {
   Briefcase,
   CalendarIcon,
   LoaderCircle,
-  DollarSign,
   Clock,
   SquareArrowOutUpRight,
 } from "lucide-react";
@@ -211,7 +209,7 @@ export function OrganizationPostedProjects() {
 
   const handlePublishDraft = async (projectId: string) => {
     try {
-      const publishedProject = await publishDraftProject(projectId);
+      await publishDraftProject(projectId);
       setProjects(
         projects?.map((project) =>
           project.id === projectId

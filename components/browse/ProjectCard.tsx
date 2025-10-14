@@ -31,6 +31,7 @@ import { useUserAuth } from "@/lib/stores/userStore";
 import { getCategoryThumbnail } from "@/lib/categoryThumbnails";
 import { User } from "@prisma/client";
 import { getUserByClerkId } from "@/lib/actions/user";
+import Link from "next/link";
 
 interface ProjectCardProps {
   projects: AvailableProject[];
@@ -233,8 +234,11 @@ export function ProjectCard({
             <SheetContent className="min-w-[800px]">
               <SheetHeader>
                 <SheetTitle>
-                  <div className="flex items-center gap-2 mb-2">
-                    <Avatar className="h-10 w-10 rounded-none">
+                  <Link
+                    href={`/profile/${user?.clerkId}`}
+                    className="group flex items-center gap-2 mb-2 cursor-pointer"
+                  >
+                    <Avatar className="h-10 w-10 rounded-none group-hover:scale-105 transition-transform">
                       <AvatarImage
                         src={
                           project.businessOwner.imageUrl || "/placeholder.svg"
@@ -244,11 +248,11 @@ export function ProjectCard({
                         {project.businessOwner.firstName?.charAt(0)}
                       </AvatarFallback>
                     </Avatar>
-                    <h3 className="font-bold text-gray-900 capitalize">
+                    <h3 className="font-bold text-gray-900 capitalize group-hover:underline transition-all">
                       {project.businessOwner.firstName}{" "}
                       {project.businessOwner.lastName}
                     </h3>
-                  </div>
+                  </Link>
                 </SheetTitle>
                 <div className="flex items-center justify-between">
                   <div>

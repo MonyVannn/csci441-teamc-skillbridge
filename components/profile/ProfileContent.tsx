@@ -1,13 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Project, User } from "@prisma/client";
 
-import {
-  Building2,
-  Calendar,
-  GraduationCap,
-  FolderOpen,
-  Clock,
-} from "lucide-react";
+import { Building2, Calendar, GraduationCap, FolderOpen } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "../ui/badge";
 

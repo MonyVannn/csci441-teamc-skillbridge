@@ -235,7 +235,7 @@ export function ProjectCard({
               <SheetHeader>
                 <SheetTitle>
                   <Link
-                    href={`/profile/${user?.clerkId}`}
+                    href={`/profile/${project.businessOwner.clerkId}`}
                     className="group flex items-center gap-2 mb-2 cursor-pointer"
                   >
                     <Avatar className="h-10 w-10 rounded-none group-hover:scale-105 transition-transform">

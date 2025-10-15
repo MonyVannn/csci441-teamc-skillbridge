@@ -142,7 +142,17 @@ const HeaderContent: React.FC<HeaderContentProps> = ({
                   <UserButton.UserProfilePage
                     label="Applications"
                     url="applications"
-                    labelIcon={<ScrollText className="w-4 h-4" />}
+                    labelIcon={
+                      <>
+                        <ScrollText className="w-4 h-4" />{" "}
+                        {totalUnrespondedApplications &&
+                          totalUnrespondedApplications > 0 && (
+                            <div className="absolute top-0 -right-28 w-4 h-4 z-50 bg-red-400 rounded-full text-white font-bold text-[10px] flex items-center justify-center">
+                              {totalUnrespondedApplications}
+                            </div>
+                          )}
+                      </>
+                    }
                   >
                     <OrganizationApplication />
                   </UserButton.UserProfilePage>

@@ -66,6 +66,7 @@ export async function getAvailableProjects(
         businessOwner: {
           select: {
             id: true,
+            clerkId: true,
             imageUrl: true,
             firstName: true,
             lastName: true,

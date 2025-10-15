@@ -30,7 +30,6 @@ import { ApplyButton } from "../application/ApplyButton";
 import { useUserAuth } from "@/lib/stores/userStore";
 import { getCategoryThumbnail } from "@/lib/categoryThumbnails";
 import { User } from "@prisma/client";
-import { getUserByClerkId } from "@/lib/actions/user";
 import Link from "next/link";
 
 interface ProjectCardProps {

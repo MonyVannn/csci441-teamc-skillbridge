@@ -32,6 +32,14 @@ import {
   Clock,
   SquareArrowOutUpRight,
 } from "lucide-react";
+import { format } from "date-fns";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { cn } from "@/lib/utils";
 import { Separator } from "../ui/separator";
 import {
   Prisma,
@@ -370,34 +378,6 @@ export function OrganizationPostedProjects() {
             <h3 className="font-bold text-gray-900 flex items-center gap-2">
               {editingId ? "Edit Project" : "Add New Project"}
             </h3>
-            <div className="flex gap-2">
-              <Button
-                type="button"
-                onClick={handleCancel}
-                variant="outline"
-                size="sm"
-                className="border-gray-300 text-gray-700 hover:bg-gray-50 bg-white"
-              >
-                Cancel
-              </Button>
-              {(editingProjectStatus === "DRAFT" || isAddingNew) && (
-                <Button
-                  type="button"
-                  onClick={handleSaveAsDraft}
-                  variant="secondary"
-                  size="sm"
-                >
-                  Save as Draft
-                </Button>
-              )}
-              <Button
-                type="submit"
-                size="sm"
-                className="bg-[#1DBF9F] hover:bg-[#1DBF9F]/80 text-white"
-              >
-                {editingProjectStatus === "DRAFT" ? "Publish" : "Save"}
-              </Button>
-            </div>
           </div>
 
           {/* Project Title */}
@@ -413,6 +393,7 @@ export function OrganizationPostedProjects() {
                   <Input
                     {...field}
                     placeholder="e.g. E-commerce Website Development"
+                    className="bg-white"
                   />
                 </FormControl>
                 <FormMessage />
@@ -434,6 +415,7 @@ export function OrganizationPostedProjects() {
                     {...field}
                     placeholder="Describe your project details and requirements..."
                     rows={4}
+                    className="bg-white"
                   />
                 </FormControl>
                 <FormMessage />
@@ -448,13 +430,14 @@ export function OrganizationPostedProjects() {
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-sm font-medium text-gray-700">
-                  Applicant Responsibilities
+                  Responsibilities
                 </FormLabel>
                 <FormControl>
                   <Textarea
                     {...field}
                     placeholder="Describe the applicant's responsibilities..."
                     rows={4}
+                    className="bg-white"
                   />
                 </FormControl>
                 <FormMessage />
@@ -469,13 +452,14 @@ export function OrganizationPostedProjects() {
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-sm font-medium text-gray-700">
-                  Project Deliverables
+                  Deliverables
                 </FormLabel>
                 <FormControl>
                   <Textarea
                     {...field}
                     placeholder="Describe your project deliverables, goal, expectation..."
                     rows={4}
+                    className="bg-white"
                   />
                 </FormControl>
                 <FormMessage />
@@ -503,6 +487,7 @@ export function OrganizationPostedProjects() {
                         addSkill();
                       }
                     }}
+                    className="bg-white"
                   />
                   <Button
                     type="button"
@@ -542,7 +527,7 @@ export function OrganizationPostedProjects() {
                   </FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
-                      <SelectTrigger className="w-full">
+                      <SelectTrigger className="w-full bg-white">
                         <SelectValue placeholder="Select category" />
                       </SelectTrigger>
                     </FormControl>
@@ -570,22 +555,22 @@ export function OrganizationPostedProjects() {
                   </FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
-                      <SelectTrigger className="w-full">
+                      <SelectTrigger className="w-full bg-white">
                         <SelectValue placeholder="Select scope" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
                       <SelectItem value={ProjectScope.BEGINNER}>
-                        Small (1-2 weeks)
+                        BEGINNER
                       </SelectItem>
                       <SelectItem value={ProjectScope.INTERMEDIATE}>
-                        Medium (1-2 months)
+                        INTERMEDIATE
                       </SelectItem>
                       <SelectItem value={ProjectScope.ADVANCED}>
-                        Large (3-6 months)
+                        ADVANCED
                       </SelectItem>
                       <SelectItem value={ProjectScope.EXPERT}>
-                        Enterprise (6+ months)
+                        EXPERT
                       </SelectItem>
                     </SelectContent>
                   </Select>
@@ -611,6 +596,7 @@ export function OrganizationPostedProjects() {
                       onChange={(e: ChangeEvent<HTMLInputElement>) =>
                         field.onChange(Number.parseFloat(e.target.value))
                       }
+                      className="bg-white"
                     />
                   </FormControl>
                   <FormMessage />
@@ -625,13 +611,41 @@ export function OrganizationPostedProjects() {
               control={form.control}
               name="startDate"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="flex flex-col">
                   <FormLabel className="text-sm font-medium text-gray-700">
                     Start Date
                   </FormLabel>
-                  <FormControl>
-                    <Input {...field} type="date" />
-                  </FormControl>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "pl-3 text-left font-normal w-full",
+                            !field.value && "text-muted-foreground"
+                          )}
+                        >
+                          {field.value ? (
+                            format(new Date(field.value), "PPP")
+                          ) : (
+                            <span>Pick a date</span>
+                          )}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={
+                          field.value ? new Date(field.value) : undefined
+                        }
+                        onSelect={field.onChange}
+                        disabled={(date) => date < new Date()}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
                   <FormMessage />
                 </FormItem>
               )}
@@ -641,13 +655,41 @@ export function OrganizationPostedProjects() {
               control={form.control}
               name="estimatedEndDate"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="flex flex-col">
                   <FormLabel className="text-sm font-medium text-gray-700">
                     Estimated End Date
                   </FormLabel>
-                  <FormControl>
-                    <Input {...field} type="date" />
-                  </FormControl>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "pl-3 text-left font-normal w-full",
+                            !field.value && "text-muted-foreground"
+                          )}
+                        >
+                          {field.value ? (
+                            format(new Date(field.value), "PPP")
+                          ) : (
+                            <span>Pick a date</span>
+                          )}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={
+                          field.value ? new Date(field.value) : undefined
+                        }
+                        onSelect={field.onChange}
+                        disabled={(date) => date < new Date()}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
                   <FormMessage />
                 </FormItem>
               )}
@@ -657,17 +699,76 @@ export function OrganizationPostedProjects() {
               control={form.control}
               name="applicationDeadline"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="flex flex-col">
                   <FormLabel className="text-sm font-medium text-gray-700">
                     Application Deadline
                   </FormLabel>
-                  <FormControl>
-                    <Input {...field} type="date" />
-                  </FormControl>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "pl-3 text-left font-normal w-full",
+                            !field.value && "text-muted-foreground"
+                          )}
+                        >
+                          {field.value ? (
+                            format(new Date(field.value), "PPP")
+                          ) : (
+                            <span>Pick a date</span>
+                          )}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={
+                          field.value ? new Date(field.value) : undefined
+                        }
+                        onSelect={field.onChange}
+                        disabled={(date) => date < new Date()}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
                   <FormMessage />
                 </FormItem>
               )}
             />
+          </div>
+          <div className="flex items-center justify-between">
+            <Button
+              type="button"
+              onClick={handleCancel}
+              variant="outline"
+              size="sm"
+              className="border-gray-300 text-gray-700 hover:bg-gray-50 bg-white"
+            >
+              Cancel
+            </Button>
+            <div className="flex gap-2">
+              {(editingProjectStatus === "DRAFT" || isAddingNew) && (
+                <Button
+                  type="button"
+                  onClick={handleSaveAsDraft}
+                  variant="secondary"
+                  size="sm"
+                  className="bg-[#d5f7f0] hover:bg-[#d5f7f0]/80"
+                >
+                  Save as Draft
+                </Button>
+              )}
+              <Button
+                type="submit"
+                size="sm"
+                className="bg-[#1DBF9F] hover:bg-[#1DBF9F]/80 text-white"
+              >
+                {editingProjectStatus === "DRAFT" ? "Publish" : "Save"}
+              </Button>
+            </div>
           </div>
         </form>
       </Form>

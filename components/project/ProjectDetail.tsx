@@ -17,12 +17,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../ui/dialog";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { updateProjectStatus, deleteProject } from "@/lib/actions/project";
 import { useUser } from "@clerk/nextjs";
-import { ProjectStatus } from "@prisma/client";
+import { ProjectStatus, User } from "@prisma/client";
 import { EditProjectModal } from "./EditProjectModal";
 import { useRouter } from "next/navigation";
+import { getUser } from "@/lib/actions/user";
 
 interface ProjectDetailProps {
   project: AvailableProject;
@@ -39,8 +40,24 @@ export function ProjectDetail({ project, timeline }: ProjectDetailProps) {
     null
   );
   const [isUpdating, setIsUpdating] = useState(false);
+  const [dbUser, setDbUser] = useState<User>();
 
   const isOwner = user?.id === project.businessOwner.clerkId;
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      if (user) {
+        try {
+          const userData = await getUser();
+          setDbUser(userData);
+        } catch (error) {
+          console.error("Failed to fetch user data:", error);
+        }
+      }
+    };
+
+    fetchUser();
+  }, [user]);
 
   const getStatusChangeMessage = () => {
     switch (project.status) {
@@ -189,7 +206,9 @@ export function ProjectDetail({ project, timeline }: ProjectDetailProps) {
                   </Button>
                 </>
               )}
-              <ApplyButton project={project} />
+              {!isOwner && dbUser?.role === "USER" && (
+                <ApplyButton project={project} />
+              )}
             </div>
           </div>
         </div>

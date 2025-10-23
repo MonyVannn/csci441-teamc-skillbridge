@@ -4,7 +4,7 @@ import Image from "next/image";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Badge } from "../ui/badge";
 import { AvailableProject, TimelineEntry } from "@/type";
-import { Dot } from "lucide-react";
+import { Archive, Dot, Pencil } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ApplyButton } from "../application/ApplyButton";
 import { Separator } from "../ui/separator";
@@ -18,9 +18,11 @@ import {
   DialogTitle,
 } from "../ui/dialog";
 import { useState } from "react";
-import { updateProjectStatus } from "@/lib/actions/project";
+import { updateProjectStatus, deleteProject } from "@/lib/actions/project";
 import { useUser } from "@clerk/nextjs";
 import { ProjectStatus } from "@prisma/client";
+import { EditProjectModal } from "./EditProjectModal";
+import { useRouter } from "next/navigation";
 
 interface ProjectDetailProps {
   project: AvailableProject;
@@ -29,11 +31,16 @@ interface ProjectDetailProps {
 
 export function ProjectDetail({ project, timeline }: ProjectDetailProps) {
   const { user } = useUser();
+  const router = useRouter();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isArchiveDialogOpen, setIsArchiveDialogOpen] = useState(false);
   const [pendingStatus, setPendingStatus] = useState<ProjectStatus | null>(
     null
   );
   const [isUpdating, setIsUpdating] = useState(false);
+
+  const isOwner = user?.id === project.businessOwner.clerkId;
 
   const getStatusChangeMessage = () => {
     switch (project.status) {
@@ -99,11 +106,29 @@ export function ProjectDetail({ project, timeline }: ProjectDetailProps) {
     setPendingStatus(null);
   };
 
+  const handleArchiveProject = async () => {
+    setIsUpdating(true);
+    try {
+      await deleteProject(project.id);
+      console.log("Project archived successfully");
+      setIsArchiveDialogOpen(false);
+      router.push("/");
+    } catch (error) {
+      console.error("Failed to archive project:", error);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
   const statusInfo = getStatusChangeMessage();
 
   return (
     <div className="p-12 grid grid-cols-4 gap-8">
-      <div className="col-span-3 w-full">
+      <div
+        className={`${
+          project.assignedStudent ? "col-span-3" : "col-span-4"
+        } w-full`}
+      >
         <div>
           <div>
             <div className="flex items-center gap-2 mb-2">
@@ -142,7 +167,30 @@ export function ProjectDetail({ project, timeline }: ProjectDetailProps) {
                 </div>
               </div>
             </div>
-            <ApplyButton project={project} />
+            <div className="flex items-center gap-2">
+              {isOwner && (
+                <>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsEditModalOpen(true)}
+                  >
+                    <Pencil className="h-4 w-4 mr-2" />
+                    Edit
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsArchiveDialogOpen(true)}
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                  >
+                    <Archive className="h-4 w-4 mr-2" />
+                    Archive
+                  </Button>
+                </>
+              )}
+              <ApplyButton project={project} />
+            </div>
           </div>
         </div>
         <div className="grid flex-1 auto-rows-min gap-6 overflow-y-auto pt-10">
@@ -352,6 +400,45 @@ export function ProjectDetail({ project, timeline }: ProjectDetailProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Archive Confirmation Dialog */}
+      <Dialog open={isArchiveDialogOpen} onOpenChange={setIsArchiveDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Archive Project</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to archive this project? This action will
+              mark the project as archived and it will no longer be visible to
+              applicants. You can view archived projects in your settings.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsArchiveDialogOpen(false)}
+              disabled={isUpdating}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleArchiveProject}
+              disabled={isUpdating}
+              variant="destructive"
+            >
+              {isUpdating ? "Archiving..." : "Archive Project"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Project Modal */}
+      {isOwner && (
+        <EditProjectModal
+          open={isEditModalOpen}
+          onOpenChange={setIsEditModalOpen}
+          project={project}
+        />
+      )}
     </div>
   );
 }

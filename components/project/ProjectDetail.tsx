@@ -124,7 +124,11 @@ export function ProjectDetail({ project, timeline }: ProjectDetailProps) {
 
   return (
     <div className="p-12 grid grid-cols-4 gap-8">
-      <div className="col-span-3 w-full">
+      <div
+        className={`${
+          project.assignedStudent ? "col-span-3" : "col-span-4"
+        } w-full`}
+      >
         <div>
           <div>
             <div className="flex items-center gap-2 mb-2">

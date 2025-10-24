@@ -2,7 +2,7 @@
 
 ## Overview
 
-This directory contains unit tests for the SkillBridge application using Jest and React Testing Library.
+This directory contains unit and integration tests for the SkillBridge application using Jest and React Testing Library.
 
 ## Test Files
 
@@ -49,6 +49,99 @@ The marketplace page is an async server component that:
 ##### 5. Layout and Structure (2 tests)
 - ✅ Has correct CSS classes for responsive design
 - ✅ Renders all main sections (filters, mobile filters, project list)
+
+### `components/Header.test.tsx`
+
+Comprehensive unit and integration tests for the Header and HeaderContent components, which provide the main navigation and user interface elements.
+
+#### What's Being Tested
+
+The Header is an async server component that:
+- Fetches user authentication state
+- Retrieves unresponded application counts for business owners
+- Renders HeaderContent with user data and application notifications
+
+The HeaderContent is a client component that:
+- Displays the SKILLBRIDGE logo and navigation
+- Shows different UI elements based on user authentication state
+- Provides role-specific features (USER vs BUSINESS_OWNER)
+- Displays notification badges for unresponded applications
+- Handles client-side user data fetching when needed
+
+#### Test Coverage
+
+**49 test cases** organized into 11 categories:
+
+##### 1. Server Component Rendering (5 tests)
+- ✅ Calls getUserOrNull to fetch user data
+- ✅ Calls getTotalUnrespondedApplication for BUSINESS_OWNER users
+- ✅ Does not call getTotalUnrespondedApplication for USER role
+- ✅ Handles errors when fetching unresponded applications
+- ✅ Renders HeaderContent with user and applications data
+
+##### 2. Brand/Logo Rendering (3 tests)
+- ✅ Renders the SKILLBRIDGE logo with correct text
+- ✅ Renders logo as a link to homepage (/)
+- ✅ Applies correct styling classes to logo
+
+##### 3. Navigation and Search Bar (2 tests)
+- ✅ Renders search bar component
+- ✅ Renders search bar in center position on large screens
+
+##### 4. Signed Out State (5 tests)
+- ✅ Renders "Sign in" button when user is signed out
+- ✅ Renders "Get Started" button when user is signed out
+- ✅ Links "Sign in" button to /sign-in
+- ✅ Links "Get Started" button to /sign-up
+- ✅ Does not render UserButton when signed out
+
+##### 5. Signed In State - USER Role (7 tests)
+- ✅ Renders UserButton when signed in
+- ✅ Renders Bio profile page for USER role
+- ✅ Renders Experience profile page for USER role
+- ✅ Renders Education profile page for USER role
+- ✅ Renders Applications profile page for USER role
+- ✅ Renders profile link with correct URL for USER role
+- ✅ Does not render "Post a Project" button for USER role
+- ✅ Does not render Posted Projects page for USER role
+
+##### 6. Signed In State - BUSINESS_OWNER Role (7 tests)
+- ✅ Renders "Post a Project" button for BUSINESS_OWNER role
+- ✅ Opens PostProjectModal when "Post a Project" is clicked
+- ✅ Renders Bio profile page for BUSINESS_OWNER role
+- ✅ Renders Posted Projects profile page for BUSINESS_OWNER role
+- ✅ Renders Applications profile page for BUSINESS_OWNER role
+- ✅ Does not render Experience page for BUSINESS_OWNER role
+- ✅ Does not render Education page for BUSINESS_OWNER role
+
+##### 7. Notification Badge Display (5 tests)
+- ✅ Displays notification badge when unresponded applications > 0
+- ✅ Does not display notification badge when unresponded applications = 0
+- ✅ Does not display notification badge when unresponded applications is null
+- ✅ Displays correct count in notification badge
+- ✅ Styles notification badge with red background
+
+##### 8. Accessibility (6 tests)
+- ✅ Renders header as a semantic header element
+- ✅ Has proper heading hierarchy for logo (H1 elements)
+- ✅ Has accessible button elements for actions
+- ✅ Has proper link elements with href attributes
+- ✅ Uses semantic navigation structure
+- ✅ Has visible focus indicators on interactive elements
+
+##### 9. Client-Side User Fetching (2 tests)
+- ✅ Fetches user from database when Clerk user loads
+- ✅ Does not fetch user if already provided via server props
+
+##### 10. Path-based Rendering (3 tests)
+- ✅ Does not render header on sign-in page
+- ✅ Does not render header on sign-up page
+- ✅ Renders header on other pages
+
+##### 11. Responsive Design (3 tests)
+- ✅ Applies responsive classes to logo
+- ✅ Applies responsive classes to action buttons
+- ✅ Hides search bar on small screens
 
 ## Running Tests
 

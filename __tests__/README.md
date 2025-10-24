@@ -143,6 +143,109 @@ The HeaderContent is a client component that:
 - ✅ Applies responsive classes to action buttons
 - ✅ Hides search bar on small screens
 
+### `components/Footer.test.tsx`
+
+Comprehensive unit tests for the Footer component, which provides site-wide navigation links and branding.
+
+#### What's Being Tested
+
+The Footer is a client component that:
+- Displays the SKILLBRIDGE logo and tagline
+- Provides navigation links organized into three sections (Company, Need Help, Community)
+- Shows copyright information
+- Conditionally renders based on current pathname (hides on auth pages)
+- Uses responsive design for mobile, tablet, and desktop layouts
+
+#### Test Coverage
+
+**60 test cases** organized into 12 categories:
+
+##### 1. Basic Rendering (3 tests)
+- ✅ Renders the footer element
+- ✅ Has correct background styling
+- ✅ Renders within a container
+
+##### 2. Logo and Tagline (5 tests)
+- ✅ Renders the SKILLBRIDGE logo
+- ✅ Renders logo with correct styling
+- ✅ Uses h1 tags for logo text
+- ✅ Renders the tagline text
+- ✅ Styles tagline with correct classes
+
+##### 3. Company Section (5 tests)
+- ✅ Renders COMPANY section header
+- ✅ Renders COMPANY header as h3
+- ✅ Renders ABOUT US link
+- ✅ Renders EXPLORE link
+- ✅ Has correct link styling for Company links
+
+##### 4. Need Help Section (5 tests)
+- ✅ Renders NEED HELP? section header
+- ✅ Renders NEED HELP? header as h3
+- ✅ Renders CONTACT US link
+- ✅ Renders BLOG link
+- ✅ Has correct link styling for Help links
+
+##### 5. Community Section (6 tests)
+- ✅ Renders COMMUNITY section header
+- ✅ Renders COMMUNITY header as h3
+- ✅ Renders X (Twitter) link
+- ✅ Renders LINKEDIN link
+- ✅ Renders INSTAGRAM link
+- ✅ Has correct link styling for Community links
+
+##### 6. Copyright Section (4 tests)
+- ✅ Renders copyright text
+- ✅ Displays current year 2025 in copyright
+- ✅ Styles copyright text correctly
+- ✅ Has border separator above copyright
+
+##### 7. Link Structure (3 tests)
+- ✅ Renders all links as anchor elements
+- ✅ Has href attributes on all links
+- ✅ Has placeholder href="#" for all links
+
+##### 8. Footer Blocks Presence (4 tests)
+- ✅ Has three main navigation columns
+- ✅ Has logo/tagline block
+- ✅ Has copyright block
+- ✅ Renders all major blocks in correct order
+
+##### 9. Responsive Layout (4 tests)
+- ✅ Applies responsive grid classes to main layout
+- ✅ Applies responsive grid classes to navigation columns
+- ✅ Applies correct column spans for logo section
+- ✅ Applies correct column positioning for navigation
+
+##### 10. Accessibility (5 tests)
+- ✅ Uses semantic footer element
+- ✅ Has proper heading hierarchy
+- ✅ Has accessible link elements
+- ✅ Uses unordered lists for navigation
+- ✅ Uses list items for each link
+
+##### 11. Path-based Rendering (5 tests)
+- ✅ Does not render footer on sign-in page
+- ✅ Does not render footer on sign-up page
+- ✅ Does not render footer on sign-in subpaths
+- ✅ Renders footer on homepage
+- ✅ Renders footer on other pages
+
+##### 12. Styling and Visual Design (5 tests)
+- ✅ Has dark background theme
+- ✅ Has appropriate padding
+- ✅ Has gap between grid items
+- ✅ Applies hover styles to links
+- ✅ Applies transition effects to links
+
+##### 13. Content Validation (6 tests)
+- ✅ Contains exactly 7 navigation links
+- ✅ Contains exactly 3 section headers
+- ✅ Has all Company section links
+- ✅ Has all Help section links
+- ✅ Has all Community section links
+- ✅ Contains SkillBridge branding in both logo and copyright
+
 ## Running Tests
 
 ### Run All Tests

@@ -4,7 +4,7 @@ import Image from "next/image";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Badge } from "../ui/badge";
 import { AvailableProject, TimelineEntry } from "@/type";
-import { Archive, Dot, Pencil } from "lucide-react";
+import { Archive, ArchiveRestore, Dot, Pencil } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ApplyButton } from "../application/ApplyButton";
 import { Separator } from "../ui/separator";
@@ -18,7 +18,11 @@ import {
   DialogTitle,
 } from "../ui/dialog";
 import { useEffect, useState } from "react";
-import { updateProjectStatus, deleteProject } from "@/lib/actions/project";
+import {
+  updateProjectStatus,
+  deleteProject,
+  unarchiveProject,
+} from "@/lib/actions/project";
 import { useUser } from "@clerk/nextjs";
 import { ProjectStatus, User } from "@prisma/client";
 import { EditProjectModal } from "./EditProjectModal";
@@ -129,9 +133,23 @@ export function ProjectDetail({ project, timeline }: ProjectDetailProps) {
       await deleteProject(project.id);
       console.log("Project archived successfully");
       setIsArchiveDialogOpen(false);
-      router.push("/");
+      router.refresh();
     } catch (error) {
       console.error("Failed to archive project:", error);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleUnarchiveProject = async () => {
+    setIsUpdating(true);
+    try {
+      await unarchiveProject(project.id);
+      console.log("Project unarchived successfully");
+      setIsArchiveDialogOpen(false);
+      router.refresh();
+    } catch (error) {
+      console.error("Failed to unarchive project:", error);
     } finally {
       setIsUpdating(false);
     }
@@ -195,15 +213,27 @@ export function ProjectDetail({ project, timeline }: ProjectDetailProps) {
                     <Pencil className="h-4 w-4 mr-2" />
                     Edit
                   </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setIsArchiveDialogOpen(true)}
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                  >
-                    <Archive className="h-4 w-4 mr-2" />
-                    Archive
-                  </Button>
+                  {project.status === "ARCHIVED" ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setIsArchiveDialogOpen(true)}
+                      className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                    >
+                      <ArchiveRestore className="h-4 w-4 mr-2" />
+                      Unarchive
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setIsArchiveDialogOpen(true)}
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <Archive className="h-4 w-4 mr-2" />
+                      Archive
+                    </Button>
+                  )}
                 </>
               )}
               {!isOwner &&
@@ -424,15 +454,19 @@ export function ProjectDetail({ project, timeline }: ProjectDetailProps) {
         </DialogContent>
       </Dialog>
 
-      {/* Archive Confirmation Dialog */}
+      {/* Archive/Unarchive Confirmation Dialog */}
       <Dialog open={isArchiveDialogOpen} onOpenChange={setIsArchiveDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Archive Project</DialogTitle>
+            <DialogTitle>
+              {project.status === "ARCHIVED"
+                ? "Unarchive Project"
+                : "Archive Project"}
+            </DialogTitle>
             <DialogDescription>
-              Are you sure you want to archive this project? This action will
-              mark the project as archived and it will no longer be visible to
-              applicants. You can view archived projects in your settings.
+              {project.status === "ARCHIVED"
+                ? "Are you sure you want to unarchive this project? This action will restore the project to OPEN status and make it visible to applicants again."
+                : "Are you sure you want to archive this project? This action will mark the project as archived and it will no longer be visible to applicants. You can view archived projects in your settings."}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -444,11 +478,28 @@ export function ProjectDetail({ project, timeline }: ProjectDetailProps) {
               Cancel
             </Button>
             <Button
-              onClick={handleArchiveProject}
+              onClick={
+                project.status === "ARCHIVED"
+                  ? handleUnarchiveProject
+                  : handleArchiveProject
+              }
               disabled={isUpdating}
-              variant="destructive"
+              variant={
+                project.status === "ARCHIVED" ? "default" : "destructive"
+              }
+              className={
+                project.status === "ARCHIVED"
+                  ? "bg-green-600 hover:bg-green-700"
+                  : ""
+              }
             >
-              {isUpdating ? "Archiving..." : "Archive Project"}
+              {isUpdating
+                ? project.status === "ARCHIVED"
+                  ? "Unarchiving..."
+                  : "Archiving..."
+                : project.status === "ARCHIVED"
+                ? "Unarchive Project"
+                : "Archive Project"}
             </Button>
           </DialogFooter>
         </DialogContent>

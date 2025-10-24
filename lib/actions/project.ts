@@ -475,6 +475,50 @@ export async function deleteProject(projectId: string) {
   }
 }
 
+export async function unarchiveProject(projectId: string) {
+  const user = await currentUser();
+
+  if (!user) throw new Error("Not authenticated.");
+
+  try {
+    const existingUser = await prisma.user.findFirst({
+      where: { clerkId: user.id },
+    });
+
+    if (!existingUser) throw new Error("User not found.");
+    if (existingUser.role !== "BUSINESS_OWNER")
+      throw new Error("This role is not allowed to call this function.");
+
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+    });
+
+    if (!project) throw new Error("Project not found.");
+
+    // Only allow unarchiving if project is currently archived
+    if (project.status !== "ARCHIVED") {
+      throw new Error("Can only unarchive projects that are archived.");
+    }
+
+    // Restore to OPEN status (or could restore to previous status if tracked)
+    await prisma.project.update({
+      where: { id: projectId },
+      data: {
+        status: "OPEN",
+      },
+    });
+
+    // Revalidate homepage and settings page
+    revalidatePath("/");
+    revalidatePath("/settings");
+
+    return project;
+  } catch (e) {
+    console.error("Error unarchiving project, ", e);
+    throw new Error("Failed to unarchive project.");
+  }
+}
+
 export async function updateProjectStatus(
   projectId: string,
   newStatus: ProjectStatus

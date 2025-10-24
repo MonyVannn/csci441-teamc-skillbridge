@@ -99,7 +99,7 @@ export function ProjectCard({
   return (
     <div className="container mx-auto">
       <div className="w-full flex items-center justify-between px-6 mt-5">
-        <h1 className="font-bold text-lg">Available Projects</h1>
+        <h1 className="font-semibold text-lg">Available Projects</h1>
         <div className="flex items-center">
           <Button
             variant="outline"

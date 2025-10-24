@@ -4,7 +4,13 @@ import Image from "next/image";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Badge } from "../ui/badge";
 import { AvailableProject, TimelineEntry } from "@/type";
-import { Archive, ArchiveRestore, Dot, Pencil } from "lucide-react";
+import {
+  Archive,
+  ArchiveRestore,
+  Dot,
+  MoreHorizontal,
+  Pencil,
+} from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ApplyButton } from "../application/ApplyButton";
 import { Separator } from "../ui/separator";
@@ -17,6 +23,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
 import { useEffect, useState } from "react";
 import {
   updateProjectStatus,
@@ -165,7 +177,7 @@ export function ProjectDetail({ project, timeline }: ProjectDetailProps) {
         } w-full`}
       >
         <div>
-          <div>
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 mb-2">
               <Avatar className="h-10 w-10 rounded-none">
                 <AvatarImage
@@ -180,8 +192,49 @@ export function ProjectDetail({ project, timeline }: ProjectDetailProps) {
                 {project.businessOwner.lastName}
               </h3>
             </div>
+            <div className="flex md:hidden items-center gap-2">
+              {isOwner && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm">
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => setIsEditModalOpen(true)}>
+                      <Pencil className="h-4 w-4 mr-2" />
+                      Edit Project
+                    </DropdownMenuItem>
+                    {project.status === "ARCHIVED" ? (
+                      <DropdownMenuItem
+                        onClick={() => setIsArchiveDialogOpen(true)}
+                        className="text-green-600 focus:text-green-700 focus:bg-green-50"
+                      >
+                        <ArchiveRestore className="h-4 w-4 mr-2" />
+                        Unarchive Project
+                      </DropdownMenuItem>
+                    ) : (
+                      <DropdownMenuItem
+                        onClick={() => setIsArchiveDialogOpen(true)}
+                        className="text-red-600 focus:text-red-700 focus:bg-red-50"
+                      >
+                        <Archive className="h-4 w-4 mr-2" />
+                        Archive Project
+                      </DropdownMenuItem>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+              {!isOwner &&
+                (dbUser === undefined ? (
+                  // Loading skeleton for Apply button
+                  <div className="h-10 w-32 bg-gray-200 animate-pulse rounded" />
+                ) : (
+                  dbUser.role === "USER" && <ApplyButton project={project} />
+                ))}
+            </div>
           </div>
-          <div className="flex items-center justify-between">
+          <div className="md:flex items-center justify-between">
             <div>
               <div className="text-2xl font-bold text-gray-900 mt-2">
                 {project.title}
@@ -202,39 +255,38 @@ export function ProjectDetail({ project, timeline }: ProjectDetailProps) {
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="hidden md:flex items-center gap-2">
               {isOwner && (
-                <>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setIsEditModalOpen(true)}
-                  >
-                    <Pencil className="h-4 w-4 mr-2" />
-                    Edit
-                  </Button>
-                  {project.status === "ARCHIVED" ? (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setIsArchiveDialogOpen(true)}
-                      className="text-green-600 hover:text-green-700 hover:bg-green-50"
-                    >
-                      <ArchiveRestore className="h-4 w-4 mr-2" />
-                      Unarchive
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm">
+                      <MoreHorizontal className="h-4 w-4" />
                     </Button>
-                  ) : (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setIsArchiveDialogOpen(true)}
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                    >
-                      <Archive className="h-4 w-4 mr-2" />
-                      Archive
-                    </Button>
-                  )}
-                </>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => setIsEditModalOpen(true)}>
+                      <Pencil className="h-4 w-4 mr-2" />
+                      Edit Project
+                    </DropdownMenuItem>
+                    {project.status === "ARCHIVED" ? (
+                      <DropdownMenuItem
+                        onClick={() => setIsArchiveDialogOpen(true)}
+                        className="text-green-600 focus:text-green-700 focus:bg-green-50"
+                      >
+                        <ArchiveRestore className="h-4 w-4 mr-2" />
+                        Unarchive Project
+                      </DropdownMenuItem>
+                    ) : (
+                      <DropdownMenuItem
+                        onClick={() => setIsArchiveDialogOpen(true)}
+                        className="text-red-600 focus:text-red-700 focus:bg-red-50"
+                      >
+                        <Archive className="h-4 w-4 mr-2" />
+                        Archive Project
+                      </DropdownMenuItem>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               )}
               {!isOwner &&
                 (dbUser === undefined ? (

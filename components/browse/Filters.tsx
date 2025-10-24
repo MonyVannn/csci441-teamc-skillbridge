@@ -30,6 +30,21 @@ export function Filters() {
     return [min ? parseInt(min, 10) : 5, max ? parseInt(max, 10) : 5000];
   });
 
+  // Sync state with URL params when they change
+  useEffect(() => {
+    const categories = searchParams.get("categories");
+    const scopes = searchParams.get("scopes");
+    const min = searchParams.get("minBudget");
+    const max = searchParams.get("maxBudget");
+
+    setSelectedCategories(categories ? categories.split(",") : []);
+    setSelectedScopes(scopes ? scopes.split(",") : []);
+    setBudgetRange([
+      min ? parseInt(min, 10) : 5,
+      max ? parseInt(max, 10) : 5000,
+    ]);
+  }, [searchParams]);
+
   // Update URL when filters change
   useEffect(() => {
     const params = new URLSearchParams(searchParams.toString());
@@ -102,8 +117,20 @@ export function Filters() {
   };
 
   return (
-    <div className="w-80 border-r border-gray-200 p-6 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="w-full lg:w-80 lg:border-r border-gray-200 p-4 lg:p-6 space-y-4 lg:space-y-6">
+      <div className="flex items-center justify-between lg:hidden">
+        <h2 className="text-lg font-semibold text-gray-900">Filters</h2>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-gray-500 hover:text-gray-700"
+          onClick={clearAllFilters}
+        >
+          Clear all
+        </Button>
+      </div>
+
+      <div className="hidden lg:flex items-center justify-between">
         <h2 className="text-lg font-semibold text-gray-900">Filters</h2>
         <Button
           variant="ghost"

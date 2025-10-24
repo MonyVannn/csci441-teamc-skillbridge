@@ -51,42 +51,47 @@ const HeaderContent: React.FC<HeaderContentProps> = ({
     return null;
 
   return (
-    <header className="bg-[#121212] border-b py-4 px-8 flex items-center justify-between">
-      <div className="text-gray-100 text-2xl font-black">
-        <Link href="/" className="-space-y-2">
+    <header className="relative bg-[#121212] border-b py-3 px-4 sm:py-4 sm:px-6 lg:px-8 flex items-center justify-between gap-2 sm:gap-4">
+      {/* Logo - Hide text on mobile, show only on tablet+ */}
+      <div className="text-gray-100 text-base sm:text-2xl font-bold md:font-black flex-shrink-0">
+        <Link href="/" className="-space-y-1 sm:-space-y-2">
           <h1>SKILL</h1>
           <h1>BRIDGE.</h1>
         </Link>
       </div>
-      <div className="text-gray-100 max-w-lg min-w-md">
+
+      {/* Search Bar - Responsive width */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 hidden lg:block text-gray-100 max-w-40 md:max-w-[300px] lg:max-w-[500px] w-full">
         <SearchBar />
       </div>
-      <div className="flex items-center gap-2">
-        <Link href={"/sign-in"}>
-          <Button
-            variant={"ghost"}
-            className="text-white font-medium rounded-full hover:bg-[#695DCC]/40 hover:text-white"
-          >
-            Sign in
-          </Button>
-        </Link>
+
+      {/* Actions - Stack on small screens, hide text on mobile */}
+      <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
         <SignedOut>
+          <Link href={"/sign-in"} className="hidden md:block">
+            <Button
+              variant={"ghost"}
+              className="text-white font-medium rounded-full hover:bg-[#695DCC]/40 hover:text-white"
+            >
+              Sign in
+            </Button>
+          </Link>
           <Link href="/sign-up">
-            <Button className="cursor-pointer bg-[#695DCC] hover:bg-[#695DCC]/80 font-semibold rounded-full">
-              Get Started
+            <Button className="cursor-pointer bg-[#695DCC] hover:bg-[#695DCC]/80 font-semibold rounded-full text-xs sm:text-sm px-3 sm:px-4">
+              <span>Get Started</span>
             </Button>
           </Link>
         </SignedOut>
         <SignedIn>
-          <div className="flex items-center gap-10">
+          <div className="flex items-center gap-2 sm:gap-4 lg:gap-10">
             {dbUser?.role === "BUSINESS_OWNER" && (
               <div>
                 <Button
                   onClick={() => setIsModalOpen(true)}
-                  className="flex items-center gap-2 px-6 py-3 bg-[#695DCC] hover:bg-[#695DCC]/80 font-medium"
+                  className="flex items-center rounded-full gap-1 px-3 sm:px-4 lg:px-6 py-2 sm:py-3 bg-[#695DCC] hover:bg-[#695DCC]/80 font-semibold text-xs sm:text-sm"
                 >
-                  <Plus className="h-5 w-5" />
-                  Post a Project
+                  <Plus className="h-4 w-4 sm:h-5 sm:w-5" />
+                  <span>Post a Project</span>
                 </Button>
                 <PostProjectModal
                   open={isModalOpen}
@@ -98,7 +103,7 @@ const HeaderContent: React.FC<HeaderContentProps> = ({
             <div className="relative pt-2">
               {totalUnrespondedApplications &&
                 totalUnrespondedApplications > 0 && (
-                  <div className="absolute top-0 -right-2 w-5 h-5 z-50 bg-red-400 rounded-full text-white font-bold text-xs flex items-center justify-center">
+                  <div className="absolute top-0 -right-1 sm:-right-2 w-4 h-4 sm:w-5 sm:h-5 z-50 bg-red-400 rounded-full text-white font-bold text-[10px] sm:text-xs flex items-center justify-center">
                     {totalUnrespondedApplications}
                   </div>
                 )}

@@ -267,10 +267,10 @@ export function EditProjectModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl min-w-3xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Edit Project</DialogTitle>
-          <DialogDescription>
+      <DialogContent className="w-[95vw] sm:w-full sm:max-w-2xl lg:max-w-4xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
+        <DialogHeader className="text-left">
+          <DialogTitle className="text-lg sm:text-xl">Edit Project</DialogTitle>
+          <DialogDescription className="text-xs sm:text-sm">
             Update your project details below.
           </DialogDescription>
         </DialogHeader>
@@ -278,7 +278,7 @@ export function EditProjectModal({
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(handleSubmit)}
-            className="space-y-6"
+            className="space-y-4 sm:space-y-6"
           >
             <FormField
               control={form.control}
@@ -361,25 +361,26 @@ export function EditProjectModal({
                 <FormItem>
                   <FormLabel>Required Skills *</FormLabel>
                   <FormControl>
-                    <div className="space-y-3">
+                    <div className="space-y-2 sm:space-y-3">
                       <div className="flex gap-2">
                         <Input
                           placeholder="Type a skill and press Enter"
                           value={skillInput}
                           onChange={(e) => setSkillInput(e.target.value)}
                           onKeyPress={handleKeyPress}
-                          className="flex-1"
+                          className="flex-1 text-sm"
                         />
                         <Button
                           type="button"
                           variant="outline"
                           onClick={() => addSkill(skillInput.trim())}
+                          className="px-3 sm:px-4"
                         >
                           Add
                         </Button>
                       </div>
 
-                      <div className="flex flex-wrap gap-2">
+                      <div className="flex flex-wrap gap-1.5 sm:gap-2">
                         {commonSkills.slice(0, 12).map((skill) => (
                           <Button
                             key={skill}
@@ -387,7 +388,7 @@ export function EditProjectModal({
                             variant="outline"
                             size="sm"
                             onClick={() => addSkill(skill)}
-                            className="text-xs"
+                            className="text-[10px] sm:text-xs px-2 py-1 h-auto"
                           >
                             {skill}
                           </Button>
@@ -395,14 +396,14 @@ export function EditProjectModal({
                       </div>
 
                       {selectedSkills.length > 0 && (
-                        <div className="flex flex-wrap gap-2">
+                        <div className="flex flex-wrap gap-1.5 sm:gap-2">
                           {selectedSkills.map((skill) => (
                             <Badge
                               key={skill}
                               variant="secondary"
-                              className="flex items-center gap-1 pr-1"
+                              className="flex items-center gap-0.5 sm:gap-1 pr-0.5 sm:pr-1 text-xs"
                             >
-                              <span className="pl-1">{skill}</span>
+                              <span className="pl-1 sm:pl-1.5">{skill}</span>
                               <button
                                 type="button"
                                 aria-label={`Remove ${skill}`}
@@ -410,9 +411,9 @@ export function EditProjectModal({
                                   e.stopPropagation();
                                   removeSkill(skill);
                                 }}
-                                className="inline-flex h-5 w-5 items-center justify-center rounded hover:bg-muted/70 focus:outline-none focus:ring-2 focus:ring-ring"
+                                className="inline-flex h-4 w-4 sm:h-5 sm:w-5 items-center justify-center rounded hover:bg-muted/70 focus:outline-none focus:ring-2 focus:ring-ring"
                               >
-                                <X className="h-3.5 w-3.5" />
+                                <X className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                               </button>
                             </Badge>
                           ))}
@@ -420,7 +421,7 @@ export function EditProjectModal({
                       )}
                     </div>
                   </FormControl>
-                  <FormDescription>
+                  <FormDescription className="text-xs">
                     Add skills required for this project. You can type custom
                     skills or click the suggested ones.
                   </FormDescription>
@@ -429,7 +430,7 @@ export function EditProjectModal({
               )}
             />
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
               <FormField
                 control={form.control}
                 name="category"
@@ -509,7 +510,7 @@ export function EditProjectModal({
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
               <FormField
                 control={form.control}
                 name="startDate"
@@ -522,16 +523,18 @@ export function EditProjectModal({
                           <Button
                             variant="outline"
                             className={cn(
-                              "pl-3 text-left font-normal",
+                              "pl-2 sm:pl-3 text-left font-normal text-xs sm:text-sm w-full",
                               !field.value && "text-muted-foreground"
                             )}
                           >
                             {field.value ? (
-                              format(field.value, "PPP")
+                              <span className="truncate">
+                                {format(field.value, "PPP")}
+                              </span>
                             ) : (
                               <span>Pick a date</span>
                             )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            <CalendarIcon className="ml-auto h-3.5 w-3.5 sm:h-4 sm:w-4 opacity-50 flex-shrink-0" />
                           </Button>
                         </FormControl>
                       </PopoverTrigger>
@@ -562,16 +565,18 @@ export function EditProjectModal({
                           <Button
                             variant="outline"
                             className={cn(
-                              "pl-3 text-left font-normal",
+                              "pl-2 sm:pl-3 text-left font-normal text-xs sm:text-sm w-full",
                               !field.value && "text-muted-foreground"
                             )}
                           >
                             {field.value ? (
-                              format(field.value, "PPP")
+                              <span className="truncate">
+                                {format(field.value, "PPP")}
+                              </span>
                             ) : (
                               <span>Pick a date</span>
                             )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            <CalendarIcon className="ml-auto h-3.5 w-3.5 sm:h-4 sm:w-4 opacity-50 flex-shrink-0" />
                           </Button>
                         </FormControl>
                       </PopoverTrigger>
@@ -602,16 +607,18 @@ export function EditProjectModal({
                           <Button
                             variant="outline"
                             className={cn(
-                              "pl-3 text-left font-normal",
+                              "pl-2 sm:pl-3 text-left font-normal text-xs sm:text-sm w-full",
                               !field.value && "text-muted-foreground"
                             )}
                           >
                             {field.value ? (
-                              format(field.value, "PPP")
+                              <span className="truncate">
+                                {format(field.value, "PPP")}
+                              </span>
                             ) : (
                               <span>Pick a date</span>
                             )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            <CalendarIcon className="ml-auto h-3.5 w-3.5 sm:h-4 sm:w-4 opacity-50 flex-shrink-0" />
                           </Button>
                         </FormControl>
                       </PopoverTrigger>
@@ -631,16 +638,17 @@ export function EditProjectModal({
               />
             </div>
 
-            <div className="flex justify-between pt-4">
+            <div className="flex flex-col sm:flex-row justify-between gap-3 pt-4">
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => onOpenChange(false)}
                 disabled={isUpdating}
+                className="w-full sm:w-auto"
               >
                 Cancel
               </Button>
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                 {project.status === "DRAFT" && (
                   <>
                     <Button
@@ -648,6 +656,7 @@ export function EditProjectModal({
                       variant="secondary"
                       onClick={handleSaveAsDraft}
                       disabled={isUpdating}
+                      className="w-full sm:w-auto"
                     >
                       {isUpdating ? "Saving..." : "Save as Draft"}
                     </Button>
@@ -655,13 +664,18 @@ export function EditProjectModal({
                       type="button"
                       onClick={handlePublishDraft}
                       disabled={isUpdating}
+                      className="w-full sm:w-auto"
                     >
                       {isUpdating ? "Publishing..." : "Publish Draft"}
                     </Button>
                   </>
                 )}
                 {project.status !== "DRAFT" && (
-                  <Button type="submit" disabled={isUpdating}>
+                  <Button
+                    type="submit"
+                    disabled={isUpdating}
+                    className="w-full sm:w-auto"
+                  >
                     {isUpdating ? "Updating..." : "Update Project"}
                   </Button>
                 )}

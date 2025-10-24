@@ -46,7 +46,7 @@ export function ProjectDetail({ project, timeline }: ProjectDetailProps) {
 
   useEffect(() => {
     const fetchUser = async () => {
-      if (user) {
+      if (user?.id && !dbUser) {
         try {
           const userData = await getUser();
           setDbUser(userData);
@@ -57,7 +57,7 @@ export function ProjectDetail({ project, timeline }: ProjectDetailProps) {
     };
 
     fetchUser();
-  }, [user]);
+  }, [user?.id, dbUser]);
 
   const getStatusChangeMessage = () => {
     switch (project.status) {
@@ -206,9 +206,13 @@ export function ProjectDetail({ project, timeline }: ProjectDetailProps) {
                   </Button>
                 </>
               )}
-              {!isOwner && dbUser?.role === "USER" && (
-                <ApplyButton project={project} />
-              )}
+              {!isOwner &&
+                (dbUser === undefined ? (
+                  // Loading skeleton for Apply button
+                  <div className="h-10 w-32 bg-gray-200 animate-pulse rounded" />
+                ) : (
+                  dbUser.role === "USER" && <ApplyButton project={project} />
+                ))}
             </div>
           </div>
         </div>

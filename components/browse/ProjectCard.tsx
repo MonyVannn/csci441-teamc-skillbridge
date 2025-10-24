@@ -245,7 +245,7 @@ export function ProjectCard({
                     href={`/profile/${project.businessOwner.clerkId}`}
                     className="group flex items-center gap-2 mb-2 cursor-pointer"
                   >
-                    <Avatar className="h-8 w-8  rounded-none group-hover:scale-105 transition-transform">
+                    <Avatar className="h-8 w-8 rounded-none group-hover:scale-105 transition-transform">
                       <AvatarImage
                         src={
                           project.businessOwner.imageUrl || "/placeholder.svg"

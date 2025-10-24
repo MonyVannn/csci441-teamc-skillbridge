@@ -217,7 +217,7 @@ export function ProjectCard({
 
                   {/* Seller Info */}
                   <div className="flex items-center gap-2 mb-2">
-                    <Avatar className="h-5 w-5 ">
+                    <Avatar className="h-5 w-5">
                       <AvatarImage
                         src={
                           project.businessOwner.imageUrl || "/placeholder.svg"

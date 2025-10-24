@@ -2,7 +2,7 @@
 
 ## Overview
 
-This directory contains unit tests for the SkillBridge application using Jest and React Testing Library.
+This directory contains unit and integration tests for the SkillBridge application using Jest and React Testing Library.
 
 ## Test Files
 
@@ -49,6 +49,202 @@ The marketplace page is an async server component that:
 ##### 5. Layout and Structure (2 tests)
 - ✅ Has correct CSS classes for responsive design
 - ✅ Renders all main sections (filters, mobile filters, project list)
+
+### `components/Header.test.tsx`
+
+Comprehensive unit and integration tests for the Header and HeaderContent components, which provide the main navigation and user interface elements.
+
+#### What's Being Tested
+
+The Header is an async server component that:
+- Fetches user authentication state
+- Retrieves unresponded application counts for business owners
+- Renders HeaderContent with user data and application notifications
+
+The HeaderContent is a client component that:
+- Displays the SKILLBRIDGE logo and navigation
+- Shows different UI elements based on user authentication state
+- Provides role-specific features (USER vs BUSINESS_OWNER)
+- Displays notification badges for unresponded applications
+- Handles client-side user data fetching when needed
+
+#### Test Coverage
+
+**49 test cases** organized into 11 categories:
+
+##### 1. Server Component Rendering (5 tests)
+- ✅ Calls getUserOrNull to fetch user data
+- ✅ Calls getTotalUnrespondedApplication for BUSINESS_OWNER users
+- ✅ Does not call getTotalUnrespondedApplication for USER role
+- ✅ Handles errors when fetching unresponded applications
+- ✅ Renders HeaderContent with user and applications data
+
+##### 2. Brand/Logo Rendering (3 tests)
+- ✅ Renders the SKILLBRIDGE logo with correct text
+- ✅ Renders logo as a link to homepage (/)
+- ✅ Applies correct styling classes to logo
+
+##### 3. Navigation and Search Bar (2 tests)
+- ✅ Renders search bar component
+- ✅ Renders search bar in center position on large screens
+
+##### 4. Signed Out State (5 tests)
+- ✅ Renders "Sign in" button when user is signed out
+- ✅ Renders "Get Started" button when user is signed out
+- ✅ Links "Sign in" button to /sign-in
+- ✅ Links "Get Started" button to /sign-up
+- ✅ Does not render UserButton when signed out
+
+##### 5. Signed In State - USER Role (7 tests)
+- ✅ Renders UserButton when signed in
+- ✅ Renders Bio profile page for USER role
+- ✅ Renders Experience profile page for USER role
+- ✅ Renders Education profile page for USER role
+- ✅ Renders Applications profile page for USER role
+- ✅ Renders profile link with correct URL for USER role
+- ✅ Does not render "Post a Project" button for USER role
+- ✅ Does not render Posted Projects page for USER role
+
+##### 6. Signed In State - BUSINESS_OWNER Role (7 tests)
+- ✅ Renders "Post a Project" button for BUSINESS_OWNER role
+- ✅ Opens PostProjectModal when "Post a Project" is clicked
+- ✅ Renders Bio profile page for BUSINESS_OWNER role
+- ✅ Renders Posted Projects profile page for BUSINESS_OWNER role
+- ✅ Renders Applications profile page for BUSINESS_OWNER role
+- ✅ Does not render Experience page for BUSINESS_OWNER role
+- ✅ Does not render Education page for BUSINESS_OWNER role
+
+##### 7. Notification Badge Display (5 tests)
+- ✅ Displays notification badge when unresponded applications > 0
+- ✅ Does not display notification badge when unresponded applications = 0
+- ✅ Does not display notification badge when unresponded applications is null
+- ✅ Displays correct count in notification badge
+- ✅ Styles notification badge with red background
+
+##### 8. Accessibility (6 tests)
+- ✅ Renders header as a semantic header element
+- ✅ Has proper heading hierarchy for logo (H1 elements)
+- ✅ Has accessible button elements for actions
+- ✅ Has proper link elements with href attributes
+- ✅ Uses semantic navigation structure
+- ✅ Has visible focus indicators on interactive elements
+
+##### 9. Client-Side User Fetching (2 tests)
+- ✅ Fetches user from database when Clerk user loads
+- ✅ Does not fetch user if already provided via server props
+
+##### 10. Path-based Rendering (3 tests)
+- ✅ Does not render header on sign-in page
+- ✅ Does not render header on sign-up page
+- ✅ Renders header on other pages
+
+##### 11. Responsive Design (3 tests)
+- ✅ Applies responsive classes to logo
+- ✅ Applies responsive classes to action buttons
+- ✅ Hides search bar on small screens
+
+### `components/Footer.test.tsx`
+
+Comprehensive unit tests for the Footer component, which provides site-wide navigation links and branding.
+
+#### What's Being Tested
+
+The Footer is a client component that:
+- Displays the SKILLBRIDGE logo and tagline
+- Provides navigation links organized into three sections (Company, Need Help, Community)
+- Shows copyright information
+- Conditionally renders based on current pathname (hides on auth pages)
+- Uses responsive design for mobile, tablet, and desktop layouts
+
+#### Test Coverage
+
+**60 test cases** organized into 12 categories:
+
+##### 1. Basic Rendering (3 tests)
+- ✅ Renders the footer element
+- ✅ Has correct background styling
+- ✅ Renders within a container
+
+##### 2. Logo and Tagline (5 tests)
+- ✅ Renders the SKILLBRIDGE logo
+- ✅ Renders logo with correct styling
+- ✅ Uses h1 tags for logo text
+- ✅ Renders the tagline text
+- ✅ Styles tagline with correct classes
+
+##### 3. Company Section (5 tests)
+- ✅ Renders COMPANY section header
+- ✅ Renders COMPANY header as h3
+- ✅ Renders ABOUT US link
+- ✅ Renders EXPLORE link
+- ✅ Has correct link styling for Company links
+
+##### 4. Need Help Section (5 tests)
+- ✅ Renders NEED HELP? section header
+- ✅ Renders NEED HELP? header as h3
+- ✅ Renders CONTACT US link
+- ✅ Renders BLOG link
+- ✅ Has correct link styling for Help links
+
+##### 5. Community Section (6 tests)
+- ✅ Renders COMMUNITY section header
+- ✅ Renders COMMUNITY header as h3
+- ✅ Renders X (Twitter) link
+- ✅ Renders LINKEDIN link
+- ✅ Renders INSTAGRAM link
+- ✅ Has correct link styling for Community links
+
+##### 6. Copyright Section (4 tests)
+- ✅ Renders copyright text
+- ✅ Displays current year 2025 in copyright
+- ✅ Styles copyright text correctly
+- ✅ Has border separator above copyright
+
+##### 7. Link Structure (3 tests)
+- ✅ Renders all links as anchor elements
+- ✅ Has href attributes on all links
+- ✅ Has placeholder href="#" for all links
+
+##### 8. Footer Blocks Presence (4 tests)
+- ✅ Has three main navigation columns
+- ✅ Has logo/tagline block
+- ✅ Has copyright block
+- ✅ Renders all major blocks in correct order
+
+##### 9. Responsive Layout (4 tests)
+- ✅ Applies responsive grid classes to main layout
+- ✅ Applies responsive grid classes to navigation columns
+- ✅ Applies correct column spans for logo section
+- ✅ Applies correct column positioning for navigation
+
+##### 10. Accessibility (5 tests)
+- ✅ Uses semantic footer element
+- ✅ Has proper heading hierarchy
+- ✅ Has accessible link elements
+- ✅ Uses unordered lists for navigation
+- ✅ Uses list items for each link
+
+##### 11. Path-based Rendering (5 tests)
+- ✅ Does not render footer on sign-in page
+- ✅ Does not render footer on sign-up page
+- ✅ Does not render footer on sign-in subpaths
+- ✅ Renders footer on homepage
+- ✅ Renders footer on other pages
+
+##### 12. Styling and Visual Design (5 tests)
+- ✅ Has dark background theme
+- ✅ Has appropriate padding
+- ✅ Has gap between grid items
+- ✅ Applies hover styles to links
+- ✅ Applies transition effects to links
+
+##### 13. Content Validation (6 tests)
+- ✅ Contains exactly 7 navigation links
+- ✅ Contains exactly 3 section headers
+- ✅ Has all Company section links
+- ✅ Has all Help section links
+- ✅ Has all Community section links
+- ✅ Contains SkillBridge branding in both logo and copyright
 
 ## Running Tests
 

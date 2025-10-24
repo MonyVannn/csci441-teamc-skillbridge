@@ -26,7 +26,7 @@ export function SearchBar() {
       <Input
         type="search"
         placeholder="Search projects"
-        className="pl-8 border-gray-400 text-sm md:text-base"
+        className="pl-8 border-gray-300 text-sm md:text-base"
         value={query}
         onChange={handleSearchChange}
       />

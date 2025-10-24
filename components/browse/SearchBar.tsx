@@ -21,12 +21,12 @@ export function SearchBar() {
   };
 
   return (
-    <div className="relative">
-      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4" />
+    <div className="relative w-full">
+      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-3 w-3 md:h-4 md:w-4" />
       <Input
         type="search"
         placeholder="Search projects"
-        className="pl-10 border-gray-100"
+        className="pl-8 border-gray-400 text-sm md:text-base"
         value={query}
         onChange={handleSearchChange}
       />

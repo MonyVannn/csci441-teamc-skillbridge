@@ -61,11 +61,19 @@ const HeaderContent: React.FC<HeaderContentProps> = ({
       <div className="text-gray-100 max-w-lg min-w-md">
         <SearchBar />
       </div>
-      <div>
+      <div className="flex items-center gap-2">
+        <Link href={"/sign-in"}>
+          <Button
+            variant={"ghost"}
+            className="text-white font-medium rounded-full hover:bg-[#695DCC]/40 hover:text-white"
+          >
+            Sign in
+          </Button>
+        </Link>
         <SignedOut>
           <Link href="/sign-up">
-            <Button className="cursor-pointer bg-[#695DCC] hover:bg-[#695DCC]/80 font-bold">
-              Sign Up
+            <Button className="cursor-pointer bg-[#695DCC] hover:bg-[#695DCC]/80 font-semibold rounded-full">
+              Get Started
             </Button>
           </Link>
         </SignedOut>

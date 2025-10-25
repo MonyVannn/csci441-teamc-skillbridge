@@ -221,8 +221,7 @@ COMPLETED (15%):   Finished projects     ━━━━━
 ### Badge Assignment Logic
 
 **Skill Level Badges:**
-- `NEWBIE`: 1+ projects completed
-- `BEGINNER`: 3+ projects completed
+- `BEGINNER`: 1+ projects completed
 - `INTERMEDIATE`: 10+ projects completed
 - `ADVANCED`: 25+ projects completed
 

@@ -314,7 +314,7 @@ export function ProjectCard({
                   </h3>
                   <ul className="text-gray-900 mt-3 sm:mt-5 list-disc list-inside ml-2 sm:ml-4">
                     {project.responsibilities
-                      ?.split(/-/)
+                      ?.split(/•/)
                       .map((responsibility) => {
                         const cleanText = responsibility.trim();
                         return (
@@ -328,7 +328,7 @@ export function ProjectCard({
                 <div className="text-xs sm:text-sm">
                   <h3 className="font-semibold text-gray-900">Deliverables</h3>
                   <ul className="text-gray-900 mt-3 sm:mt-5 list-disc list-inside ml-2 sm:ml-4">
-                    {project.deliverables?.split(/-/).map((deliverable) => {
+                    {project.deliverables?.split(/•/).map((deliverable) => {
                       const cleanText = deliverable.trim();
                       return (
                         cleanText && ( // skip empty strings

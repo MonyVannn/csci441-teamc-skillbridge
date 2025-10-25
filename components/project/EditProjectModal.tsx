@@ -330,7 +330,7 @@ export function EditProjectModal({
               )}
             />
             <p className="text-sm text-muted-foreground -mt-4">
-              Start a new responsibility with a dash (&apos;-&apos;)
+              Start a new responsibility with this dot (&apos;•&apos;)
             </p>
 
             <FormField
@@ -351,7 +351,7 @@ export function EditProjectModal({
               )}
             />
             <p className="text-sm text-muted-foreground -mt-4">
-              Start a new deliverable with a dash (&apos;-&apos;)
+              Start a new deliverable with this dot (&apos;•&apos;)
             </p>
 
             <FormField

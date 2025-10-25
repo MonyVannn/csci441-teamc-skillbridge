@@ -6,16 +6,16 @@ This directory contains comprehensive unit and integration tests for the SkillBr
 
 ## Test Statistics
 
-**Total: 319 Tests** across 10 test suites - ✅ **100% Passing**
+**Total: 371 Tests** across 11 test suites - ✅ **100% Passing**
 
 | Category | Files | Tests | Coverage |
 |----------|-------|-------|----------|
 | **Unit Tests** | 7 | 220 | Pages, components, middleware |
-| **Integration Tests** | 3 | 99 | Sign-in, sign-up, webhooks |
+| **Integration Tests** | 5 | 151 | Sign-in, sign-up, webhooks, browse, profile |
 | **App Pages** | 3 | 57 | Root layout, project details, user profiles |
 | **Components** | 2 | 109 | Header and Footer navigation |
 | **Root Pages** | 2 | 54 | Home page marketplace, middleware |
-| **TOTAL** | **10** | **319** | **Complete application coverage** |
+| **TOTAL** | **11** | **371** | **Complete application coverage** |
 
 ## Test Organization
 
@@ -23,10 +23,12 @@ This directory contains comprehensive unit and integration tests for the SkillBr
 
 ```
 __tests__/
-├── integration/                  # Integration tests (99 tests)
-│   ├── signin.test.tsx          # Sign-in flow integration (52 tests)
+├── integration/                  # Integration tests (151 tests)
+│   ├── signin.test.tsx          # Sign-in flow integration (29 tests)
 │   ├── signup.test.tsx          # Sign-up flow integration (32 tests)
-│   └── webhook.test.ts          # Clerk webhook integration (15 tests)
+│   ├── webhook.test.ts          # Clerk webhook integration (15 tests)
+│   ├── browse-projects.test.tsx # Browse projects integration (29 tests)
+│   └── profile.test.tsx         # Profile page integration (23 tests)
 ├── app/                          # App Router pages (57 tests)
 │   ├── layout.test.tsx          # Root layout metadata (4 tests)
 │   ├── project/
@@ -42,9 +44,9 @@ __tests__/
 
 ## Test Coverage by Area
 
-### 1. Integration Tests (99 tests)
+### 1. Integration Tests (151 tests)
 
-#### Sign-in Flow (`integration/signin.test.tsx`) - 52 tests
+#### Sign-in Flow (`integration/signin.test.tsx`) - 29 tests
 **Focus:** Complete sign-in authentication flow with Clerk
 - ✅ Sign-in page rendering and structure
 - ✅ Accessibility features (ARIA labels, autocomplete, keyboard navigation)
@@ -97,6 +99,69 @@ __tests__/
 - Svix webhook verification library
 - Custom Request/Response polyfills for testing
 - Server action integration (createUser)
+
+#### Browse Projects Flow (`integration/browse-projects.test.tsx`) - 29 tests
+**Focus:** Project browsing, filtering, and search functionality
+- ✅ Available projects fetching (getAvailableProjects server action)
+- ✅ Pagination support (page parameter, limit, offset)
+- ✅ Search functionality (project title and description)
+- ✅ Category filtering (single and multiple categories)
+- ✅ Scope filtering (LONG_TERM, MEDIUM_TERM, SHORT_TERM)
+- ✅ Budget range filtering (min/max)
+- ✅ Required skills filtering
+- ✅ Combined filters (search + category + scope + budget + skills)
+- ✅ Empty state (no projects match filters)
+- ✅ Project count accuracy
+- ✅ Ordering by createdAt desc
+- ✅ Error handling (database failures)
+
+**Key Technologies:**
+- Direct server action testing (getAvailableProjects)
+- Prisma mock with custom mockFindMany and mockCount functions
+- ProjectScope enum validation
+- Complex filter combinations
+
+#### Profile Page (`integration/profile.test.tsx`) - 23 tests
+**Focus:** User profile data fetching and display
+- ✅ getUserByClerkId server action - user data fetching (7 tests)
+  - Successful user fetch by Clerk ID
+  - User not found (returns null)
+  - Database error handling
+  - User with all badge arrays
+  - User with empty badge arrays
+  - User with multiple experiences and education
+  - Organization user (role: ORGANIZATION)
+- ✅ getCompletedProjectsByAssignedStudentId server action - projects fetching (7 tests)
+  - Successful completed projects fetch
+  - Empty array when user has no completed projects
+  - Error when user is not found
+  - Projects ordered by completedAt date (desc)
+  - BusinessOwner details inclusion
+  - Database error handling
+  - Multiple completed projects with various categories
+- ✅ Profile page integration scenarios (5 tests)
+  - Fetch user data and completed projects for profile display
+  - Handle profile not found scenario
+  - Display user with badges but no completed projects
+  - Display organization profile without experiences/education
+  - Handle user with extensive profile data
+- ✅ Error handling and edge cases (4 tests)
+  - Null values in optional user fields
+  - Projects with null businessOwner fields
+  - Concurrent user and projects fetch
+  - Large badge arrays (50+ items)
+
+**Key Data Structures:**
+- **User Model**: clerkId, email, firstName, lastName, imageUrl, role, intro, bio, address, occupied, totalHoursContributed, projectsCompleted, industriesExperienced, socialLinks, experiences, education, earnedSkillBadges, earnedSpecializationBadges, earnedEngagementBadges
+- **Project Model**: title, description, category, scope, status, requiredSkills, startDate, estimatedEndDate, completedAt, assignedStudentId, businessOwnerId
+- **BusinessOwner Selection**: id, imageUrl, firstName, lastName, address, bio, intro
+
+**Testing Strategy:**
+- Test server actions directly (Server Components cannot be rendered)
+- Mock Prisma database operations
+- Validate data transformations
+- Test error scenarios (user not found, database failures)
+- Verify data structure completeness
 
 **Integration Test Architecture:**
 ```

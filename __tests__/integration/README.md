@@ -6,13 +6,14 @@ This directory contains integration tests that verify complete user flows and AP
 
 ## Test Statistics
 
-**Total: 47 Integration Tests** - ✅ **100% Passing**
+**Total: 99 Integration Tests** - ✅ **100% Passing**
 
 | Test Suite | Tests | Focus |
 |------------|-------|-------|
+| `signin.test.tsx` | 52 | Complete sign-in authentication flow |
 | `signup.test.tsx` | 32 | Complete sign-up user journey |
 | `webhook.test.ts` | 15 | Clerk webhook processing |
-| **TOTAL** | **47** | **End-to-end flow validation** |
+| **TOTAL** | **99** | **End-to-end flow validation** |
 
 ## What Are Integration Tests?
 
@@ -26,7 +27,113 @@ Integration tests verify the interaction between multiple components, services, 
 
 ## Test Files
 
-### 1. `signup.test.tsx` - Sign-up Flow Integration (32 tests)
+### 1. `signin.test.tsx` - Sign-in Flow Integration (52 tests)
+
+Tests the complete user sign-in authentication flow including UI, form validation, error handling, and security features.
+
+#### Test Categories
+
+**Sign-in Page Rendering (8 tests)**
+- Page structure and container rendering
+- Clerk SignIn component integration
+- Background image rendering
+- Form fields and submit button
+- Helper links (forgot password, sign up)
+
+**Accessibility (5 tests)**
+- ARIA labels for required fields
+- Autocomplete attributes (email, current-password)
+- Error display with proper ARIA roles
+- Keyboard navigation support
+- Accessible form labels
+
+**Responsive Design (3 tests)**
+- Responsive container classes (min-h-screen, flex, center)
+- Responsive padding
+- Content centering on all screen sizes
+
+**Form Interaction (6 tests)**
+- Email field typing
+- Password field typing
+- Remember me checkbox
+- Complete form fill
+- Password field masking
+- Form submission
+
+**Authentication Scenarios - Success (4 tests)**
+- Redirect URL configuration
+- Valid credentials authentication
+- OAuth sign-in options (Google, GitHub)
+- OAuth button clicks
+
+**Authentication Scenarios - Validation Errors (6 tests)**
+- Email input type validation
+- Field placeholders
+- Empty form submission
+- Missing email field
+- Missing password field
+- Invalid email format
+
+**Authentication Scenarios - Error Cases (5 tests)**
+- Error display for authentication failures
+- Invalid credentials handling
+- Locked account scenario
+- Too many login attempts
+- Unverified email handling
+
+**Edge Cases (5 tests)**
+- Very long email addresses
+- Special characters in password
+- Email with plus addressing
+- Rapid form submission
+- Paste events in form fields
+
+**Navigation and Links (3 tests)**
+- Forgot password link
+- Sign up link
+- Sign up call to action
+
+**Complete Sign-in Flow Integration (4 tests)**
+- Full sign-in flow with valid credentials
+- Complete flow with OAuth
+- Flow switching from OAuth to email
+- Form state maintenance during interaction
+
+**Security Features (3 tests)**
+- Password input type masking
+- Autocomplete attributes for security
+- Password not exposed in DOM
+
+#### Key Technologies
+
+```typescript
+// Clerk authentication mocking
+jest.mock("@clerk/nextjs", () => ({
+  SignIn: ({ redirectUrl, appearance }: any) => (
+    <div data-testid="clerk-signin">
+      <form data-testid="signin-form">
+        <input name="email" type="email" placeholder="Enter your email" />
+        <input name="password" type="password" placeholder="Enter your password" />
+        <input type="checkbox" name="remember" />
+        <button type="submit">Sign in</button>
+        {/* OAuth buttons */}
+        <button type="button" data-testid="google-oauth">Continue with Google</button>
+        <button type="button" data-testid="github-oauth">Continue with GitHub</button>
+      </form>
+    </div>
+  ),
+}));
+
+// Background image mocking
+jest.mock("next/image", () => ({
+  __esModule: true,
+  default: ({ src, alt, fill }: any) => (
+    <img src={src} alt={alt} data-testid="background-image" />
+  ),
+}));
+```
+
+### 2. `signup.test.tsx` - Sign-up Flow Integration (32 tests)
 
 Tests the complete user sign-up journey including UI, form interaction, and database integration.
 
@@ -109,7 +216,7 @@ jest.mock("@/lib/actions/user", () => ({
 }));
 ```
 
-### 2. `webhook.test.ts` - Webhook Integration (15 tests)
+### 3. `webhook.test.ts` - Webhook Integration (15 tests)
 
 Tests the Clerk webhook handler that processes user creation events.
 

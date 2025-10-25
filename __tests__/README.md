@@ -6,16 +6,16 @@ This directory contains comprehensive unit and integration tests for the SkillBr
 
 ## Test Statistics
 
-**Total: 267 Tests** across 9 test suites - ✅ **100% Passing**
+**Total: 319 Tests** across 10 test suites - ✅ **100% Passing**
 
 | Category | Files | Tests | Coverage |
 |----------|-------|-------|----------|
 | **Unit Tests** | 7 | 220 | Pages, components, middleware |
-| **Integration Tests** | 2 | 47 | Sign-up flow, webhooks |
+| **Integration Tests** | 3 | 99 | Sign-in, sign-up, webhooks |
 | **App Pages** | 3 | 57 | Root layout, project details, user profiles |
 | **Components** | 2 | 109 | Header and Footer navigation |
 | **Root Pages** | 2 | 54 | Home page marketplace, middleware |
-| **TOTAL** | **9** | **267** | **Complete application coverage** |
+| **TOTAL** | **10** | **319** | **Complete application coverage** |
 
 ## Test Organization
 
@@ -23,7 +23,8 @@ This directory contains comprehensive unit and integration tests for the SkillBr
 
 ```
 __tests__/
-├── integration/                  # Integration tests (47 tests)
+├── integration/                  # Integration tests (99 tests)
+│   ├── signin.test.tsx          # Sign-in flow integration (52 tests)
 │   ├── signup.test.tsx          # Sign-up flow integration (32 tests)
 │   └── webhook.test.ts          # Clerk webhook integration (15 tests)
 ├── app/                          # App Router pages (57 tests)
@@ -41,7 +42,27 @@ __tests__/
 
 ## Test Coverage by Area
 
-### 1. Integration Tests (47 tests)
+### 1. Integration Tests (99 tests)
+
+#### Sign-in Flow (`integration/signin.test.tsx`) - 52 tests
+**Focus:** Complete sign-in authentication flow with Clerk
+- ✅ Sign-in page rendering and structure
+- ✅ Accessibility features (ARIA labels, autocomplete, keyboard navigation)
+- ✅ Responsive design (mobile/desktop layouts)
+- ✅ Form interaction (email, password, remember me, submission)
+- ✅ Authentication success scenarios (valid credentials, OAuth)
+- ✅ Validation errors (missing fields, invalid format)
+- ✅ Error cases (invalid credentials, locked accounts, unverified email)
+- ✅ Edge cases (long emails, special characters, rapid submission)
+- ✅ Navigation and links (forgot password, sign up)
+- ✅ Complete sign-in flow integration
+- ✅ Security features (password masking, autocomplete attributes)
+
+**Key Technologies:**
+- Clerk SignIn component with realistic form mocking
+- Jest mocks for Clerk, Next.js Image
+- React Testing Library for user interactions
+- OAuth provider mocking (Google, GitHub)
 
 #### Sign-up Flow (`integration/signup.test.tsx`) - 32 tests
 **Focus:** Complete sign-up user journey with Clerk authentication
@@ -79,6 +100,13 @@ __tests__/
 
 **Integration Test Architecture:**
 ```
+Sign-in Flow:
+1. User visits sign-in page
+2. Fills email and password
+3. Clerk handles authentication
+4. User redirected to dashboard on success
+5. Errors displayed for invalid credentials
+
 Sign-up Flow:
 1. User fills Clerk sign-up form
 2. Clerk creates user account
@@ -393,23 +421,24 @@ Each test directory contains detailed documentation:
 
 - **`__tests__/app/README.md`** - App Router testing guide
 - **`__tests__/app/IMPLEMENTATION_SUMMARY.md`** - Detailed implementation notes
+- **`__tests__/integration/README.md`** - Integration testing comprehensive guide
 - **Individual test files** - Inline comments explaining complex test scenarios
 
 ## Test Quality Standards
 
-✅ **All tests passing** - 267/267 tests pass consistently  
+✅ **All tests passing** - 319/319 tests pass consistently  
 ✅ **TypeScript strict mode** - Full type checking enabled  
 ✅ **No compilation errors** - Clean build with zero warnings  
 ✅ **Comprehensive coverage** - Unit and integration tests covering happy path, edge cases, and error scenarios  
 ✅ **User-centric approach** - Tests focus on user interactions, not implementation  
 ✅ **Well-documented** - Clear descriptions and inline comments  
-✅ **Fast execution** - Complete suite runs in ~7 seconds  
+✅ **Fast execution** - Complete suite runs in ~15 seconds  
 ✅ **Custom polyfills** - No external dependencies for Web API testing  
 
 ## Continuous Integration
 
 Tests are designed to run in CI/CD pipelines:
-- Fast execution time (~7 seconds for full suite)
+- Fast execution time (~15 seconds for full suite)
 - No external dependencies required
 - Custom Web API polyfills avoid runtime dependencies
 - Deterministic results (no flaky tests)
@@ -422,14 +451,14 @@ Tests are designed to run in CI/CD pipelines:
 2. **Visual Regression Tests** - Screenshot comparisons
 3. **Performance Tests** - Load time and rendering performance
 4. **Accessibility Tests** - Automated a11y audits
-5. **More Integration Tests** - Expand to other features (project posting, applications, settings)
+5. **More Integration Tests** - Expand to other features (project posting, applications, settings, profile pages)
 
 ### Areas for Expansion
 - Additional integration tests (browse, profile, project pages)
-- More webhook scenarios (user updates, deletions)
+- More authentication scenarios (password reset, email verification)
 - API route testing for other endpoints
 - Database integration tests with test containers
-- Authentication flow tests (sign-in, sign-out, session management)
+- Complete OAuth flow testing (Google, GitHub)
 
 ## Contributing
 

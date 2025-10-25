@@ -36,7 +36,7 @@ The seed script (`seed.ts`) populates your MongoDB database with realistic sampl
   - Varying experience levels (0-25 completed projects)
   - Total hours contributed (0-500)
   - **Badges** earned based on activity:
-    - **Skill Badges:** NEWBIE, BEGINNER, INTERMEDIATE, ADVANCED
+    - **Skill Badges:** BEGINNER, INTERMEDIATE, ADVANCED, EXPERT
     - **Specialization Badges:** FRONTEND_FOCUS, BACKEND_BUILDER, DESIGN_THINKER, AI_INNOVATOR
     - **Engagement Badges:** VETERAN, TOP_CONTRIBUTOR, TEAM_PLAYER
   - Work experiences (for experienced students)

@@ -6,14 +6,16 @@ This directory contains integration tests that verify complete user flows and AP
 
 ## Test Statistics
 
-**Total: 99 Integration Tests** - ✅ **100% Passing**
+**Total: 151 Integration Tests** - ✅ **100% Passing**
 
 | Test Suite | Tests | Focus |
 |------------|-------|-------|
-| `signin.test.tsx` | 52 | Complete sign-in authentication flow |
+| `signin.test.tsx` | 29 | Complete sign-in authentication flow |
 | `signup.test.tsx` | 32 | Complete sign-up user journey |
 | `webhook.test.ts` | 15 | Clerk webhook processing |
-| **TOTAL** | **99** | **End-to-end flow validation** |
+| `browse-projects.test.tsx` | 29 | Project browsing and filtering |
+| `profile.test.tsx` | 23 | User profile display and data |
+| **TOTAL** | **151** | **End-to-end flow validation** |
 
 ## What Are Integration Tests?
 
@@ -215,6 +217,131 @@ jest.mock("@/lib/actions/user", () => ({
   createUser: jest.fn(),
 }));
 ```
+
+### 4. `profile.test.tsx` - Profile Page Integration (23 tests)
+
+Tests the complete user profile display functionality including data fetching, badge display, and completed projects.
+
+#### Test Categories
+
+**getUserByClerkId - User Data Fetching (7 tests)**
+- Successful user fetch by Clerk ID
+- User not found (returns null)
+- Database error handling
+- User with all badge arrays
+- User with empty badge arrays
+- User with multiple experiences and education
+- Organization user (role: ORGANIZATION)
+
+**getCompletedProjectsByAssignedStudentId - Completed Projects Fetching (7 tests)**
+- Successful completed projects fetch
+- Empty array when user has no completed projects
+- Error when user is not found
+- Projects ordered by completedAt date (desc)
+- BusinessOwner details inclusion
+- Database error handling
+- Multiple completed projects with various categories
+
+**Profile Page - Integration Scenarios (5 tests)**
+- Fetch user data and completed projects for profile display
+- Handle profile not found scenario
+- Display user with badges but no completed projects
+- Display organization profile without experiences/education
+- Handle user with extensive profile data
+
+**Profile Page - Error Handling and Edge Cases (4 tests)**
+- Handle null values in optional user fields
+- Handle projects with null businessOwner fields
+- Handle concurrent user and projects fetch
+- Handle large badge arrays efficiently
+
+#### Key Technologies
+
+```typescript
+// Mock Clerk to prevent ESM errors
+jest.mock("@clerk/backend", () => ({}));
+jest.mock("@clerk/nextjs/server", () => ({
+  currentUser: jest.fn(),
+}));
+
+// Mock Prisma database operations
+jest.mock("@/lib/prisma", () => ({
+  __esModule: true,
+  default: {
+    user: {
+      findFirst: jest.fn(),
+    },
+    project: {
+      findMany: jest.fn(),
+    },
+  },
+}));
+
+// Test server actions directly (Server Components can't be rendered)
+import { getUserByClerkId } from "@/lib/actions/user";
+import { getCompletedProjectsByAssignedStudentId } from "@/lib/actions/project";
+
+// Example test
+it("should fetch user data and completed projects", async () => {
+  const mockUser = {
+    id: "user-1",
+    clerkId: "clerk_123",
+    firstName: "John",
+    lastName: "Doe",
+    earnedSkillBadges: ["JavaScript", "React", "Node.js"],
+    earnedSpecializationBadges: ["Full Stack"],
+    earnedEngagementBadges: ["Top Contributor"],
+    // ... other user fields
+  };
+
+  const mockProjects = [
+    {
+      id: "project-1",
+      title: "E-commerce Platform",
+      status: "COMPLETED",
+      completedAt: new Date("2023-05-15"),
+      businessOwner: {
+        id: "org-1",
+        firstName: "Tech",
+        lastName: "Corp",
+        // ... other businessOwner fields
+      },
+      // ... other project fields
+    },
+  ];
+
+  (prisma.user.findFirst as jest.Mock).mockResolvedValue(mockUser);
+  (prisma.project.findMany as jest.Mock).mockResolvedValue(mockProjects);
+
+  const userData = await getUserByClerkId("clerk_123");
+  const completedProjects = await getCompletedProjectsByAssignedStudentId("clerk_123");
+
+  expect(userData).toEqual(mockUser);
+  expect(completedProjects).toEqual(mockProjects);
+  expect(userData?.earnedSkillBadges).toHaveLength(3);
+  expect(completedProjects).toHaveLength(1);
+});
+```
+
+#### Data Model Validation
+
+The profile tests validate the complete User and Project data structures:
+
+**User Model Fields:**
+- Core: `id`, `clerkId`, `email`, `firstName`, `lastName`, `imageUrl`, `role`
+- Profile: `intro`, `bio`, `address`
+- Status: `occupied`, `totalHoursContributed`, `projectsCompleted`
+- Collections: `industriesExperienced`, `socialLinks`, `experiences`, `education`
+- Badges: `earnedSkillBadges`, `earnedSpecializationBadges`, `earnedEngagementBadges`
+
+**Project Model Fields:**
+- Core: `id`, `title`, `description`, `category`, `scope`, `status`
+- Skills: `requiredSkills[]`
+- Dates: `startDate`, `estimatedEndDate`, `completedAt`
+- Relations: `assignedStudentId`, `businessOwnerId`, `businessOwner`
+
+**BusinessOwner Selection:**
+- `id`, `imageUrl`, `firstName`, `lastName`, `address`, `bio`, `intro`
 
 ### 3. `webhook.test.ts` - Webhook Integration (15 tests)
 

@@ -39,7 +39,7 @@ export async function getAvailableProjects(
   try {
     const totalProjects = await prisma.project.count({
       where: {
-        status: { notIn: ["ARCHIVED", "DRAFT"] },
+        status: "OPEN",
         title: { contains: query, mode: "insensitive" },
         category: { in: categoryList },
         scope: { in: scopeList },
@@ -53,7 +53,7 @@ export async function getAvailableProjects(
       skip: skip,
       take: pageSize,
       where: {
-        status: { notIn: ["ARCHIVED", "DRAFT"] },
+        status: "OPEN",
         title: { contains: query, mode: "insensitive" },
         category: { in: categoryList },
         scope: { in: scopeList },

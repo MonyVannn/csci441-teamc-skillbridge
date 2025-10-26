@@ -1,12 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Popover,
   PopoverContent,
@@ -23,11 +22,73 @@ import {
 } from "lucide-react";
 import { Separator } from "../ui/separator";
 import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
   createExperience,
   deleteExperience,
   editExperience,
   getExperience,
 } from "@/lib/actions/user";
+
+// Zod schema for experience form validation
+const experienceFormSchema = z
+  .object({
+    title: z
+      .string()
+      .min(2, "Job title must be at least 2 characters")
+      .max(200, "Job title must be less than 200 characters"),
+    company: z
+      .string()
+      .min(2, "Company name must be at least 2 characters")
+      .max(200, "Company name must be less than 200 characters"),
+    startDate: z.string().min(1, "Start date is required"),
+    endDate: z.string().optional().nullable(),
+    description: z
+      .string()
+      .max(1000, "Description must be less than 1000 characters")
+      .optional()
+      .nullable(),
+    isCurrentRole: z.boolean(),
+  })
+  .refine(
+    (data) => {
+      // If not current role, end date is required
+      if (!data.isCurrentRole && !data.endDate) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: "End date is required unless this is your current role",
+      path: ["endDate"],
+    }
+  )
+  .refine(
+    (data) => {
+      // If both dates exist, end date should be after start date
+      if (data.startDate && data.endDate && !data.isCurrentRole) {
+        const start = new Date(data.startDate);
+        const end = new Date(data.endDate);
+        return end >= start;
+      }
+      return true;
+    },
+    {
+      message: "End date must be after start date",
+      path: ["endDate"],
+    }
+  );
+
+type ExperienceFormValues = z.infer<typeof experienceFormSchema>;
 
 interface Experience {
   id: string;
@@ -35,7 +96,7 @@ interface Experience {
   company: string;
   startDate: string;
   endDate: string | null;
-  description: string | null; // Allow description to be null
+  description: string | null;
 }
 
 export function UserExperience() {
@@ -43,14 +104,20 @@ export function UserExperience() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [formData, setFormData] = useState({
-    title: "",
-    company: "",
-    startDate: "",
-    endDate: "",
-    description: "",
-    isCurrentRole: false,
+
+  const form = useForm<ExperienceFormValues>({
+    resolver: zodResolver(experienceFormSchema),
+    defaultValues: {
+      title: "",
+      company: "",
+      startDate: "",
+      endDate: "",
+      description: "",
+      isCurrentRole: false,
+    },
   });
+
+  const isCurrentRole = form.watch("isCurrentRole");
 
   useEffect(() => {
     async function loadExperiences() {
@@ -59,10 +126,10 @@ export function UserExperience() {
         setExperiences(
           data.map((exp) => ({
             ...exp,
-            startDate: exp.startDate.toISOString().split("T")[0], // Convert Date to string
+            startDate: exp.startDate.toISOString().split("T")[0],
             endDate: exp.endDate
               ? exp.endDate.toISOString().split("T")[0]
-              : null, // Convert Date to string or null
+              : null,
           }))
         );
       } catch (error) {
@@ -75,8 +142,15 @@ export function UserExperience() {
     loadExperiences();
   }, []);
 
+  // Reset end date when current role is checked
+  useEffect(() => {
+    if (isCurrentRole) {
+      form.setValue("endDate", "");
+    }
+  }, [isCurrentRole, form]);
+
   const handleAddExperience = () => {
-    setFormData({
+    form.reset({
       title: "",
       company: "",
       startDate: "",
@@ -89,7 +163,7 @@ export function UserExperience() {
   };
 
   const handleEditExperience = (experience: Experience) => {
-    setFormData({
+    form.reset({
       title: experience.title,
       company: experience.company,
       startDate: experience.startDate,
@@ -104,26 +178,25 @@ export function UserExperience() {
   const handleDeleteExperience = async (id: string) => {
     try {
       const user = await deleteExperience(id);
-
       console.log("Experience deleted, ", user);
-
       setExperiences(experiences?.filter((exp) => exp.id !== id));
     } catch (e) {
       console.error("Failed to delete user experience, ", e);
     }
   };
 
-  const handleSaveExperience = async () => {
+  const onSubmit = async (data: ExperienceFormValues) => {
     const experienceData = {
-      title: formData.title,
-      company: formData.company,
-      startDate: formData.startDate,
-      endDate: formData.isCurrentRole ? null : formData.endDate,
-      description: formData.description,
+      title: data.title,
+      company: data.company,
+      startDate: data.startDate,
+      endDate: data.isCurrentRole ? null : data.endDate || null,
+      description: data.description || null,
     };
 
-    if (editingId) {
-      try {
+    try {
+      if (editingId) {
+        // Update existing experience
         const experienceToEdit = {
           ...experienceData,
           id: editingId,
@@ -134,21 +207,21 @@ export function UserExperience() {
         };
 
         const user = await editExperience(experienceToEdit);
-
         console.log("Experience edited, ", user);
 
-        // Update existing experience
         setExperiences(
           experiences?.map((exp) =>
-            exp.id === editingId ? { ...experienceData, id: editingId } : exp
+            exp.id === editingId
+              ? {
+                  ...experienceData,
+                  id: editingId,
+                  endDate: experienceData.endDate || null,
+                }
+              : exp
           )
         );
-      } catch (e) {
-        console.error("Failed to edit user experience, ", e);
-      }
-    } else {
-      // Add new experience
-      try {
+      } else {
+        // Add new experience
         const experienceToAdd = {
           ...experienceData,
           startDate: new Date(experienceData.startDate),
@@ -158,51 +231,27 @@ export function UserExperience() {
         };
 
         const user = await createExperience(experienceToAdd);
-
         console.log("Experience added, ", user);
 
         const newExperience: Experience = {
           ...experienceData,
           id: Date.now().toString(),
+          endDate: experienceData.endDate || null,
         };
         setExperiences([newExperience, ...(experiences || [])]);
-      } catch (e) {
-        console.log("Error adding new experience: ", e);
       }
-    }
 
-    // Reset states
-    setEditingId(null);
-    setIsAddingNew(false);
-    setFormData({
-      title: "",
-      company: "",
-      startDate: "",
-      endDate: "",
-      description: "",
-      isCurrentRole: false,
-    });
+      // Reset form and states
+      handleCancel();
+    } catch (e) {
+      console.error("Failed to save experience: ", e);
+    }
   };
 
   const handleCancel = () => {
     setEditingId(null);
     setIsAddingNew(false);
-    setFormData({
-      title: "",
-      company: "",
-      startDate: "",
-      endDate: "",
-      description: "",
-      isCurrentRole: false,
-    });
-  };
-
-  const handleCurrentRoleChange = (checked: boolean) => {
-    setFormData((prev) => ({
-      ...prev,
-      isCurrentRole: checked,
-      endDate: checked ? "" : prev.endDate,
-    }));
+    form.reset();
   };
 
   const formatDateRange = (startDate: string, endDate: string | null) => {
@@ -221,196 +270,214 @@ export function UserExperience() {
 
   const renderExperienceForm = () => (
     <div className="p-6 bg-[#1DBF9F]/5 border-l-4 border-[#1DBF9F]">
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h3 className="font-bold text-gray-900 flex items-center gap-2">
-            {editingId ? "Edit Experience" : "Add New Experience"}
-          </h3>
-          <div className="flex gap-2">
-            <Button
-              onClick={handleSaveExperience}
-              size="sm"
-              className="bg-[#1DBF9F] hover:bg-[#1DBF9F]/80 text-white"
-              disabled={
-                !formData.title || !formData.company || !formData.startDate
-              }
-            >
-              Save
-            </Button>
-            <Button
-              onClick={handleCancel}
-              variant="outline"
-              size="sm"
-              className="border-gray-300 text-gray-700 hover:bg-gray-50 bg-white"
-            >
-              Cancel
-            </Button>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h3 className="font-bold text-gray-900 flex items-center gap-2">
+              {editingId ? "Edit Experience" : "Add New Experience"}
+            </h3>
+            <div className="flex gap-2">
+              <Button
+                type="submit"
+                size="sm"
+                className="bg-[#1DBF9F] hover:bg-[#1DBF9F]/80 text-white"
+                disabled={form.formState.isSubmitting}
+              >
+                {form.formState.isSubmitting ? "Saving..." : "Save"}
+              </Button>
+              <Button
+                type="button"
+                onClick={handleCancel}
+                variant="outline"
+                size="sm"
+                className="border-gray-300 text-gray-700 hover:bg-gray-50 bg-white"
+              >
+                Cancel
+              </Button>
+            </div>
           </div>
-        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Job Title */}
-          <div className="space-y-2">
-            <Label
-              htmlFor="title"
-              className="text-sm font-medium text-gray-700 flex items-center gap-2"
-            >
-              Job Title
-            </Label>
-            <Input
-              id="title"
-              value={formData.title}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, title: e.target.value }))
-              }
-              placeholder="e.g. Senior Software Engineer"
-              className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 bg-white"
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Job Title */}
+            <FormField
+              control={form.control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-gray-700">
+                    Job Title
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="e.g. Senior Software Engineer"
+                      className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 bg-white"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Company */}
+            <FormField
+              control={form.control}
+              name="company"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-gray-700">
+                    Company
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="e.g. TechCorp Inc."
+                      className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 bg-white"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
           </div>
 
-          {/* Company */}
-          <div className="space-y-2">
-            <Label
-              htmlFor="company"
-              className="text-sm font-medium text-gray-700 flex items-center gap-2"
-            >
-              Company
-            </Label>
-            <Input
-              id="company"
-              value={formData.company}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, company: e.target.value }))
-              }
-              placeholder="e.g. TechCorp Inc."
-              className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 bg-white"
+          {/* Date Range */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="startDate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-gray-700">
+                    Start Date
+                  </FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          className="w-full justify-start text-left font-normal border-gray-200 focus:border-blue-500 focus:ring-blue-500 bg-white"
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {field.value
+                            ? format(new Date(field.value), "MM/dd/yyyy")
+                            : "Select start date"}
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <CalendarComponent
+                        mode="single"
+                        selected={
+                          field.value ? new Date(field.value) : undefined
+                        }
+                        onSelect={(date) => {
+                          if (date) {
+                            field.onChange(format(date, "yyyy-MM-dd"));
+                          }
+                        }}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="endDate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-gray-700">
+                    End Date
+                  </FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          className="w-full justify-start text-left font-normal border-gray-200 focus:border-blue-500 focus:ring-blue-500 bg-white disabled:bg-gray-50 disabled:text-gray-400"
+                          disabled={isCurrentRole}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {field.value && !isCurrentRole
+                            ? format(new Date(field.value), "MM/dd/yyyy")
+                            : isCurrentRole
+                            ? "Present"
+                            : "Select end date"}
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <CalendarComponent
+                        mode="single"
+                        selected={
+                          field.value ? new Date(field.value) : undefined
+                        }
+                        onSelect={(date) => {
+                          if (date) {
+                            field.onChange(format(date, "yyyy-MM-dd"));
+                          }
+                        }}
+                        initialFocus
+                        disabled={isCurrentRole}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
           </div>
-        </div>
 
-        {/* Date Range */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label
-              htmlFor="startDate"
-              className="text-sm font-medium text-gray-700 flex items-center gap-2"
-            >
-              Start Date
-            </Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start text-left font-normal border-gray-200 focus:border-blue-500 focus:ring-blue-500 bg-white"
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {formData.startDate
-                    ? format(formData.startDate, "MM/dd/yyyy")
-                    : "Select start date"}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <CalendarComponent
-                  mode="single"
-                  selected={
-                    formData.startDate
-                      ? new Date(formData.startDate + "-01")
-                      : undefined
-                  }
-                  onSelect={(date) => {
-                    if (date) {
-                      const monthYear = format(date, "MM/dd/yyyy");
-                      setFormData((prev) => ({
-                        ...prev,
-                        startDate: monthYear,
-                      }));
-                    }
-                  }}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-
-          <div className="space-y-2">
-            <Label
-              htmlFor="endDate"
-              className="text-sm font-medium text-gray-700 flex items-center gap-2"
-            >
-              End Date
-            </Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start text-left font-normal border-gray-200 focus:border-blue-500 focus:ring-blue-500 bg-white disabled:bg-gray-50 disabled:text-gray-400"
-                  disabled={formData.isCurrentRole}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {formData.endDate && !formData.isCurrentRole
-                    ? format(formData.endDate, "MM/dd/yyyy")
-                    : formData.isCurrentRole
-                    ? "Present"
-                    : "Select end date"}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <CalendarComponent
-                  mode="single"
-                  selected={
-                    formData.endDate
-                      ? new Date(formData.endDate + "-01")
-                      : undefined
-                  }
-                  onSelect={(date) => {
-                    if (date) {
-                      const monthYear = format(date, "MM/dd/yyyy");
-                      setFormData((prev) => ({ ...prev, endDate: monthYear }));
-                    }
-                  }}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-        </div>
-
-        {/* Current Role Checkbox */}
-        <div className="flex items-center space-x-2">
-          <Checkbox
-            id="currentRole"
-            checked={formData.isCurrentRole}
-            onCheckedChange={handleCurrentRoleChange}
-            className="border-gray-300 bg-white"
+          {/* Current Role Checkbox */}
+          <FormField
+            control={form.control}
+            name="isCurrentRole"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                    className="border-gray-300 bg-white"
+                  />
+                </FormControl>
+                <div className="space-y-1 leading-none">
+                  <FormLabel className="text-sm text-gray-700 cursor-pointer">
+                    I currently work in this role
+                  </FormLabel>
+                </div>
+              </FormItem>
+            )}
           />
-          <Label
-            htmlFor="currentRole"
-            className="text-sm text-gray-700 cursor-pointer"
-          >
-            I currently work in this role
-          </Label>
-        </div>
 
-        {/* Description */}
-        <div className="space-y-2">
-          <Label
-            htmlFor="description"
-            className="text-sm font-medium text-gray-700 flex items-center gap-2"
-          >
-            Description
-          </Label>
-          <Textarea
-            id="description"
-            value={formData.description}
-            onChange={(e) =>
-              setFormData((prev) => ({ ...prev, description: e.target.value }))
-            }
-            placeholder="Describe your role, responsibilities, and key achievements..."
-            rows={4}
-            className="border-gray-100 focus:border-blue-500 focus:ring-blue-500 resize-none bg-white"
+          {/* Description */}
+          <FormField
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-medium text-gray-700">
+                  Description
+                </FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="Describe your role, responsibilities, and key achievements..."
+                    rows={4}
+                    className="border-gray-100 focus:border-blue-500 focus:ring-blue-500 resize-none bg-white"
+                    {...field}
+                    value={field.value || ""}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-        </div>
-      </div>
+        </form>
+      </Form>
     </div>
   );
 

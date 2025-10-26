@@ -183,6 +183,7 @@ export function OrganizationApplication() {
                                   {app.applicant.lastName}
                                 </h3>
                                 <Link
+                                  target="_top"
                                   href={`/profile/${app.applicant.clerkId}`}
                                 >
                                   <Button size={"icon"} variant={"ghost"}>

@@ -47,6 +47,7 @@ import { createProject } from "@/lib/actions/project";
 import { useUser } from "@clerk/nextjs";
 import { getUserByClerkId } from "@/lib/actions/user";
 import { ProjectCategory, ProjectScope } from "@prisma/client";
+import { toast } from "sonner";
 
 const categories = Object.values(ProjectCategory);
 const scopes = Object.values(ProjectScope);
@@ -167,7 +168,10 @@ export function PostProjectModal({
   });
 
   const createProjectWithStatus = async (data: FormData, isDraft: boolean) => {
-    if (!user.isSignedIn) return;
+    if (!user.isSignedIn) {
+      toast.error("You must be signed in to create a project.");
+      return;
+    }
     const formDataWithSkills = {
       ...data,
       requiredSkills: selectedSkills,
@@ -176,7 +180,10 @@ export function PostProjectModal({
     try {
       const dbUser = await getUserByClerkId(user.user?.id);
 
-      if (!dbUser) return;
+      if (!dbUser) {
+        toast.error("User account not found. Please try again.");
+        return;
+      }
 
       const project = await createProject({
         ...formDataWithSkills,
@@ -187,19 +194,25 @@ export function PostProjectModal({
         businessOwner: { connect: { id: dbUser.id } },
       });
 
-      console.log(
-        isDraft ? "Project saved as draft, " : "Project successfully created, ",
-        project
+      toast.success(
+        isDraft
+          ? "Project saved as draft successfully!"
+          : "Project posted successfully!"
       );
+
+      // Reset form and close modal
+      form.reset();
+      setSelectedSkills([]);
+      setSkillInput("");
+      onOpenChange(false);
     } catch (e) {
       console.error("Failed to create a new project, ", e);
+      toast.error(
+        isDraft
+          ? "Failed to save project as draft. Please try again."
+          : "Failed to post project. Please try again."
+      );
     }
-
-    // Reset form and close modal
-    form.reset();
-    setSelectedSkills([]);
-    setSkillInput("");
-    onOpenChange(false);
   };
 
   const handleSubmit = async (data: FormData) => {
@@ -212,6 +225,8 @@ export function PostProjectModal({
     if (isValid) {
       const data = form.getValues();
       await createProjectWithStatus(data, true);
+    } else {
+      toast.error("Please fill in all required fields correctly.");
     }
   };
 
@@ -220,6 +235,7 @@ export function PostProjectModal({
     if (trimmedSkill && !selectedSkills.includes(trimmedSkill)) {
       // Enforce 20 character limit
       if (trimmedSkill.length > 20) {
+        toast.error("Each skill must be 20 characters or less.");
         form.setError("requiredSkills", {
           type: "manual",
           message: "Each skill must be 20 characters or less",
@@ -235,6 +251,8 @@ export function PostProjectModal({
         shouldValidate: true,
       });
       setSkillInput("");
+    } else if (selectedSkills.includes(trimmedSkill)) {
+      toast.warning("This skill has already been added.");
     }
   };
 

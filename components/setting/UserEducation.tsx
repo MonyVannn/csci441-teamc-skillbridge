@@ -38,6 +38,7 @@ import {
   editEducation,
   getEducation,
 } from "@/lib/actions/user";
+import { toast } from "sonner";
 
 // Zod schema for education form validation
 const educationFormSchema = z
@@ -134,6 +135,7 @@ export function UserEducation() {
         );
       } catch (error) {
         console.error("Failed to load education:", error);
+        toast.error("Failed to load education. Please try again.");
       } finally {
         setIsLoading(false);
       }
@@ -180,8 +182,10 @@ export function UserEducation() {
       const user = await deleteEducation(id);
       console.log("Education deleted, ", user);
       setEducation(education?.filter((edu) => edu.id !== id));
+      toast.success("Education deleted successfully!");
     } catch (e) {
       console.error("Failed to delete user education, ", e);
+      toast.error("Failed to delete education. Please try again.");
     }
   };
 
@@ -220,6 +224,7 @@ export function UserEducation() {
               : edu
           )
         );
+        toast.success("Education updated successfully!");
       } else {
         // Add new education
         const educationToAdd = {
@@ -239,12 +244,18 @@ export function UserEducation() {
           endDate: educationData.endDate || null,
         };
         setEducation([newEducation, ...(education || [])]);
+        toast.success("Education added successfully!");
       }
 
       // Reset form and states
       handleCancel();
     } catch (e) {
       console.error("Failed to save education: ", e);
+      toast.error(
+        editingId
+          ? "Failed to update education. Please try again."
+          : "Failed to add education. Please try again."
+      );
     }
   };
 

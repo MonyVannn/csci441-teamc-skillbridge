@@ -47,6 +47,7 @@ import { editProject, publishDraftProject } from "@/lib/actions/project";
 import { ProjectCategory, ProjectScope, ProjectStatus } from "@prisma/client";
 import { AvailableProject } from "@/type";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 const categories = Object.values(ProjectCategory);
 const scopes = Object.values(ProjectScope);
@@ -195,15 +196,21 @@ export function EditProjectModal({
         project.id
       );
 
-      console.log(
-        isDraft ? "Project saved as draft" : "Project successfully updated",
-        project.id
+      toast.success(
+        isDraft
+          ? "Project saved as draft successfully!"
+          : "Project updated successfully!"
       );
 
       router.refresh();
       onOpenChange(false);
     } catch (e) {
       console.error("Failed to update project: ", e);
+      toast.error(
+        isDraft
+          ? "Failed to save project as draft. Please try again."
+          : "Failed to update project. Please try again."
+      );
     } finally {
       setIsUpdating(false);
     }
@@ -218,6 +225,8 @@ export function EditProjectModal({
     if (isValid) {
       const data = form.getValues();
       await updateProjectWithStatus(data, true);
+    } else {
+      toast.error("Please fill in all required fields correctly.");
     }
   };
 
@@ -225,11 +234,12 @@ export function EditProjectModal({
     setIsUpdating(true);
     try {
       await publishDraftProject(project.id);
-      console.log("Draft published successfully");
+      toast.success("Draft published successfully!");
       router.refresh();
       onOpenChange(false);
     } catch (e) {
       console.error("Failed to publish draft: ", e);
+      toast.error("Failed to publish draft. Please try again.");
     } finally {
       setIsUpdating(false);
     }
@@ -240,6 +250,7 @@ export function EditProjectModal({
     if (trimmedSkill && !selectedSkills.includes(trimmedSkill)) {
       // Enforce 20 character limit
       if (trimmedSkill.length > 20) {
+        toast.error("Each skill must be 20 characters or less.");
         form.setError("requiredSkills", {
           type: "manual",
           message: "Each skill must be 20 characters or less",
@@ -255,6 +266,8 @@ export function EditProjectModal({
         shouldValidate: true,
       });
       setSkillInput("");
+    } else if (selectedSkills.includes(trimmedSkill)) {
+      toast.warning("This skill has already been added.");
     }
   };
 

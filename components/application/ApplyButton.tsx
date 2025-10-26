@@ -43,7 +43,7 @@ export function ApplyButton({ project }: ApplyButtonProps) {
       await createApplication(project.id, formData.coverLetter);
       setIsAppliedButton(false);
       setOpenDialog(false);
-      setFormData(prev => ({ ...prev, coverLetter: "" }));
+      setFormData((prev) => ({ ...prev, coverLetter: "" }));
     } catch (error) {
       console.error("Failed to submit application:", error);
     }
@@ -56,7 +56,7 @@ export function ApplyButton({ project }: ApplyButtonProps) {
       >
         {isAppliedButton ? "Apply Now" : "Applied"}
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="shadow-2xl">
         <DialogHeader>
           <DialogTitle>Applying to {project.title}</DialogTitle>
           <DialogDescription>

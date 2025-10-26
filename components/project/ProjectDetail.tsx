@@ -24,6 +24,16 @@ import {
   DialogTitle,
 } from "../ui/dialog";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../ui/alert-dialog";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -40,6 +50,7 @@ import { ProjectStatus, User } from "@prisma/client";
 import { EditProjectModal } from "./EditProjectModal";
 import { useRouter } from "next/navigation";
 import { getUser } from "@/lib/actions/user";
+import { toast } from "sonner";
 
 interface ProjectDetailProps {
   project: AvailableProject;
@@ -68,6 +79,7 @@ export function ProjectDetail({ project, timeline }: ProjectDetailProps) {
           setDbUser(userData);
         } catch (error) {
           console.error("Failed to fetch user data:", error);
+          toast.error("Failed to load user data. Please refresh the page.");
         }
       }
     };
@@ -110,10 +122,12 @@ export function ProjectDetail({ project, timeline }: ProjectDetailProps) {
     setIsUpdating(true);
     try {
       await updateProjectStatus(project.id, "COMPLETED");
+      toast.success("Project marked as completed!");
       setIsDialogOpen(false);
       setPendingStatus(null);
     } catch (error) {
       console.error("Failed to update project status:", error);
+      toast.error("Failed to update project status. Please try again.");
     } finally {
       setIsUpdating(false);
     }
@@ -125,10 +139,12 @@ export function ProjectDetail({ project, timeline }: ProjectDetailProps) {
     setIsUpdating(true);
     try {
       await updateProjectStatus(project.id, pendingStatus);
+      toast.success("Project status updated successfully!");
       setIsDialogOpen(false);
       setPendingStatus(null);
     } catch (error) {
       console.error("Failed to update project status:", error);
+      toast.error("Failed to update project status. Please try again.");
     } finally {
       setIsUpdating(false);
     }
@@ -144,10 +160,12 @@ export function ProjectDetail({ project, timeline }: ProjectDetailProps) {
     try {
       await deleteProject(project.id);
       console.log("Project archived successfully");
+      toast.success("Project archived successfully!");
       setIsArchiveDialogOpen(false);
       router.refresh();
     } catch (error) {
       console.error("Failed to archive project:", error);
+      toast.error("Failed to archive project. Please try again.");
     } finally {
       setIsUpdating(false);
     }
@@ -158,10 +176,12 @@ export function ProjectDetail({ project, timeline }: ProjectDetailProps) {
     try {
       await unarchiveProject(project.id);
       console.log("Project unarchived successfully");
+      toast.success("Project unarchived successfully!");
       setIsArchiveDialogOpen(false);
       router.refresh();
     } catch (error) {
       console.error("Failed to unarchive project:", error);
+      toast.error("Failed to unarchive project. Please try again.");
     } finally {
       setIsUpdating(false);
     }
@@ -507,42 +527,36 @@ export function ProjectDetail({ project, timeline }: ProjectDetailProps) {
       </Dialog>
 
       {/* Archive/Unarchive Confirmation Dialog */}
-      <Dialog open={isArchiveDialogOpen} onOpenChange={setIsArchiveDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
+      <AlertDialog
+        open={isArchiveDialogOpen}
+        onOpenChange={setIsArchiveDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
               {project.status === "ARCHIVED"
                 ? "Unarchive Project"
                 : "Archive Project"}
-            </DialogTitle>
-            <DialogDescription>
+            </AlertDialogTitle>
+            <AlertDialogDescription>
               {project.status === "ARCHIVED"
                 ? "Are you sure you want to unarchive this project? This action will restore the project to OPEN status and make it visible to applicants again."
                 : "Are you sure you want to archive this project? This action will mark the project as archived and it will no longer be visible to applicants. You can view archived projects in your settings."}
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsArchiveDialogOpen(false)}
-              disabled={isUpdating}
-            >
-              Cancel
-            </Button>
-            <Button
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isUpdating}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
               onClick={
                 project.status === "ARCHIVED"
                   ? handleUnarchiveProject
                   : handleArchiveProject
               }
               disabled={isUpdating}
-              variant={
-                project.status === "ARCHIVED" ? "default" : "destructive"
-              }
               className={
                 project.status === "ARCHIVED"
                   ? "bg-green-600 hover:bg-green-700"
-                  : ""
+                  : "bg-red-600 hover:bg-red-700"
               }
             >
               {isUpdating
@@ -552,10 +566,10 @@ export function ProjectDetail({ project, timeline }: ProjectDetailProps) {
                 : project.status === "ARCHIVED"
                 ? "Unarchive Project"
                 : "Archive Project"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Edit Project Modal */}
       {isOwner && (

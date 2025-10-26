@@ -4,6 +4,16 @@ import { useEffect, useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { format } from "date-fns";
 import {
   LoaderCircle,
@@ -20,6 +30,7 @@ import {
 } from "@/lib/actions/application";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { toast } from "sonner";
 
 // Updated interface to include project details for each application
 interface ApplicationDetails {
@@ -45,6 +56,17 @@ export function OrganizationApplication() {
     ApplicationDetails[] | undefined
   >();
   const [isLoading, setIsLoading] = useState(true);
+  const [confirmDialog, setConfirmDialog] = useState<{
+    open: boolean;
+    action: "ACCEPTED" | "REJECTED" | null;
+    applicationId: string | null;
+    applicantName: string | null;
+  }>({
+    open: false,
+    action: null,
+    applicationId: null,
+    applicantName: null,
+  });
 
   useEffect(() => {
     async function loadAllApplications() {
@@ -60,6 +82,7 @@ export function OrganizationApplication() {
         );
       } catch (error) {
         console.error("Failed to load project applications:", error);
+        toast.error("Failed to load applications. Please try again.");
       } finally {
         setIsLoading(false);
       }
@@ -81,27 +104,60 @@ export function OrganizationApplication() {
     }, {} as Record<string, ApplicationDetails[]>);
   }, [applications]);
 
-  const handleUpdateStatus = async (
+  const openConfirmDialog = (
+    action: "ACCEPTED" | "REJECTED",
     applicationId: string,
-    newStatus: "ACCEPTED" | "REJECTED"
+    applicantName: string
   ) => {
-    const originalApplications = applications;
-    const app = applications?.find((app) => app.id === applicationId);
+    setConfirmDialog({
+      open: true,
+      action,
+      applicationId,
+      applicantName,
+    });
+  };
 
+  const closeConfirmDialog = () => {
+    setConfirmDialog({
+      open: false,
+      action: null,
+      applicationId: null,
+      applicantName: null,
+    });
+  };
+
+  const handleUpdateStatus = async () => {
+    if (!confirmDialog.applicationId || !confirmDialog.action) return;
+
+    const applicationId = confirmDialog.applicationId;
+    const newStatus = confirmDialog.action;
+    const originalApplications = applications;
+
+    // Optimistic update
     setApplications((prev) =>
       prev?.map((app) =>
         app.id === applicationId ? { ...app, status: newStatus } : app
       )
     );
 
+    closeConfirmDialog();
+
     try {
-      if (newStatus === "ACCEPTED" && app) {
+      if (newStatus === "ACCEPTED") {
         await approveApplication(applicationId);
+        toast.success("Application approved successfully!");
       } else {
         await rejectApplication(applicationId);
+        toast.success("Application rejected successfully!");
       }
     } catch (error) {
       console.error(`Failed to update application status:`, error);
+      toast.error(
+        `Failed to ${
+          newStatus === "ACCEPTED" ? "approve" : "reject"
+        } application. Please try again.`
+      );
+      // Revert on error
       setApplications(originalApplications);
     }
   };
@@ -197,7 +253,11 @@ export function OrganizationApplication() {
                                     variant="outline"
                                     size="sm"
                                     onClick={() =>
-                                      handleUpdateStatus(app.id, "REJECTED")
+                                      openConfirmDialog(
+                                        "REJECTED",
+                                        app.id,
+                                        `${app.applicant.firstName} ${app.applicant.lastName}`
+                                      )
                                     }
                                     className="w-1/2 sm:w-auto text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
                                   >
@@ -206,7 +266,11 @@ export function OrganizationApplication() {
                                   <Button
                                     size="sm"
                                     onClick={() =>
-                                      handleUpdateStatus(app.id, "ACCEPTED")
+                                      openConfirmDialog(
+                                        "ACCEPTED",
+                                        app.id,
+                                        `${app.applicant.firstName} ${app.applicant.lastName}`
+                                      )
                                     }
                                     className="w-1/2 sm:w-auto bg-green-600 hover:bg-green-700 text-white"
                                   >
@@ -243,6 +307,53 @@ export function OrganizationApplication() {
           </div>
         )}
       </div>
+
+      {/* Confirmation Dialog */}
+      <AlertDialog open={confirmDialog.open} onOpenChange={closeConfirmDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {confirmDialog.action === "ACCEPTED"
+                ? "Approve Application"
+                : "Reject Application"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {confirmDialog.action === "ACCEPTED" ? (
+                <>
+                  Are you sure you want to approve{" "}
+                  <span className="font-semibold">
+                    {confirmDialog.applicantName}&apos;s
+                  </span>{" "}
+                  application? This will notify the applicant that they have
+                  been accepted for this project.
+                </>
+              ) : (
+                <>
+                  Are you sure you want to reject{" "}
+                  <span className="font-semibold">
+                    {confirmDialog.applicantName}&apos;s
+                  </span>{" "}
+                  application? This action will notify the applicant of the
+                  rejection.
+                </>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleUpdateStatus}
+              className={
+                confirmDialog.action === "ACCEPTED"
+                  ? "bg-green-600 hover:bg-green-700"
+                  : "bg-red-600 hover:bg-red-700"
+              }
+            >
+              {confirmDialog.action === "ACCEPTED" ? "Approve" : "Reject"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

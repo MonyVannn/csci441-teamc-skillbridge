@@ -144,6 +144,13 @@ export async function createApplication(
     if (existingUser.role !== "USER")
       throw new Error("User must be a student.");
 
+    const project = await prisma.project.findFirst({
+      where: { id: projectId },
+    });
+
+    if (!project) throw new Error("Project not found.");
+    if (project.status !== "OPEN") throw new Error("Unavailable project.");
+
     const application = await prisma.application.create({
       data: {
         status: "PENDING",
@@ -197,6 +204,13 @@ export async function approveApplication(applicationId: string) {
         "You do not have permission to approve this application."
       );
     }
+
+    const project = await prisma.project.findFirst({
+      where: { id: application.projectId },
+    });
+
+    if (!project) throw new Error("Project not found.");
+    if (project.status !== "OPEN") throw new Error("Unavailable project.");
 
     const updatedApplication = await prisma.application.update({
       where: {

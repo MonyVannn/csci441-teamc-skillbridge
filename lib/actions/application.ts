@@ -205,7 +205,7 @@ export async function approveApplication(applicationId: string) {
       );
     }
 
-    const project = await prisma.project.findFirst({
+    const project = await prisma.project.findUnique({
       where: { id: application.projectId },
     });
 

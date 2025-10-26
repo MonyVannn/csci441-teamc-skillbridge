@@ -51,12 +51,12 @@ const userInformationSchema = z.object({
   email: z.string().email("Invalid email address"),
   bio: z
     .string()
-    .max(1000, "Bio must be less than 500 characters")
+    .max(1000, "Bio must be less than 1000 characters")
     .optional()
     .nullable(),
   intro: z
     .string()
-    .max(500, "Professional intro must be less than 1000 characters")
+    .max(500, "Professional intro must be less than 500 characters")
     .optional()
     .nullable(),
   address: z

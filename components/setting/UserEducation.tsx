@@ -1,12 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Popover,
   PopoverContent,
@@ -23,11 +22,73 @@ import {
 } from "lucide-react";
 import { Separator } from "../ui/separator";
 import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
   createEducation,
   deleteEducation,
   editEducation,
   getEducation,
 } from "@/lib/actions/user";
+
+// Zod schema for education form validation
+const educationFormSchema = z
+  .object({
+    degree: z
+      .string()
+      .min(2, "Degree must be at least 2 characters")
+      .max(200, "Degree must be less than 200 characters"),
+    institution: z
+      .string()
+      .min(2, "Institution must be at least 2 characters")
+      .max(200, "Institution must be less than 200 characters"),
+    startDate: z.string().min(1, "Start date is required"),
+    endDate: z.string().optional().nullable(),
+    description: z
+      .string()
+      .max(1000, "Description must be less than 1000 characters")
+      .optional()
+      .nullable(),
+    isOngoing: z.boolean(),
+  })
+  .refine(
+    (data) => {
+      // If not ongoing, end date is required
+      if (!data.isOngoing && !data.endDate) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: "End date is required unless education is ongoing",
+      path: ["endDate"],
+    }
+  )
+  .refine(
+    (data) => {
+      // If both dates exist, end date should be after start date
+      if (data.startDate && data.endDate && !data.isOngoing) {
+        const start = new Date(data.startDate);
+        const end = new Date(data.endDate);
+        return end >= start;
+      }
+      return true;
+    },
+    {
+      message: "End date must be after start date",
+      path: ["endDate"],
+    }
+  );
+
+type EducationFormValues = z.infer<typeof educationFormSchema>;
 
 interface Education {
   id: string;
@@ -43,40 +104,53 @@ export function UserEducation() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [formData, setFormData] = useState({
-    degree: "",
-    institution: "",
-    startDate: "",
-    endDate: "",
-    description: "",
-    isOngoing: false,
+
+  const form = useForm<EducationFormValues>({
+    resolver: zodResolver(educationFormSchema),
+    defaultValues: {
+      degree: "",
+      institution: "",
+      startDate: "",
+      endDate: "",
+      description: "",
+      isOngoing: false,
+    },
   });
 
+  const isOngoing = form.watch("isOngoing");
+
   useEffect(() => {
-    async function loadExperiences() {
+    async function loadEducation() {
       try {
         const data = await getEducation();
         setEducation(
           data.map((exp) => ({
             ...exp,
-            startDate: exp.startDate.toISOString().split("T")[0], // Convert Date to string
+            startDate: exp.startDate.toISOString().split("T")[0],
             endDate: exp.endDate
               ? exp.endDate.toISOString().split("T")[0]
-              : null, // Convert Date to string or null
+              : null,
           }))
         );
       } catch (error) {
-        console.error("Failed to load experiences:", error);
+        console.error("Failed to load education:", error);
       } finally {
         setIsLoading(false);
       }
     }
 
-    loadExperiences();
+    loadEducation();
   }, []);
 
+  // Reset end date when ongoing is checked
+  useEffect(() => {
+    if (isOngoing) {
+      form.setValue("endDate", "");
+    }
+  }, [isOngoing, form]);
+
   const handleAddEducation = () => {
-    setFormData({
+    form.reset({
       degree: "",
       institution: "",
       startDate: "",
@@ -89,7 +163,7 @@ export function UserEducation() {
   };
 
   const handleEditEducation = (edu: Education) => {
-    setFormData({
+    form.reset({
       degree: edu.degree,
       institution: edu.institution,
       startDate: edu.startDate,
@@ -104,27 +178,25 @@ export function UserEducation() {
   const handleDeleteEducation = async (id: string) => {
     try {
       const user = await deleteEducation(id);
-
       console.log("Education deleted, ", user);
-
       setEducation(education?.filter((edu) => edu.id !== id));
     } catch (e) {
       console.error("Failed to delete user education, ", e);
     }
   };
 
-  const handleSaveEducation = async () => {
+  const onSubmit = async (data: EducationFormValues) => {
     const educationData = {
-      degree: formData.degree,
-      institution: formData.institution,
-      startDate: formData.startDate,
-      endDate: formData.isOngoing ? null : formData.endDate,
-      description: formData.description,
+      degree: data.degree,
+      institution: data.institution,
+      startDate: data.startDate,
+      endDate: data.isOngoing ? null : data.endDate || null,
+      description: data.description || null,
     };
 
-    if (editingId) {
-      // Update existing education
-      try {
+    try {
+      if (editingId) {
+        // Update existing education
         const educationToEdit = {
           ...educationData,
           id: editingId,
@@ -135,19 +207,21 @@ export function UserEducation() {
         };
 
         const user = await editEducation(educationToEdit);
-
-        console.log("Experience edited, ", user);
+        console.log("Education edited, ", user);
 
         setEducation(
           education?.map((edu) =>
-            edu.id === editingId ? { ...educationData, id: editingId } : edu
+            edu.id === editingId
+              ? {
+                  ...educationData,
+                  id: editingId,
+                  endDate: educationData.endDate || null,
+                }
+              : edu
           )
         );
-      } catch (e) {
-        console.error("Failed to edit user experience, ", e);
-      }
-    } else {
-      try {
+      } else {
+        // Add new education
         const educationToAdd = {
           ...educationData,
           startDate: new Date(educationData.startDate),
@@ -157,51 +231,27 @@ export function UserEducation() {
         };
 
         const user = await createEducation(educationToAdd);
-
         console.log("Education added, ", user);
 
         const newEducation: Education = {
           ...educationData,
           id: Date.now().toString(),
+          endDate: educationData.endDate || null,
         };
         setEducation([newEducation, ...(education || [])]);
-      } catch (e) {
-        console.log("Error adding new education: ", e);
       }
-    }
 
-    // Reset states
-    setEditingId(null);
-    setIsAddingNew(false);
-    setFormData({
-      degree: "",
-      institution: "",
-      startDate: "",
-      endDate: "",
-      description: "",
-      isOngoing: false,
-    });
+      // Reset form and states
+      handleCancel();
+    } catch (e) {
+      console.error("Failed to save education: ", e);
+    }
   };
 
   const handleCancel = () => {
     setEditingId(null);
     setIsAddingNew(false);
-    setFormData({
-      degree: "",
-      institution: "",
-      startDate: "",
-      endDate: "",
-      description: "",
-      isOngoing: false,
-    });
-  };
-
-  const handleOngoingChange = (checked: boolean) => {
-    setFormData((prev) => ({
-      ...prev,
-      isOngoing: checked,
-      endDate: checked ? "" : prev.endDate,
-    }));
+    form.reset();
   };
 
   const formatDateRange = (startDate: string, endDate: string | null) => {
@@ -220,199 +270,214 @@ export function UserEducation() {
 
   const renderEducationForm = () => (
     <div className="p-6 bg-[#1DBF9F]/5 border-l-4 border-[#1DBF9F]">
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h3 className="font-bold text-gray-900 flex items-center gap-2">
-            {editingId ? "Edit Education" : "Add New Education"}
-          </h3>
-          <div className="flex gap-2">
-            <Button
-              onClick={handleSaveEducation}
-              size="sm"
-              className="bg-[#1DBF9F] hover:bg-[#1DBF9F]/80 text-white"
-              disabled={
-                !formData.degree || !formData.institution || !formData.startDate
-              }
-            >
-              Save
-            </Button>
-            <Button
-              onClick={handleCancel}
-              variant="outline"
-              size="sm"
-              className="border-gray-300 text-gray-700 hover:bg-gray-50 bg-white"
-            >
-              Cancel
-            </Button>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h3 className="font-bold text-gray-900 flex items-center gap-2">
+              {editingId ? "Edit Education" : "Add New Education"}
+            </h3>
+            <div className="flex gap-2">
+              <Button
+                type="submit"
+                size="sm"
+                className="bg-[#1DBF9F] hover:bg-[#1DBF9F]/80 text-white"
+                disabled={form.formState.isSubmitting}
+              >
+                {form.formState.isSubmitting ? "Saving..." : "Save"}
+              </Button>
+              <Button
+                type="button"
+                onClick={handleCancel}
+                variant="outline"
+                size="sm"
+                className="border-gray-300 text-gray-700 hover:bg-gray-50 bg-white"
+              >
+                Cancel
+              </Button>
+            </div>
           </div>
-        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Degree/Certification */}
-          <div className="space-y-2">
-            <Label
-              htmlFor="degree"
-              className="text-sm font-medium text-gray-700 flex items-center gap-2"
-            >
-              Degree/Certification
-            </Label>
-            <Input
-              id="degree"
-              value={formData.degree}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, degree: e.target.value }))
-              }
-              placeholder="e.g. Bachelor of Science in Computer Science"
-              className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 bg-white"
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Degree/Certification */}
+            <FormField
+              control={form.control}
+              name="degree"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-gray-700">
+                    Degree/Certification
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="e.g. Bachelor of Science in Computer Science"
+                      className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 bg-white"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Institution */}
+            <FormField
+              control={form.control}
+              name="institution"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-gray-700">
+                    Institution
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="e.g. Stanford University"
+                      className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 bg-white"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
           </div>
 
-          {/* Institution */}
-          <div className="space-y-2">
-            <Label
-              htmlFor="institution"
-              className="text-sm font-medium text-gray-700 flex items-center gap-2"
-            >
-              Institution
-            </Label>
-            <Input
-              id="institution"
-              value={formData.institution}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  institution: e.target.value,
-                }))
-              }
-              placeholder="e.g. Stanford University"
-              className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 bg-white"
+          {/* Date Range */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="startDate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-gray-700">
+                    Start Date
+                  </FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          className="w-full justify-start text-left font-normal border-gray-200 focus:border-blue-500 focus:ring-blue-500 bg-white"
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {field.value
+                            ? format(new Date(field.value), "MM/dd/yyyy")
+                            : "Select start date"}
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <CalendarComponent
+                        mode="single"
+                        selected={
+                          field.value ? new Date(field.value) : undefined
+                        }
+                        onSelect={(date) => {
+                          if (date) {
+                            field.onChange(format(date, "yyyy-MM-dd"));
+                          }
+                        }}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="endDate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-gray-700">
+                    End Date
+                  </FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          className="w-full justify-start text-left font-normal border-gray-200 focus:border-blue-500 focus:ring-blue-500 bg-white disabled:bg-gray-50 disabled:text-gray-400"
+                          disabled={isOngoing}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {field.value && !isOngoing
+                            ? format(new Date(field.value), "MM/dd/yyyy")
+                            : isOngoing
+                            ? "Ongoing"
+                            : "Select end date"}
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <CalendarComponent
+                        mode="single"
+                        selected={
+                          field.value ? new Date(field.value) : undefined
+                        }
+                        onSelect={(date) => {
+                          if (date) {
+                            field.onChange(format(date, "yyyy-MM-dd"));
+                          }
+                        }}
+                        initialFocus
+                        disabled={isOngoing}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
           </div>
-        </div>
 
-        {/* Date Range */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label
-              htmlFor="startDate"
-              className="text-sm font-medium text-gray-700 flex items-center gap-2"
-            >
-              Start Date
-            </Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start text-left font-normal border-gray-200 focus:border-blue-500 focus:ring-blue-500 bg-white"
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {formData.startDate
-                    ? format(formData.startDate, "MM/dd/yyyy")
-                    : "Select start date"}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <CalendarComponent
-                  mode="single"
-                  selected={
-                    formData.startDate
-                      ? new Date(formData.startDate + "-01")
-                      : undefined
-                  }
-                  onSelect={(date) => {
-                    if (date) {
-                      const monthYear = format(date, "MM/dd/yyyy");
-                      setFormData((prev) => ({
-                        ...prev,
-                        startDate: monthYear,
-                      }));
-                    }
-                  }}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-
-          <div className="space-y-2">
-            <Label
-              htmlFor="endDate"
-              className="text-sm font-medium text-gray-700 flex items-center gap-2"
-            >
-              End Date
-            </Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start text-left font-normal border-gray-200 focus:border-blue-500 focus:ring-blue-500 bg-white disabled:bg-gray-50 disabled:text-gray-400"
-                  disabled={formData.isOngoing}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {formData.endDate && !formData.isOngoing
-                    ? format(formData.endDate, "MM/dd/yyyy")
-                    : formData.isOngoing
-                    ? "Ongoing"
-                    : "Select end date"}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <CalendarComponent
-                  mode="single"
-                  selected={
-                    formData.endDate
-                      ? new Date(formData.endDate + "-01")
-                      : undefined
-                  }
-                  onSelect={(date) => {
-                    if (date) {
-                      const monthYear = format(date, "MM/dd/yyyy");
-                      setFormData((prev) => ({ ...prev, endDate: monthYear }));
-                    }
-                  }}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-        </div>
-
-        {/* Ongoing Checkbox */}
-        <div className="flex items-center space-x-2">
-          <Checkbox
-            id="ongoing"
-            checked={formData.isOngoing}
-            onCheckedChange={handleOngoingChange}
-            className="border-gray-300 bg-white"
+          {/* Ongoing Checkbox */}
+          <FormField
+            control={form.control}
+            name="isOngoing"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                    className="border-gray-300 bg-white"
+                  />
+                </FormControl>
+                <div className="space-y-1 leading-none">
+                  <FormLabel className="text-sm text-gray-700 cursor-pointer">
+                    This is ongoing (currently enrolled/pursuing)
+                  </FormLabel>
+                </div>
+              </FormItem>
+            )}
           />
-          <Label
-            htmlFor="ongoing"
-            className="text-sm text-gray-700 cursor-pointer"
-          >
-            This is ongoing (currently enrolled/pursuing)
-          </Label>
-        </div>
 
-        {/* Description */}
-        <div className="space-y-2">
-          <Label
-            htmlFor="description"
-            className="text-sm font-medium text-gray-700 flex items-center gap-2"
-          >
-            Description
-          </Label>
-          <Textarea
-            id="description"
-            value={formData.description}
-            onChange={(e) =>
-              setFormData((prev) => ({ ...prev, description: e.target.value }))
-            }
-            placeholder="Describe your studies, achievements, relevant coursework, GPA, honors, etc..."
-            rows={4}
-            className="border-gray-100 focus:border-blue-500 focus:ring-blue-500 resize-none bg-white"
+          {/* Description */}
+          <FormField
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-medium text-gray-700">
+                  Description
+                </FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="Describe your studies, achievements, relevant coursework, GPA, honors, etc..."
+                    rows={4}
+                    className="border-gray-100 focus:border-blue-500 focus:ring-blue-500 resize-none bg-white"
+                    {...field}
+                    value={field.value || ""}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-        </div>
-      </div>
+        </form>
+      </Form>
     </div>
   );
 

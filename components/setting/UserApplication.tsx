@@ -128,7 +128,7 @@ export function UserApplications() {
                 <div className="flex items-baseline justify-between">
                   <div className="flex-1 space-y-2">
                     <div className="flex items-center justify-between">
-                      <Link href={`/project/${app.project.id}`}>
+                      <Link target="_top" href={`/project/${app.project.id}`}>
                         <h3 className="font-semibold text-gray-900 text-balance hover:underline">
                           {app.project.title}
                         </h3>

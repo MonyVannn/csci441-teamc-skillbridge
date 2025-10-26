@@ -183,15 +183,20 @@ export function ProjectCard({
                   </div>
 
                   <div className="flex items-center gap-1 mt-3 sm:mt-5 overflow-y-clip overflow-x-auto pb-2">
-                    {project.requiredSkills.map((skill) => (
+                    {project.requiredSkills.slice(0, 3).map((skill) => (
                       <Badge
                         key={skill}
-                        variant={"outline"}
-                        className="text-xs whitespace-nowrap"
+                        variant="secondary"
+                        className="text-xs"
                       >
                         {skill}
                       </Badge>
                     ))}
+                    {project.requiredSkills.length > 3 && (
+                      <Badge variant="secondary" className="text-xs">
+                        +{project.requiredSkills.length - 3}
+                      </Badge>
+                    )}
                   </div>
 
                   {/* Price */}

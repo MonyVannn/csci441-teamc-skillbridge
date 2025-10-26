@@ -132,7 +132,7 @@ export function UserInformation() {
     }
 
     loadUser();
-  }, []);
+  }, [form]);
 
   const handleEdit = () => {
     setIsEditing(true);

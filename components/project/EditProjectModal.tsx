@@ -236,8 +236,18 @@ export function EditProjectModal({
   };
 
   const addSkill = (skill: string) => {
-    if (skill && !selectedSkills.includes(skill)) {
-      const newSkills = [...selectedSkills, skill];
+    const trimmedSkill = skill.trim();
+    if (trimmedSkill && !selectedSkills.includes(trimmedSkill)) {
+      // Enforce 20 character limit
+      if (trimmedSkill.length > 20) {
+        form.setError("requiredSkills", {
+          type: "manual",
+          message: "Each skill must be 20 characters or less",
+        });
+        return;
+      }
+      form.clearErrors("requiredSkills");
+      const newSkills = [...selectedSkills, trimmedSkill];
       setSelectedSkills(newSkills);
       form.setValue("requiredSkills", newSkills, {
         shouldDirty: true,
@@ -369,6 +379,7 @@ export function EditProjectModal({
                           onChange={(e) => setSkillInput(e.target.value)}
                           onKeyPress={handleKeyPress}
                           className="flex-1 text-sm"
+                          maxLength={20}
                         />
                         <Button
                           type="button"
@@ -423,7 +434,8 @@ export function EditProjectModal({
                   </FormControl>
                   <FormDescription className="text-xs">
                     Add skills required for this project. You can type custom
-                    skills or click the suggested ones.
+                    skills or click the suggested ones. Each skill is limited to
+                    20 characters.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

@@ -144,7 +144,7 @@ export async function createApplication(
     if (existingUser.role !== "USER")
       throw new Error("User must be a student.");
 
-    const project = await prisma.project.findFirst({
+    const project = await prisma.project.findUnique({
       where: { id: projectId },
     });
 

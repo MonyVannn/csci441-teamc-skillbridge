@@ -5,11 +5,20 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuCheckboxItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   LoaderCircle,
   Search,
   X,
   Briefcase,
   Calendar as CalendarIcon,
+  MoreVertical,
 } from "lucide-react";
 import { ProjectStatus } from "@prisma/client";
 import { getProjectsByOwnerId } from "@/lib/actions/project";
@@ -24,9 +33,19 @@ export function OrganizationPostedProjects() {
     useState<ProjectWithAssignedStudent[]>();
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<ProjectStatus | "ALL">(
-    "ALL"
-  );
+  const [selectedStatuses, setSelectedStatuses] = useState<ProjectStatus[]>([]);
+
+  // Available status options
+  const statusOptions: { value: ProjectStatus; label: string }[] = [
+    { value: "DRAFT", label: "Draft" },
+    { value: "OPEN", label: "Open" },
+    { value: "IN_REVIEW", label: "In Review" },
+    { value: "ASSIGNED", label: "Assigned" },
+    { value: "IN_PROGRESS", label: "In Progress" },
+    { value: "COMPLETED", label: "Completed" },
+    { value: "CANCELLED", label: "Cancelled" },
+    { value: "ARCHIVED", label: "Archived" },
+  ];
 
   useEffect(() => {
     async function loadProjects() {
@@ -59,13 +78,32 @@ export function OrganizationPostedProjects() {
       );
     }
 
-    // Apply status filter
-    if (statusFilter !== "ALL") {
-      filtered = filtered.filter((project) => project.status === statusFilter);
+    // Apply status filter (multiselect)
+    if (selectedStatuses.length > 0) {
+      filtered = filtered.filter((project) =>
+        selectedStatuses.includes(project.status)
+      );
     }
 
     setFilteredProjects(filtered);
-  }, [searchQuery, statusFilter, projects]);
+  }, [searchQuery, selectedStatuses, projects]);
+
+  const toggleStatus = (status: ProjectStatus) => {
+    setSelectedStatuses((prev) =>
+      prev.includes(status)
+        ? prev.filter((s) => s !== status)
+        : [...prev, status]
+    );
+  };
+
+  const removeStatus = (status: ProjectStatus) => {
+    setSelectedStatuses((prev) => prev.filter((s) => s !== status));
+  };
+
+  const clearAllFilters = () => {
+    setSearchQuery("");
+    setSelectedStatuses([]);
+  };
 
   const getStatusColor = (status: ProjectStatus) => {
     const colors = {
@@ -102,88 +140,92 @@ export function OrganizationPostedProjects() {
 
       {/* Search and Filters */}
       <div className="flex flex-col gap-3">
-        <div className="relative w-full">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <Input
-            placeholder="Search..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-          />
+        {/* Search bar with dropdown menu */}
+        <div className="flex gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
+              placeholder="Search projects..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel>Filter by Status</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {statusOptions.map((option) => (
+                <DropdownMenuCheckboxItem
+                  key={option.value}
+                  checked={selectedStatuses.includes(option.value)}
+                  onCheckedChange={() => toggleStatus(option.value)}
+                  className="hover:cursor-pointer"
+                >
+                  {option.label}
+                </DropdownMenuCheckboxItem>
+              ))}
+              {selectedStatuses.length > 0 && (
+                <>
+                  <DropdownMenuSeparator />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={clearAllFilters}
+                    className="w-full justify-start text-xs"
+                  >
+                    Clear all filters
+                  </Button>
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          <Button
-            variant={statusFilter === "ALL" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setStatusFilter("ALL")}
-            className={
-              statusFilter === "ALL" ? "bg-[#1DBF9F] hover:bg-[#1DBF9F]/80" : ""
-            }
-          >
-            All
-          </Button>
-          <Button
-            variant={statusFilter === "DRAFT" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setStatusFilter("DRAFT")}
-            className={
-              statusFilter === "DRAFT"
-                ? "bg-[#1DBF9F] hover:bg-[#1DBF9F]/80"
-                : ""
-            }
-          >
-            Draft
-          </Button>
-          <Button
-            variant={statusFilter === "OPEN" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setStatusFilter("OPEN")}
-            className={
-              statusFilter === "OPEN"
-                ? "bg-[#1DBF9F] hover:bg-[#1DBF9F]/80"
-                : ""
-            }
-          >
-            Open
-          </Button>
-          <Button
-            variant={statusFilter === "IN_PROGRESS" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setStatusFilter("IN_PROGRESS")}
-            className={
-              statusFilter === "IN_PROGRESS"
-                ? "bg-[#1DBF9F] hover:bg-[#1DBF9F]/80"
-                : ""
-            }
-          >
-            In Progress
-          </Button>
-          <Button
-            variant={statusFilter === "COMPLETED" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setStatusFilter("COMPLETED")}
-            className={
-              statusFilter === "COMPLETED"
-                ? "bg-[#1DBF9F] hover:bg-[#1DBF9F]/80"
-                : ""
-            }
-          >
-            Completed
-          </Button>
-          {(searchQuery || statusFilter !== "ALL") && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                setSearchQuery("");
-                setStatusFilter("ALL");
-              }}
-              className="h-8 px-2"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
+
+        {/* Selected filters display */}
+        {(selectedStatuses.length > 0 || searchQuery) && (
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <div>
+              {selectedStatuses.map((status) => {
+                const option = statusOptions.find(
+                  (opt) => opt.value === status
+                );
+                return (
+                  <Badge
+                    key={status}
+                    variant="secondary"
+                    className="gap-1 pr-1"
+                  >
+                    {option?.label}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-4 w-4 p-0 hover:bg-transparent"
+                      onClick={() => removeStatus(status)}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </Badge>
+                );
+              })}
+            </div>
+            {(selectedStatuses.length > 0 || searchQuery) && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={clearAllFilters}
+                className="h-7 text-xs mr-8"
+              >
+                Clear all
+              </Button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Projects List - Card View (No horizontal scroll) */}
@@ -197,7 +239,7 @@ export function OrganizationPostedProjects() {
           <Briefcase className="h-12 w-12 mx-auto mb-4 text-gray-300" />
           <p className="font-medium">No projects found</p>
           <p className="text-sm mt-1">
-            {searchQuery || statusFilter !== "ALL"
+            {searchQuery || selectedStatuses.length > 0
               ? "Try adjusting your search or filters"
               : "Click 'Create' to get started"}
           </p>
@@ -213,6 +255,7 @@ export function OrganizationPostedProjects() {
                 <div className="flex-1 min-w-0 space-y-2">
                   <div className="flex items-start gap-2 flex-wrap">
                     <Link
+                      target="_top"
                       href={`/project/${project.id}`}
                       className="font-medium hover:underline text-gray-900 flex-1"
                     >
@@ -270,6 +313,7 @@ export function OrganizationPostedProjects() {
                   </div>
                   {project.assignedStudent && (
                     <Link
+                      target="_top"
                       href={`/profile/${project.assignedStudent.clerkId}`}
                       className="flex items-center gap-2 hover:underline w-fit"
                     >

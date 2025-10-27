@@ -335,11 +335,23 @@ export async function withdrawApplication(applicationId: string) {
 
     if (!application) throw new Error("Application not found.");
 
+    // Only allow withdrawal of PENDING applications
+    if (application.status !== "PENDING") {
+      throw new Error(
+        "Only pending applications can be withdrawn. This application has already been processed."
+      );
+    }
+
+    // Hard delete the application to allow re-application
+    // This removes the unique constraint conflict and lets users apply again
     await prisma.application.delete({
       where: {
         id: applicationId,
       },
     });
+
+    // Revalidate paths to update caches
+    revalidatePath("/");
 
     return { success: true };
   } catch (e) {

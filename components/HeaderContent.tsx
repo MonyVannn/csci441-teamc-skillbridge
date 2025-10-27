@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Button } from "./ui/button";
 import {
   ArrowRight,
@@ -62,9 +62,9 @@ const HeaderContent: React.FC<HeaderContentProps> = ({
     }
   }, [dbUser?.role]);
 
-  const handleApplicationsSeen = () => {
+  const handleApplicationsSeen = useCallback(() => {
     setUnseenApplicationCount(0);
-  };
+  }, []);
 
   if (pathname.startsWith("/sign-in") || pathname.startsWith("/sign-up"))
     return null;

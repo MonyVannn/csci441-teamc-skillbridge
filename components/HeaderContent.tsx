@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Button } from "./ui/button";
 import {
   ArrowRight,
@@ -23,6 +23,7 @@ import { SearchBar } from "./browse/SearchBar";
 import { UserApplications } from "./setting/UserApplication";
 import { OrganizationApplication } from "./setting/OrganizationApplication";
 import { getUserByClerkId } from "@/lib/actions/user";
+import { getUnseenApplicationCount } from "@/lib/actions/application";
 
 interface HeaderContentProps {
   user: User | null;
@@ -37,6 +38,9 @@ const HeaderContent: React.FC<HeaderContentProps> = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { user: clerkUser, isLoaded } = useUser();
   const [dbUser, setDbUser] = useState<User | null>(serverUser);
+  const [unseenApplicationCount, setUnseenApplicationCount] = useState<
+    number | null
+  >(null);
 
   useEffect(() => {
     // When Clerk user loads and we have their ID, fetch the database user
@@ -46,6 +50,21 @@ const HeaderContent: React.FC<HeaderContentProps> = ({
       });
     }
   }, [isLoaded, clerkUser?.id]);
+
+  useEffect(() => {
+    // Fetch unseen application count for students
+    if (dbUser?.role === "USER") {
+      getUnseenApplicationCount()
+        .then((count) => setUnseenApplicationCount(count))
+        .catch((error) =>
+          console.error("Failed to fetch unseen application count:", error)
+        );
+    }
+  }, [dbUser?.role]);
+
+  const handleApplicationsSeen = useCallback(() => {
+    setUnseenApplicationCount(0);
+  }, []);
 
   if (pathname.startsWith("/sign-in") || pathname.startsWith("/sign-up"))
     return null;
@@ -101,10 +120,18 @@ const HeaderContent: React.FC<HeaderContentProps> = ({
             )}
 
             <div className="relative pt-2">
-              {totalUnrespondedApplications &&
+              {dbUser?.role === "BUSINESS_OWNER" &&
+                totalUnrespondedApplications &&
                 totalUnrespondedApplications > 0 && (
                   <div className="absolute top-0 -right-1 sm:-right-2 w-4 h-4 sm:w-5 sm:h-5 z-50 bg-red-400 rounded-full text-white font-bold text-[10px] sm:text-xs flex items-center justify-center">
                     {totalUnrespondedApplications}
+                  </div>
+                )}
+              {dbUser?.role === "USER" &&
+                unseenApplicationCount &&
+                unseenApplicationCount > 0 && (
+                  <div className="absolute top-0 -right-1 sm:-right-2 w-4 h-4 sm:w-5 sm:h-5 z-50 bg-red-400 rounded-full text-white font-bold text-[10px] sm:text-xs flex items-center justify-center">
+                    {unseenApplicationCount}
                   </div>
                 )}
               <UserButton>
@@ -137,9 +164,21 @@ const HeaderContent: React.FC<HeaderContentProps> = ({
                   <UserButton.UserProfilePage
                     label="Applications"
                     url="applications"
-                    labelIcon={<ScrollText className="w-4 h-4" />}
+                    labelIcon={
+                      <>
+                        <ScrollText className="w-4 h-4" />{" "}
+                        {unseenApplicationCount &&
+                        unseenApplicationCount > 0 ? (
+                          <div className="absolute top-0 -right-28 w-4 h-4 z-50 bg-red-400 rounded-full text-white font-bold text-[10px] flex items-center justify-center">
+                            {unseenApplicationCount}
+                          </div>
+                        ) : null}
+                      </>
+                    }
                   >
-                    <UserApplications />
+                    <UserApplications
+                      onApplicationsSeen={handleApplicationsSeen}
+                    />
                   </UserButton.UserProfilePage>
                 )}
                 {dbUser?.role === "BUSINESS_OWNER" && (

@@ -38,6 +38,7 @@ import {
   editExperience,
   getExperience,
 } from "@/lib/actions/user";
+import { toast } from "sonner";
 
 // Zod schema for experience form validation
 const experienceFormSchema = z
@@ -134,6 +135,7 @@ export function UserExperience() {
         );
       } catch (error) {
         console.error("Failed to load experiences:", error);
+        toast.error("Failed to load experiences. Please try again.");
       } finally {
         setIsLoading(false);
       }
@@ -180,8 +182,10 @@ export function UserExperience() {
       const user = await deleteExperience(id);
       console.log("Experience deleted, ", user);
       setExperiences(experiences?.filter((exp) => exp.id !== id));
+      toast.success("Experience deleted successfully!");
     } catch (e) {
       console.error("Failed to delete user experience, ", e);
+      toast.error("Failed to delete experience. Please try again.");
     }
   };
 
@@ -220,6 +224,7 @@ export function UserExperience() {
               : exp
           )
         );
+        toast.success("Experience updated successfully!");
       } else {
         // Add new experience
         const experienceToAdd = {
@@ -239,12 +244,18 @@ export function UserExperience() {
           endDate: experienceData.endDate || null,
         };
         setExperiences([newExperience, ...(experiences || [])]);
+        toast.success("Experience added successfully!");
       }
 
       // Reset form and states
       handleCancel();
     } catch (e) {
       console.error("Failed to save experience: ", e);
+      toast.error(
+        editingId
+          ? "Failed to update experience. Please try again."
+          : "Failed to add experience. Please try again."
+      );
     }
   };
 

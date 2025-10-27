@@ -265,6 +265,10 @@ model Application {
   appliedAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
 
+  // Notification tracking fields
+  seenByApplicant Boolean   @default(true) // true when created (no notification for own application)
+  statusChangedAt DateTime? // Track when status was last changed by organization
+
   // Relationships
   project   Project @relation("ProjectApplications", fields: [projectId], references: [id])
   applicant User    @relation("Applicant", fields: [applicantId], references: [id])

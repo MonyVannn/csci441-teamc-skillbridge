@@ -9,6 +9,7 @@ import { Trash2, LoaderCircle, FileText } from "lucide-react";
 import {
   getApplicationsByUserId,
   withdrawApplication,
+  markApplicationsAsSeen,
 } from "@/lib/actions/application";
 import Link from "next/link";
 
@@ -28,7 +29,13 @@ interface Application {
   appliedAt: string;
 }
 
-export function UserApplications() {
+interface UserApplicationsProps {
+  onApplicationsSeen?: () => void;
+}
+
+export function UserApplications({
+  onApplicationsSeen,
+}: UserApplicationsProps) {
   const [applications, setApplications] = useState<Application[] | undefined>();
   const [isLoading, setIsLoading] = useState(true);
 
@@ -49,6 +56,10 @@ export function UserApplications() {
             },
           }))
         );
+        // Mark all applications as seen when the user views this page
+        await markApplicationsAsSeen();
+        // Call the callback to update the parent component's state
+        onApplicationsSeen?.();
       } catch (error) {
         console.error("Failed to load applications:", error);
       } finally {
@@ -57,7 +68,7 @@ export function UserApplications() {
     }
 
     loadApplications();
-  }, []);
+  }, [onApplicationsSeen]);
 
   /**
    * Handles withdrawing an application. It optimistically updates the UI
@@ -150,18 +161,6 @@ export function UserApplications() {
                       Applied on{" "}
                       {format(new Date(app.appliedAt), "MMMM d, yyyy")}
                     </p>
-                  </div>
-
-                  <div className="flex items-center gap-2 ml-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleWithdrawApplication(app.id)}
-                      className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600"
-                      aria-label="Withdraw Application"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
                   </div>
                 </div>
               </div>

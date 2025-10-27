@@ -86,6 +86,9 @@ export async function getApplicationsForAllOwnerProjects() {
         applicant: true,
         project: true,
       },
+      orderBy: {
+        appliedAt: "asc",
+      },
     });
 
     return applications;

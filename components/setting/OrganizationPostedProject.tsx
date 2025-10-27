@@ -26,6 +26,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { ProjectWithAssignedStudent } from "@/type";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { Separator } from "../ui/separator";
 
 export function OrganizationPostedProjects() {
   const [projects, setProjects] = useState<ProjectWithAssignedStudent[]>();
@@ -137,6 +138,7 @@ export function OrganizationPostedProjects() {
           </p>
         </div>
       </div>
+      <Separator className="my-5" />
 
       {/* Search and Filters */}
       <div className="flex flex-col gap-3">

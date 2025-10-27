@@ -13,10 +13,11 @@ interface ProfilePageProps {
 
 export default async function ProfilePage({ params }: ProfilePageProps) {
   const { userId } = await params;
-  const userData = await getUserByClerkId(userId);
-  const completedProjects = await getCompletedProjectsByAssignedStudentId(
-    userId
-  );
+
+  const [userData, completedProjects] = await Promise.all([
+    getUserByClerkId(userId),
+    getCompletedProjectsByAssignedStudentId(userId),
+  ]);
 
   if (!userData) {
     return <ProfileNotFoundPage />;

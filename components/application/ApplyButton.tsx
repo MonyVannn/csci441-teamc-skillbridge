@@ -15,6 +15,7 @@ import {
 import { createApplication, isApplied } from "@/lib/actions/application";
 import { useEffect, useState } from "react";
 import { Label } from "../ui/label";
+import { toast } from "sonner";
 
 interface ApplyButtonProps {
   project: AvailableProject;
@@ -38,14 +39,19 @@ export function ApplyButton({ project }: ApplyButtonProps) {
   }, [project.id]);
 
   const handleApply = async () => {
-    if (!formData.coverLetter) return;
+    if (!formData.coverLetter) {
+      toast.error("Please write a cover letter before submitting.");
+      return;
+    }
     try {
       await createApplication(project.id, formData.coverLetter);
       setIsAppliedButton(false);
       setOpenDialog(false);
       setFormData((prev) => ({ ...prev, coverLetter: "" }));
+      toast.success("Application submitted successfully!");
     } catch (error) {
       console.error("Failed to submit application:", error);
+      toast.error("Failed to submit application. Please try again.");
     }
   };
   return (
@@ -69,7 +75,10 @@ export function ApplyButton({ project }: ApplyButtonProps) {
           <textarea
             value={formData.coverLetter}
             onChange={(e) =>
-              setFormData((prev) => ({ ...prev, coverLetter: e.target.value }))
+              setFormData((prev) => ({
+                ...prev,
+                coverLetter: e.target.value,
+              }))
             }
             className="col-span-3 min-h-[200px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             placeholder="Write your cover letter here..."

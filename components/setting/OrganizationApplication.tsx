@@ -4,6 +4,21 @@ import { useEffect, useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Input } from "@/components/ui/input";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuCheckboxItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,8 +35,9 @@ import {
   FileText,
   Check,
   X,
-  FolderKanban,
   SquareArrowOutUpRight,
+  Search,
+  MoreVertical,
 } from "lucide-react";
 import {
   approveApplication,
@@ -55,7 +71,14 @@ export function OrganizationApplication() {
   const [applications, setApplications] = useState<
     ApplicationDetails[] | undefined
   >();
+  const [filteredApplications, setFilteredApplications] = useState<
+    ApplicationDetails[] | undefined
+  >();
   const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedStatuses, setSelectedStatuses] = useState<
+    ApplicationDetails["status"][]
+  >([]);
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
     action: "ACCEPTED" | "REJECTED" | null;
@@ -68,18 +91,29 @@ export function OrganizationApplication() {
     applicantName: null,
   });
 
+  // Available status options
+  const statusOptions: {
+    value: ApplicationDetails["status"];
+    label: string;
+  }[] = [
+    { value: "PENDING", label: "Pending" },
+    { value: "ACCEPTED", label: "Accepted" },
+    { value: "REJECTED", label: "Rejected" },
+    { value: "WITHDRAWN", label: "Withdrawn" },
+  ];
+
   useEffect(() => {
     async function loadAllApplications() {
       setIsLoading(true);
       try {
         // Fetch applications for all projects owned by the current user
         const data = await getApplicationsForAllOwnerProjects();
-        setApplications(
-          data.map((app) => ({
-            ...app,
-            appliedAt: app.appliedAt.toISOString(),
-          }))
-        );
+        const formattedData = data.map((app) => ({
+          ...app,
+          appliedAt: app.appliedAt.toISOString(),
+        }));
+        setApplications(formattedData);
+        setFilteredApplications(formattedData);
       } catch (error) {
         console.error("Failed to load project applications:", error);
         toast.error("Failed to load applications. Please try again.");
@@ -91,10 +125,38 @@ export function OrganizationApplication() {
     loadAllApplications();
   }, []);
 
+  // Filter applications based on search and status
+  useEffect(() => {
+    if (!applications) return;
+
+    let filtered = applications;
+
+    // Apply search filter
+    if (searchQuery) {
+      filtered = filtered.filter(
+        (app) =>
+          app.project.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          `${app.applicant.firstName} ${app.applicant.lastName}`
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase()) ||
+          app.coverLetter?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    // Apply status filter (multiselect)
+    if (selectedStatuses.length > 0) {
+      filtered = filtered.filter((app) =>
+        selectedStatuses.includes(app.status)
+      );
+    }
+
+    setFilteredApplications(filtered);
+  }, [searchQuery, selectedStatuses, applications]);
+
   // Group applications by project title using useMemo for efficiency
   const groupedApplications = useMemo(() => {
-    if (!applications) return {};
-    return applications.reduce((acc, app) => {
+    if (!filteredApplications) return {};
+    return filteredApplications.reduce((acc, app) => {
       const { title } = app.project;
       if (!acc[title]) {
         acc[title] = [];
@@ -102,7 +164,24 @@ export function OrganizationApplication() {
       acc[title].push(app);
       return acc;
     }, {} as Record<string, ApplicationDetails[]>);
-  }, [applications]);
+  }, [filteredApplications]);
+
+  const toggleStatus = (status: ApplicationDetails["status"]) => {
+    setSelectedStatuses((prev) =>
+      prev.includes(status)
+        ? prev.filter((s) => s !== status)
+        : [...prev, status]
+    );
+  };
+
+  const removeStatus = (status: ApplicationDetails["status"]) => {
+    setSelectedStatuses((prev) => prev.filter((s) => s !== status));
+  };
+
+  const clearAllFilters = () => {
+    setSearchQuery("");
+    setSelectedStatuses([]);
+  };
 
   const openConfirmDialog = (
     action: "ACCEPTED" | "REJECTED",
@@ -132,9 +211,15 @@ export function OrganizationApplication() {
     const applicationId = confirmDialog.applicationId;
     const newStatus = confirmDialog.action;
     const originalApplications = applications;
+    const originalFilteredApplications = filteredApplications;
 
-    // Optimistic update
+    // Optimistic update for both states
     setApplications((prev) =>
+      prev?.map((app) =>
+        app.id === applicationId ? { ...app, status: newStatus } : app
+      )
+    );
+    setFilteredApplications((prev) =>
       prev?.map((app) =>
         app.id === applicationId ? { ...app, status: newStatus } : app
       )
@@ -159,6 +244,7 @@ export function OrganizationApplication() {
       );
       // Revert on error
       setApplications(originalApplications);
+      setFilteredApplications(originalFilteredApplications);
     }
   };
 
@@ -176,135 +262,264 @@ export function OrganizationApplication() {
     }
   };
 
+  const totalApplications = filteredApplications?.length || 0;
+
   return (
     <div>
       <div className="space-y-1">
         <h1 className="font-bold text-gray-900">All Project Applications</h1>
         <p className="text-sm text-gray-500">
-          Review and manage all applications submitted to your projects.
+          Showing {totalApplications} of {applications?.length || 0} application
+          {applications?.length !== 1 ? "s" : ""}
         </p>
       </div>
       <Separator className="my-5" />
+
+      {/* Search and Filters */}
+      <div className="flex flex-col gap-3 mb-6">
+        {/* Search bar with dropdown menu */}
+        <div className="flex gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
+              placeholder="Search by applicant name, project, or cover letter..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel>Filter by Status</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {statusOptions.map((option) => (
+                <DropdownMenuCheckboxItem
+                  key={option.value}
+                  checked={selectedStatuses.includes(option.value)}
+                  onCheckedChange={() => toggleStatus(option.value)}
+                  className="hover:cursor-pointer"
+                >
+                  {option.label}
+                </DropdownMenuCheckboxItem>
+              ))}
+              {selectedStatuses.length > 0 && (
+                <>
+                  <DropdownMenuSeparator />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={clearAllFilters}
+                    className="w-full justify-start text-xs"
+                  >
+                    Clear all filters
+                  </Button>
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+
+        {/* Selected filters display */}
+        {(selectedStatuses.length > 0 || searchQuery) && (
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <div className="flex gap-2 flex-wrap">
+              {selectedStatuses.map((status) => {
+                const option = statusOptions.find(
+                  (opt) => opt.value === status
+                );
+                return (
+                  <Badge
+                    key={status}
+                    variant="secondary"
+                    className="gap-1 pr-1"
+                  >
+                    {option?.label}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-4 w-4 p-0 hover:bg-transparent"
+                      onClick={() => removeStatus(status)}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </Badge>
+                );
+              })}
+            </div>
+            {(selectedStatuses.length > 0 || searchQuery) && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={clearAllFilters}
+                className="h-7 text-xs"
+              >
+                Clear all
+              </Button>
+            )}
+          </div>
+        )}
+      </div>
+
       <div>
         {isLoading ? (
           <div className="text-center py-12 text-gray-500">
             <LoaderCircle className="h-6 w-6 mx-auto mb-4 text-gray-300 animate-spin" />
             <p>Loading Applications</p>
           </div>
-        ) : !applications || applications.length === 0 ? (
+        ) : !filteredApplications || filteredApplications.length === 0 ? (
           <div className="text-center py-12 text-gray-500">
             <FileText className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-            <p>
-              No applications have been received for any of your projects yet.
+            <p className="font-medium">No applications found</p>
+            <p className="text-sm mt-1">
+              {searchQuery || selectedStatuses.length > 0
+                ? "Try adjusting your search or filters"
+                : "No applications have been received for any of your projects yet."}
             </p>
           </div>
         ) : (
-          <div className="space-y-8">
+          <Accordion type="multiple" className="space-y-4">
             {/* Map over the grouped projects */}
             {Object.entries(groupedApplications).map(
-              ([projectTitle, projectApps]) => (
-                <div key={projectTitle}>
-                  <div className="flex items-center gap-3 mb-4">
-                    <FolderKanban className="h-6 w-6 text-gray-700" />
-                    <h2 className="font-bold text-xl text-gray-800">
-                      {projectTitle}
-                    </h2>
-                  </div>
-                  <div className="space-y-4">
-                    {/* Map over the applications for each project */}
-                    {projectApps.map((app) => (
-                      <div
-                        key={app.id}
-                        className="p-4 border border-gray-200 rounded-lg bg-white ml-2"
-                      >
-                        <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
-                          <div className="flex-1 space-y-3">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <Avatar className="rounded-lg">
-                                  <AvatarImage
-                                    src={app.applicant.imageUrl || ""}
-                                    alt={`${app.applicant.firstName ?? ""} ${
-                                      app.applicant.lastName ?? ""
-                                    }`.trim()}
-                                  />
-                                  <AvatarFallback>
-                                    {`${app.applicant.firstName?.[0] ?? ""}${
-                                      app.applicant.lastName?.[0] ?? ""
-                                    }`.toUpperCase() || "?"}
-                                  </AvatarFallback>
-                                </Avatar>
-                                <h3 className="font-semibold text-gray-900">
-                                  {app.applicant.firstName}{" "}
-                                  {app.applicant.lastName}
-                                </h3>
-                                <Link
-                                  target="_top"
-                                  href={`/profile/${app.applicant.clerkId}`}
-                                >
-                                  <Button size={"icon"} variant={"ghost"}>
-                                    <SquareArrowOutUpRight className="h-4 w-4" />
-                                  </Button>
-                                </Link>
-                              </div>
-                              {app.status === "PENDING" && (
-                                <div className="flex items-center gap-2 flex-shrink-0 w-full sm:w-auto">
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() =>
-                                      openConfirmDialog(
-                                        "REJECTED",
-                                        app.id,
-                                        `${app.applicant.firstName} ${app.applicant.lastName}`
-                                      )
-                                    }
-                                    className="w-1/2 sm:w-auto text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
-                                  >
-                                    <X className="mr-2 h-4 w-4" /> Reject
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    onClick={() =>
-                                      openConfirmDialog(
-                                        "ACCEPTED",
-                                        app.id,
-                                        `${app.applicant.firstName} ${app.applicant.lastName}`
-                                      )
-                                    }
-                                    className="w-1/2 sm:w-auto bg-green-600 hover:bg-green-700 text-white"
-                                  >
-                                    <Check className="mr-2 h-4 w-4" /> Approve
-                                  </Button>
-                                </div>
-                              )}
-                              {app.status !== "PENDING" && (
-                                <Badge
-                                  className={getStatusBadgeVariant(app.status)}
-                                >
-                                  {app.status.charAt(0) +
-                                    app.status.slice(1).toLowerCase()}
-                                </Badge>
-                              )}
-                            </div>
-                            {app.coverLetter && (
-                              <div className="text-sm text-gray-600 border-l-2 border-gray-200 pl-3 italic">
-                                <p>{app.coverLetter}</p>
-                              </div>
-                            )}
-                            <p className="text-xs text-gray-500">
-                              Applied on{" "}
-                              {format(new Date(app.appliedAt), "MMMM d, yyyy")}
-                            </p>
-                          </div>
+              ([projectTitle, projectApps]) => {
+                const pendingCount = projectApps.filter(
+                  (app) => app.status === "PENDING"
+                ).length;
+
+                return (
+                  <AccordionItem
+                    key={projectTitle}
+                    value={projectTitle}
+                    className="border rounded-lg bg-white px-4 last:border-b"
+                  >
+                    <AccordionTrigger className="hover:no-underline py-4 hover:cursor-pointer">
+                      <div className="flex items-center gap-3 w-full">
+                        <div className="flex items-center justify-between gap-3 flex-1">
+                          <h2 className="font-semibold text-gray-800">
+                            {projectTitle} ({projectApps.length})
+                          </h2>
+                          {pendingCount > 0 && (
+                            <Badge className="bg-yellow-500 text-white hover:bg-yellow-500">
+                              {pendingCount} pending
+                            </Badge>
+                          )}
                         </div>
                       </div>
-                    ))}
-                  </div>
-                </div>
-              )
+                    </AccordionTrigger>
+                    <AccordionContent className="pt-2 pb-4">
+                      <div className="space-y-3">
+                        {/* Map over the applications for each project */}
+                        {projectApps.map((app) => (
+                          <div
+                            key={app.id}
+                            className="p-4 border border-gray-200 rounded-lg bg-gray-50"
+                          >
+                            <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
+                              <div className="flex-1 space-y-3">
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <Avatar className="rounded-lg">
+                                      <AvatarImage
+                                        src={app.applicant.imageUrl || ""}
+                                        alt={`${
+                                          app.applicant.firstName ?? ""
+                                        } ${
+                                          app.applicant.lastName ?? ""
+                                        }`.trim()}
+                                      />
+                                      <AvatarFallback>
+                                        {`${
+                                          app.applicant.firstName?.[0] ?? ""
+                                        }${
+                                          app.applicant.lastName?.[0] ?? ""
+                                        }`.toUpperCase() || "?"}
+                                      </AvatarFallback>
+                                    </Avatar>
+                                    <h3 className="font-semibold text-gray-900">
+                                      {app.applicant.firstName}{" "}
+                                      {app.applicant.lastName}
+                                    </h3>
+                                    <Link
+                                      target="_top"
+                                      href={`/profile/${app.applicant.clerkId}`}
+                                    >
+                                      <Button size={"icon"} variant={"ghost"}>
+                                        <SquareArrowOutUpRight className="h-4 w-4" />
+                                      </Button>
+                                    </Link>
+                                  </div>
+                                  {app.status === "PENDING" && (
+                                    <div className="flex items-center gap-2 flex-shrink-0 w-full sm:w-auto">
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() =>
+                                          openConfirmDialog(
+                                            "REJECTED",
+                                            app.id,
+                                            `${app.applicant.firstName} ${app.applicant.lastName}`
+                                          )
+                                        }
+                                        className="w-1/2 sm:w-auto text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
+                                      >
+                                        <X className="mr-2 h-4 w-4" /> Reject
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        onClick={() =>
+                                          openConfirmDialog(
+                                            "ACCEPTED",
+                                            app.id,
+                                            `${app.applicant.firstName} ${app.applicant.lastName}`
+                                          )
+                                        }
+                                        className="w-1/2 sm:w-auto bg-green-600 hover:bg-green-700 text-white"
+                                      >
+                                        <Check className="mr-2 h-4 w-4" />{" "}
+                                        Approve
+                                      </Button>
+                                    </div>
+                                  )}
+                                  {app.status !== "PENDING" && (
+                                    <Badge
+                                      className={getStatusBadgeVariant(
+                                        app.status
+                                      )}
+                                    >
+                                      {app.status.charAt(0) +
+                                        app.status.slice(1).toLowerCase()}
+                                    </Badge>
+                                  )}
+                                </div>
+                                {app.coverLetter && (
+                                  <div className="text-sm text-gray-700 ">
+                                    <p className="whitespace-pre-line leading-relaxed">
+                                      {app.coverLetter}
+                                    </p>
+                                  </div>
+                                )}
+                                <p className="text-xs text-gray-500">
+                                  Applied on{" "}
+                                  {format(
+                                    new Date(app.appliedAt),
+                                    "MMMM d, yyyy"
+                                  )}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                );
+              }
             )}
-          </div>
+          </Accordion>
         )}
       </div>
 

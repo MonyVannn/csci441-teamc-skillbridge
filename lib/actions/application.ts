@@ -218,6 +218,8 @@ export async function approveApplication(applicationId: string) {
       },
       data: {
         status: "ACCEPTED",
+        seenByApplicant: false,
+        statusChangedAt: new Date(),
       },
     });
 
@@ -269,6 +271,8 @@ export async function rejectApplication(applicationId: string) {
       },
       data: {
         status: "REJECTED",
+        seenByApplicant: false,
+        statusChangedAt: new Date(),
       },
     });
 
@@ -338,5 +342,64 @@ export async function withdrawApplication(applicationId: string) {
   } catch (e) {
     console.error("Error withdrawing application: ", e);
     throw new Error("Failed to withdraw application");
+  }
+}
+
+export async function getUnseenApplicationCount() {
+  const user = await currentUser();
+
+  if (!user) throw new Error("Not authenticated.");
+
+  try {
+    const existingUser = await prisma.user.findFirst({
+      where: { clerkId: user.id },
+    });
+
+    if (!existingUser) throw new Error("User not found.");
+    if (existingUser.role !== "USER")
+      throw new Error("Only students can view unseen application count.");
+
+    const count = await prisma.application.count({
+      where: {
+        applicantId: existingUser.id,
+        seenByApplicant: false,
+      },
+    });
+
+    return count;
+  } catch (e) {
+    console.error("Error fetching unseen applications count: ", e);
+    throw new Error("Failed to fetch unseen applications count");
+  }
+}
+
+export async function markApplicationsAsSeen() {
+  const user = await currentUser();
+
+  if (!user) throw new Error("Not authenticated.");
+
+  try {
+    const existingUser = await prisma.user.findFirst({
+      where: { clerkId: user.id },
+    });
+
+    if (!existingUser) throw new Error("User not found.");
+    if (existingUser.role !== "USER")
+      throw new Error("Only students can mark applications as seen.");
+
+    await prisma.application.updateMany({
+      where: {
+        applicantId: existingUser.id,
+        seenByApplicant: false,
+      },
+      data: {
+        seenByApplicant: true,
+      },
+    });
+
+    return { success: true };
+  } catch (e) {
+    console.error("Error marking applications as seen: ", e);
+    throw new Error("Failed to mark applications as seen");
   }
 }

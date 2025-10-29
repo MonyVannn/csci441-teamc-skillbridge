@@ -7,7 +7,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { format } from "date-fns";
-import { CalendarIcon, X } from "lucide-react";
+import { CalendarIcon, X, LoaderCircle } from "lucide-react";
 
 import {
   Dialog,
@@ -310,7 +310,11 @@ export function EditProjectModal({
                 <FormItem>
                   <FormLabel>Title *</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter project title" {...field} />
+                    <Input
+                      placeholder="Enter project title"
+                      {...field}
+                      disabled={isUpdating}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -328,6 +332,7 @@ export function EditProjectModal({
                       placeholder="Describe your project in detail..."
                       className="min-h-[100px]"
                       {...field}
+                      disabled={isUpdating}
                     />
                   </FormControl>
                   <FormMessage />
@@ -346,6 +351,7 @@ export function EditProjectModal({
                       placeholder="- Describe applicant's responsibilities in detail..."
                       className="min-h-[100px]"
                       {...field}
+                      disabled={isUpdating}
                     />
                   </FormControl>
                   <FormMessage />
@@ -367,6 +373,7 @@ export function EditProjectModal({
                       placeholder="- Describe your deliverables in detail..."
                       className="min-h-[100px]"
                       {...field}
+                      disabled={isUpdating}
                     />
                   </FormControl>
                   <FormMessage />
@@ -393,12 +400,14 @@ export function EditProjectModal({
                           onKeyPress={handleKeyPress}
                           className="flex-1 text-sm"
                           maxLength={20}
+                          disabled={isUpdating}
                         />
                         <Button
                           type="button"
                           variant="outline"
                           onClick={() => addSkill(skillInput.trim())}
                           className="px-3 sm:px-4"
+                          disabled={isUpdating}
                         >
                           Add
                         </Button>
@@ -413,6 +422,7 @@ export function EditProjectModal({
                             size="sm"
                             onClick={() => addSkill(skill)}
                             className="text-[10px] sm:text-xs px-2 py-1 h-auto"
+                            disabled={isUpdating}
                           >
                             {skill}
                           </Button>
@@ -465,6 +475,7 @@ export function EditProjectModal({
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
+                      disabled={isUpdating}
                     >
                       <FormControl>
                         <SelectTrigger className="w-full">
@@ -493,6 +504,7 @@ export function EditProjectModal({
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
+                      disabled={isUpdating}
                     >
                       <FormControl>
                         <SelectTrigger className="w-full">
@@ -527,6 +539,7 @@ export function EditProjectModal({
                         onChange={(e) =>
                           field.onChange(Number.parseFloat(e.target.value) || 0)
                         }
+                        disabled={isUpdating}
                       />
                     </FormControl>
                     <FormMessage />
@@ -551,6 +564,7 @@ export function EditProjectModal({
                               "pl-2 sm:pl-3 text-left font-normal text-xs sm:text-sm w-full",
                               !field.value && "text-muted-foreground"
                             )}
+                            disabled={isUpdating}
                           >
                             {field.value ? (
                               <span className="truncate">
@@ -593,6 +607,7 @@ export function EditProjectModal({
                               "pl-2 sm:pl-3 text-left font-normal text-xs sm:text-sm w-full",
                               !field.value && "text-muted-foreground"
                             )}
+                            disabled={isUpdating}
                           >
                             {field.value ? (
                               <span className="truncate">
@@ -635,6 +650,7 @@ export function EditProjectModal({
                               "pl-2 sm:pl-3 text-left font-normal text-xs sm:text-sm w-full",
                               !field.value && "text-muted-foreground"
                             )}
+                            disabled={isUpdating}
                           >
                             {field.value ? (
                               <span className="truncate">
@@ -683,7 +699,14 @@ export function EditProjectModal({
                       disabled={isUpdating}
                       className="w-full sm:w-auto"
                     >
-                      {isUpdating ? "Saving..." : "Save as Draft"}
+                      {isUpdating ? (
+                        <>
+                          <LoaderCircle className="h-4 w-4 mr-2 animate-spin" />
+                          Saving...
+                        </>
+                      ) : (
+                        "Save as Draft"
+                      )}
                     </Button>
                     <Button
                       type="button"
@@ -691,7 +714,14 @@ export function EditProjectModal({
                       disabled={isUpdating}
                       className="w-full sm:w-auto"
                     >
-                      {isUpdating ? "Publishing..." : "Publish Draft"}
+                      {isUpdating ? (
+                        <>
+                          <LoaderCircle className="h-4 w-4 mr-2 animate-spin" />
+                          Publishing...
+                        </>
+                      ) : (
+                        "Publish Draft"
+                      )}
                     </Button>
                   </>
                 )}
@@ -701,7 +731,14 @@ export function EditProjectModal({
                     disabled={isUpdating}
                     className="w-full sm:w-auto"
                   >
-                    {isUpdating ? "Updating..." : "Update Project"}
+                    {isUpdating ? (
+                      <>
+                        <LoaderCircle className="h-4 w-4 mr-2 animate-spin" />
+                        Updating...
+                      </>
+                    ) : (
+                      "Update Project"
+                    )}
                   </Button>
                 )}
               </div>

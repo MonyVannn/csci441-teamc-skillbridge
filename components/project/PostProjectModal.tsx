@@ -7,7 +7,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { format } from "date-fns";
-import { CalendarIcon, X } from "lucide-react";
+import { CalendarIcon, X, LoaderCircle } from "lucide-react";
 
 import {
   Dialog,
@@ -151,6 +151,7 @@ export function PostProjectModal({
   const user = useUser();
   const [skillInput, setSkillInput] = useState("");
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -172,11 +173,15 @@ export function PostProjectModal({
       toast.error("You must be signed in to create a project.");
       return;
     }
+
+    if (isSubmitting) return; // Prevent multiple submissions
+
     const formDataWithSkills = {
       ...data,
       requiredSkills: selectedSkills,
     };
 
+    setIsSubmitting(true);
     try {
       const dbUser = await getUserByClerkId(user.user?.id);
 
@@ -212,6 +217,8 @@ export function PostProjectModal({
           ? "Failed to save project as draft. Please try again."
           : "Failed to post project. Please try again."
       );
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -298,7 +305,11 @@ export function PostProjectModal({
                 <FormItem>
                   <FormLabel>Title *</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter project title" {...field} />
+                    <Input
+                      placeholder="Enter project title"
+                      {...field}
+                      disabled={isSubmitting}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -316,6 +327,7 @@ export function PostProjectModal({
                       placeholder="Describe your project in detail..."
                       className="min-h-[100px]"
                       {...field}
+                      disabled={isSubmitting}
                     />
                   </FormControl>
                   <FormMessage />
@@ -334,6 +346,7 @@ export function PostProjectModal({
                       placeholder="- Describe applicant's responsibilities in detail..."
                       className="min-h-[100px]"
                       {...field}
+                      disabled={isSubmitting}
                     />
                   </FormControl>
                   <FormMessage />
@@ -355,6 +368,7 @@ export function PostProjectModal({
                       placeholder="- Describe your deliverables in detail..."
                       className="min-h-[100px]"
                       {...field}
+                      disabled={isSubmitting}
                     />
                   </FormControl>
                   <FormMessage />
@@ -381,12 +395,14 @@ export function PostProjectModal({
                           onKeyPress={handleKeyPress}
                           className="flex-1 text-sm"
                           maxLength={20}
+                          disabled={isSubmitting}
                         />
                         <Button
                           type="button"
                           variant="outline"
                           onClick={() => addSkill(skillInput.trim())}
                           className="px-3 sm:px-4"
+                          disabled={isSubmitting}
                         >
                           Add
                         </Button>
@@ -401,6 +417,7 @@ export function PostProjectModal({
                             size="sm"
                             onClick={() => addSkill(skill)}
                             className="text-[10px] sm:text-xs px-2 py-1 h-auto"
+                            disabled={isSubmitting}
                           >
                             {skill}
                           </Button>
@@ -453,6 +470,7 @@ export function PostProjectModal({
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
+                      disabled={isSubmitting}
                     >
                       <FormControl>
                         <SelectTrigger className="w-full">
@@ -470,8 +488,7 @@ export function PostProjectModal({
                     <FormMessage />
                   </FormItem>
                 )}
-              />
-
+              />{" "}
               <FormField
                 control={form.control}
                 name="scope"
@@ -481,6 +498,7 @@ export function PostProjectModal({
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
+                      disabled={isSubmitting}
                     >
                       <FormControl>
                         <SelectTrigger className="w-full">
@@ -499,7 +517,6 @@ export function PostProjectModal({
                   </FormItem>
                 )}
               />
-
               <FormField
                 control={form.control}
                 name="budget"
@@ -515,6 +532,7 @@ export function PostProjectModal({
                         onChange={(e) =>
                           field.onChange(Number.parseFloat(e.target.value) || 0)
                         }
+                        disabled={isSubmitting}
                       />
                     </FormControl>
                     <FormMessage />
@@ -539,6 +557,7 @@ export function PostProjectModal({
                               "pl-2 sm:pl-3 text-left font-normal text-xs sm:text-sm w-full",
                               !field.value && "text-muted-foreground"
                             )}
+                            disabled={isSubmitting}
                           >
                             {field.value ? (
                               <span className="truncate">
@@ -581,6 +600,7 @@ export function PostProjectModal({
                               "pl-2 sm:pl-3 text-left font-normal text-xs sm:text-sm w-full",
                               !field.value && "text-muted-foreground"
                             )}
+                            disabled={isSubmitting}
                           >
                             {field.value ? (
                               <span className="truncate">
@@ -623,6 +643,7 @@ export function PostProjectModal({
                               "pl-2 sm:pl-3 text-left font-normal text-xs sm:text-sm w-full",
                               !field.value && "text-muted-foreground"
                             )}
+                            disabled={isSubmitting}
                           >
                             {field.value ? (
                               <span className="truncate">
@@ -657,6 +678,7 @@ export function PostProjectModal({
                 variant="outline"
                 onClick={() => onOpenChange(false)}
                 className="w-full sm:w-auto"
+                disabled={isSubmitting}
               >
                 Cancel
               </Button>
@@ -666,11 +688,30 @@ export function PostProjectModal({
                   variant="secondary"
                   onClick={handleSaveAsDraft}
                   className="w-full sm:w-auto"
+                  disabled={isSubmitting}
                 >
-                  Save as Draft
+                  {isSubmitting ? (
+                    <>
+                      <LoaderCircle className="h-4 w-4 mr-2 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    "Save as Draft"
+                  )}
                 </Button>
-                <Button type="submit" className="w-full sm:w-auto">
-                  Post Project
+                <Button
+                  type="submit"
+                  className="w-full sm:w-auto"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <LoaderCircle className="h-4 w-4 mr-2 animate-spin" />
+                      Posting...
+                    </>
+                  ) : (
+                    "Post Project"
+                  )}
                 </Button>
               </div>
             </div>

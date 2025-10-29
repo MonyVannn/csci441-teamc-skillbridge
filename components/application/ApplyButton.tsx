@@ -16,6 +16,7 @@ import { createApplication, isApplied } from "@/lib/actions/application";
 import { useEffect, useState } from "react";
 import { Label } from "../ui/label";
 import { toast } from "sonner";
+import { LoaderCircle } from "lucide-react";
 
 interface ApplyButtonProps {
   project: AvailableProject;
@@ -24,6 +25,7 @@ interface ApplyButtonProps {
 export function ApplyButton({ project }: ApplyButtonProps) {
   const [isAppliedButton, setIsAppliedButton] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     coverLetter: "",
   });
@@ -43,6 +45,10 @@ export function ApplyButton({ project }: ApplyButtonProps) {
       toast.error("Please write a cover letter before submitting.");
       return;
     }
+
+    if (isSubmitting) return; // Prevent multiple submissions
+
+    setIsSubmitting(true);
     try {
       await createApplication(project.id, formData.coverLetter);
       setIsAppliedButton(false);
@@ -52,6 +58,8 @@ export function ApplyButton({ project }: ApplyButtonProps) {
     } catch (error) {
       console.error("Failed to submit application:", error);
       toast.error("Failed to submit application. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
   return (
@@ -80,16 +88,30 @@ export function ApplyButton({ project }: ApplyButtonProps) {
                 coverLetter: e.target.value,
               }))
             }
+            disabled={isSubmitting}
             className="col-span-3 min-h-[200px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             placeholder="Write your cover letter here..."
           />
         </div>
         <DialogFooter>
           <DialogClose asChild>
-            <Button variant="secondary">Cancel</Button>
+            <Button variant="secondary" disabled={isSubmitting}>
+              Cancel
+            </Button>
           </DialogClose>
-          <Button onClick={handleApply} className="bg-[#695DCC]">
-            Submit Application
+          <Button
+            onClick={handleApply}
+            className="bg-[#695DCC]"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
+              <>
+                <LoaderCircle className="h-4 w-4 mr-2 animate-spin" />
+                Submitting...
+              </>
+            ) : (
+              "Submit Application"
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>

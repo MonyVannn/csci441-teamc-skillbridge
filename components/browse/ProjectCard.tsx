@@ -187,7 +187,7 @@ export function ProjectCard({
                       <Badge
                         key={skill}
                         variant="secondary"
-                        className="text-xs"
+                        className="text-xs capitalize"
                       >
                         {skill}
                       </Badge>

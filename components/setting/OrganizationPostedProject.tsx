@@ -70,6 +70,14 @@ export function OrganizationPostedProjects() {
 
     let filtered = projects;
 
+    // Hide archived projects by default unless specifically filtered
+    if (
+      selectedStatuses.length === 0 ||
+      !selectedStatuses.includes("ARCHIVED")
+    ) {
+      filtered = filtered.filter((project) => project.status !== "ARCHIVED");
+    }
+
     // Apply search filter
     if (searchQuery) {
       filtered = filtered.filter(

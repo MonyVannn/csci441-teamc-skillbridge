@@ -29,7 +29,7 @@ export function MobileFilters() {
 
   return (
     <Sheet>
-      <SheetTrigger asChild>
+      <SheetTrigger asChild suppressHydrationWarning>
         <Button
           variant="outline"
           size="sm"

@@ -1,39 +1,145 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { X, Send, Minus, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Separator } from "../separator";
+import {
+  getMessages,
+  sendMessage,
+  markMessagesAsRead,
+  getOrCreateConversation,
+} from "@/lib/actions/chat";
 
 export type IndividualChatProps = {
-  id: string;
+  id: string; // Conversation ID (or userId for new chats)
+  userId?: string; // The other user's ID (for creating conversation on first message)
   name: string;
   avatar: string;
   isMinimized: boolean;
+  isNewChat?: boolean; // Flag to indicate this is a new chat without a conversation yet
   onToggleMinimize: (chatId: string) => void;
   onClose: (chatId: string) => void;
+  onConversationCreated?: (oldId: string, newConversationId: string) => void;
+};
+
+type Message = {
+  id: string;
+  content: string;
+  senderId: string;
+  senderName: string;
+  senderAvatar: string;
+  createdAt: Date;
+  isCurrentUser: boolean;
 };
 
 export default function IndividualChat({
   id,
+  userId,
   name,
   avatar,
   isMinimized,
+  isNewChat = false,
   onToggleMinimize,
   onClose,
+  onConversationCreated,
 }: IndividualChatProps) {
   const [messageInput, setMessageInput] = useState("");
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSending, setIsSending] = useState(false);
+  const [conversationId, setConversationId] = useState<string | null>(
+    isNewChat ? null : id
+  );
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const handleSendMessage = () => {
-    if (!messageInput.trim()) return;
+  // Load messages when chat opens or is expanded (only if conversation exists)
+  useEffect(() => {
+    if (!isMinimized && conversationId) {
+      loadMessages();
+      // Mark messages as read
+      markMessagesAsRead(conversationId);
+    }
+  }, [conversationId, isMinimized]);
 
-    // TODO: Send message to backend
-    console.log(`Sending message to ${id}:`, messageInput);
+  // Poll for new messages every 3 seconds when chat is open (only if conversation exists)
+  useEffect(() => {
+    if (isMinimized || !conversationId) return;
 
-    // Clear input
-    setMessageInput("");
+    const interval = setInterval(() => {
+      loadMessages(true); // Silent reload
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [conversationId, isMinimized]);
+
+  // Auto-scroll to bottom when new messages arrive
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const loadMessages = async (silent = false) => {
+    if (!conversationId) return; // Can't load messages without a conversation
+
+    if (!silent) setIsLoading(true);
+
+    try {
+      const fetchedMessages = await getMessages(conversationId);
+      setMessages(fetchedMessages);
+    } catch (error) {
+      console.error("Error loading messages:", error);
+    } finally {
+      if (!silent) setIsLoading(false);
+    }
+  };
+
+  const handleSendMessage = async () => {
+    if (!messageInput.trim() || isSending) return;
+
+    setIsSending(true);
+    const tempMessage = messageInput;
+    setMessageInput(""); // Clear input immediately for better UX
+
+    try {
+      // If this is a new chat, create the conversation first
+      if (isNewChat && !conversationId && userId) {
+        const conversation = await getOrCreateConversation(userId);
+        setConversationId(conversation.id);
+
+        // Notify parent that conversation was created
+        if (onConversationCreated) {
+          onConversationCreated(id, conversation.id);
+        }
+
+        // Now send the message with the new conversation ID
+        const newMessage = await sendMessage(conversation.id, tempMessage);
+        setMessages([newMessage]);
+      } else if (conversationId) {
+        // Normal flow - conversation already exists
+        const newMessage = await sendMessage(conversationId, tempMessage);
+        setMessages((prev) => [...prev, newMessage]);
+      }
+    } catch (error) {
+      console.error("Error sending message:", error);
+      // Restore message input on error
+      setMessageInput(tempMessage);
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  const formatTime = (date: Date) => {
+    return new Date(date).toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
   };
 
   return (
@@ -43,14 +149,14 @@ export default function IndividualChat({
       }`}
     >
       {/* Chat header */}
-      <div className="flex items-center justify-between px-3 py-1.5 border-b bg-white">
+      <div className="flex items-center justify-between px-3 py-2 border-b bg-white">
         <div
           className={`flex items-center gap-2 flex-1 min-w-0 ${
             isMinimized ? "overflow-hidden" : ""
           }`}
         >
           <Avatar className="h-7 w-7 flex-shrink-0">
-            <AvatarImage src="" alt="Messaging" />
+            <AvatarImage src={avatar} alt="Messaging" />
             <AvatarFallback className="bg-gradient-to-br from-red-500 to-orange-500 text-white text-sm font-medium">
               {avatar}
             </AvatarFallback>
@@ -89,60 +195,57 @@ export default function IndividualChat({
       {!isMinimized && (
         <>
           {/* Messages area */}
-          <div className="flex-1 h-[400px] overflow-y-auto px-4 py-3 bg-white">
-            {/* Example messages - replace with real data */}
-            <div className="flex flex-col gap-4">
-              {/* Received message */}
-              <div className="flex flex-col gap-1">
-                <div className="flex items-center gap-2">
-                  <Avatar className="h-7 w-7 flex-shrink-0">
-                    <AvatarImage src="" alt="Messaging" />
-                    <AvatarFallback className="bg-gradient-to-br from-red-500 to-orange-500 text-white text-sm font-medium">
-                      M
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className="text-sm font-semibold text-foreground">
-                    {name}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    12:18 PM
-                  </span>
-                </div>
-                <div className="text-sm text-foreground leading-relaxed ml-9">
-                  <p className="mb-3">Quick Connection Request</p>
-                  <p className="mb-3">Hi Drew,</p>
-                  <p className="mb-3">
-                    I hope you&apos;re doing well! I&apos;m reaching out because
-                    I&apos;m interested in the Software Engineer role at your
-                    company. I would really appreciate any guidance on
-                    connecting with the right person.
-                  </p>
-                  <p>Thank you!</p>
-                  <p>Monyvann.</p>
-                </div>
+          <div className="h-[400px] max-h-[400px] overflow-y-auto px-4 py-3 bg-white">
+            {isLoading ? (
+              <div className="flex items-center justify-center h-full">
+                <p className="text-sm text-muted-foreground">
+                  Loading messages...
+                </p>
               </div>
-
-              <Separator />
-
-              {/* Sent message - example */}
-              <div className="flex flex-col gap-1">
-                <div className="flex items-center gap-2">
-                  <Avatar className="h-7 w-7 flex-shrink-0">
-                    <AvatarImage src="" alt="Messaging" />
-                    <AvatarFallback className="bg-gradient-to-br from-red-500 to-orange-500 text-white text-sm font-medium">
-                      M
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className="text-sm font-semibold text-foreground">
-                    You
-                  </span>
-                  <span className="text-xs text-muted-foreground">2:54 PM</span>
-                </div>
-                <div className="text-sm text-foreground leading-relaxed ml-9">
-                  <p>Attached is my most up-to-date resume.</p>
-                </div>
+            ) : messages.length === 0 ? (
+              <div className="flex items-center justify-center h-full">
+                <p className="text-sm text-muted-foreground">
+                  No messages yet. Start the conversation!
+                </p>
               </div>
-            </div>
+            ) : (
+              <div className="flex flex-col gap-4">
+                {messages.map((message, index) => {
+                  const showSeparator =
+                    index > 0 &&
+                    messages[index - 1].senderId !== message.senderId;
+
+                  return (
+                    <React.Fragment key={message.id}>
+                      {showSeparator && <Separator />}
+                      <div className="flex flex-col gap-1">
+                        <div className="flex items-center gap-2">
+                          <Avatar className="h-7 w-7 flex-shrink-0">
+                            <AvatarImage
+                              src={message.senderAvatar}
+                              alt={message.senderName}
+                            />
+                            <AvatarFallback className="bg-gradient-to-br from-red-500 to-orange-500 text-white text-sm font-medium">
+                              {message.senderName.charAt(0)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="text-sm font-semibold text-foreground">
+                            {message.isCurrentUser ? "You" : message.senderName}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            {formatTime(message.createdAt)}
+                          </span>
+                        </div>
+                        <div className="text-sm text-foreground leading-relaxed ml-9 whitespace-pre-wrap">
+                          {message.content}
+                        </div>
+                      </div>
+                    </React.Fragment>
+                  );
+                })}
+                <div ref={messagesEndRef} />
+              </div>
+            )}
           </div>
 
           {/* Input area */}
@@ -153,6 +256,7 @@ export default function IndividualChat({
                 onChange={(e) => setMessageInput(e.target.value)}
                 placeholder="Write a message..."
                 className="h-9 text-sm"
+                disabled={isSending}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) {
                     e.preventDefault();
@@ -164,7 +268,7 @@ export default function IndividualChat({
                 onClick={handleSendMessage}
                 size="icon"
                 className="h-9 w-9 flex-shrink-0"
-                disabled={!messageInput.trim()}
+                disabled={!messageInput.trim() || isSending}
                 aria-label="Send message"
               >
                 <Send className="h-4 w-4" />

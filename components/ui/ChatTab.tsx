@@ -6,13 +6,18 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import ChatList, { type Conversation } from "@/components/ui/chat/ChatList";
 import IndividualChat from "@/components/ui/chat/IndividualChat";
+import { getConversations, getUnreadCount } from "@/lib/actions/chat";
+import { chatEventBus } from "@/lib/chat-events";
+import { useUserAuth } from "@/lib/stores/userStore";
 
 // Type for individual chat state
 type ChatWindow = {
-  id: string;
+  id: string; // This will be userId for new chats, conversationId for existing ones
+  userId?: string; // The other user's ID (for creating conversation on first message)
   name: string;
   avatar: string;
   isMinimized: boolean;
+  isNewChat?: boolean; // Flag to indicate this is a new chat without a conversation yet
 };
 
 export default function ChatTab() {
@@ -20,55 +25,123 @@ export default function ChatTab() {
   const buttonRef = useRef<HTMLDivElement | null>(null);
   const [buttonWidth, setButtonWidth] = useState(300);
   const [openChats, setOpenChats] = useState<ChatWindow[]>([]); // Track open individual chats
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const { user, isAuthenticated } = useUserAuth();
 
-  // Mock conversation data - replace with real data
-  const conversations: Conversation[] = [
-    {
-      id: "1",
-      name: "Anna Button",
-      avatar: "",
-      lastMessage: "You: Thanks, Anna",
-      time: "Oct 30",
-      unread: false,
-    },
-    {
-      id: "2",
-      name: "Sunil Dixit",
-      avatar: "",
-      lastMessage: "Connecting About the Role",
-      time: "Oct 27",
-      unread: false,
-    },
-    {
-      id: "3",
-      name: "Daniel Glasgow",
-      avatar: "",
-      lastMessage: "Seeking Connection for Role",
-      time: "Oct 23",
-      unread: true,
-    },
-    {
-      id: "4",
-      name: "Peter DiDomenico",
-      avatar: "",
-      lastMessage: "Seeking Connection for Role",
-      time: "Oct 23",
-      unread: false,
-    },
-  ];
-
+  // Load conversations on mount
   useEffect(() => {
-    // Measure the button width when component mounts
+    loadConversations();
+    loadUnreadCount();
+  }, []);
+
+  // Measure button width
+  useEffect(() => {
     if (buttonRef.current) {
       setButtonWidth(buttonRef.current.offsetWidth);
     }
   }, []);
 
-  const handleToggle = () => {
-    setOpen((v) => !v);
+  // Listen for global chat events
+  useEffect(() => {
+    const unsubscribe = chatEventBus.subscribe(async (event) => {
+      if (event.type === "OPEN_CHAT") {
+        // Refresh conversations first to check for existing ones
+        const freshConversations = await getConversations();
+        setConversations(freshConversations);
+
+        // Check if conversation exists with this user
+        const existingConversation = freshConversations.find(
+          (conv) => conv.otherUserId === event.userId
+        );
+
+        if (existingConversation) {
+          // Open existing conversation
+          handleOpenChat({
+            id: existingConversation.id,
+            name: existingConversation.name,
+            avatar: existingConversation.avatar,
+          });
+        } else {
+          // Open new chat (no conversation exists yet)
+          openNewChatWindow(
+            event.userId,
+            event.userName,
+            event.userAvatar || ""
+          );
+        }
+      }
+    });
+
+    return unsubscribe;
+  }, []); // Empty dependency array to avoid infinite loops
+
+  const loadConversations = async () => {
+    try {
+      const fetchedConversations = await getConversations();
+      setConversations(fetchedConversations);
+    } catch (error) {
+      console.error("Error loading conversations:", error);
+    } finally {
+    }
   };
 
-  // Open a chat window - if already open, bring to front and expand
+  const loadUnreadCount = async () => {
+    try {
+      const count = await getUnreadCount();
+      setUnreadCount(count);
+    } catch (error) {
+      console.error("Error loading unread count:", error);
+    }
+  };
+
+  const handleToggle = () => {
+    setOpen((v) => !v);
+    if (!open) {
+      // Refresh conversations when opening
+      loadConversations();
+      loadUnreadCount();
+    }
+  };
+
+  // Open a new chat window with a user (no existing conversation)
+  const openNewChatWindow = (
+    userId: string,
+    userName: string,
+    userAvatar: string
+  ) => {
+    setOpenChats((prev) => {
+      // Check if chat window is already open with this user
+      const existingIndex = prev.findIndex(
+        (chat) => chat.userId === userId || chat.id === userId
+      );
+
+      if (existingIndex !== -1) {
+        // Chat already open - bring to front and expand
+        const updated = [...prev];
+        const [chat] = updated.splice(existingIndex, 1);
+        return [
+          ...updated.map((c) => ({ ...c, isMinimized: true })),
+          { ...chat, isMinimized: false },
+        ];
+      } else {
+        // New chat - minimize all others and add this one
+        return [
+          ...prev.map((c) => ({ ...c, isMinimized: true })),
+          {
+            id: userId, // Use userId as temporary ID
+            userId: userId,
+            name: userName,
+            avatar: userAvatar,
+            isMinimized: false,
+            isNewChat: true, // Flag this as a new chat
+          },
+        ];
+      }
+    });
+  };
+
+  // Open a chat window from conversation list (existing conversation)
   const handleOpenChat = (conv: {
     id: string;
     name: string;
@@ -86,7 +159,7 @@ export default function ChatTab() {
           { ...chat, isMinimized: false },
         ];
       } else {
-        // New chat - minimize all others and add this one
+        // New chat from existing conversation - minimize all others and add this one
         return [
           ...prev.map((c) => ({ ...c, isMinimized: true })),
           {
@@ -94,10 +167,27 @@ export default function ChatTab() {
             name: conv.name,
             avatar: conv.avatar,
             isMinimized: false,
+            isNewChat: false, // This is an existing conversation
           },
         ];
       }
     });
+  };
+
+  // Handle when a conversation is created from a new chat
+  const handleConversationCreated = (
+    oldId: string,
+    newConversationId: string
+  ) => {
+    setOpenChats((prev) =>
+      prev.map((chat) =>
+        chat.id === oldId
+          ? { ...chat, id: newConversationId, isNewChat: false }
+          : chat
+      )
+    );
+    // Refresh conversation list to include the new conversation
+    loadConversations();
   };
 
   // Toggle minimize state of a chat
@@ -127,41 +217,39 @@ export default function ChatTab() {
     setOpenChats((prev) => prev.filter((chat) => chat.id !== chatId));
   };
 
+  if (!isAuthenticated) return null;
+
   return (
     <div
       aria-expanded={open}
-      className="fixed right-4 bottom-0 z-50 flex flex-col items-stretch transition-all duration-200 ease-out"
+      className="fixed right-4 shadow-2xl bottom-0 z-50 flex flex-col items-stretch transition-all duration-200 ease-out"
     >
       {/* Expanded conversation list - slides up */}
       <ChatList
         conversations={conversations}
         isOpen={open}
         width={buttonWidth}
+        avatar={user?.imageUrl || ""}
         onToggle={handleToggle}
         onSelectChat={handleOpenChat}
+        onRefresh={loadConversations}
       />
 
       {/* Fixed bottom tab - always visible */}
       {!open && (
         <div
           ref={buttonRef}
-          className={`flex items-center gap-2 px-3 py-2 cursor-pointer bg-white shadow-2xl 
+          className={`flex items-center gap-2 px-3 py-2 cursor-pointer bg-white border
           ${
             open ? "rounded-t-none" : "rounded-t-xl"
-          } transition-all duration-200 hover:shadow-xl`}
+          } transition-all duration-200 hover:shadow-xl relative`}
           onClick={handleToggle}
           role="button"
           aria-label={open ? "Close chat" : "Open chat"}
           tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              handleToggle();
-            }
-          }}
         >
           <Avatar className="h-7 w-7 flex-shrink-0">
-            <AvatarImage src="" alt="Messaging" />
+            <AvatarImage src={user?.imageUrl || ""} alt="Messaging" />
             <AvatarFallback className="bg-gradient-to-br from-red-500 to-orange-500 text-white text-sm font-medium">
               M
             </AvatarFallback>
@@ -169,6 +257,11 @@ export default function ChatTab() {
           <div className="w-full flex flex-col items-start min-w-0 mr-16">
             <div className="text-sm font-semibold">Messaging</div>
           </div>
+          {unreadCount > 0 && (
+            <span className="absolute top-1 right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+              {unreadCount > 9 ? "9+" : unreadCount}
+            </span>
+          )}
           <div className="flex items-center gap-1">
             <Button
               variant="ghost"
@@ -188,6 +281,7 @@ export default function ChatTab() {
               className="h-7 w-7"
               onClick={(e) => {
                 e.stopPropagation();
+                handleToggle();
               }}
               aria-label={open ? "Minimize" : "Expand chat"}
             >
@@ -210,11 +304,14 @@ export default function ChatTab() {
           <IndividualChat
             key={chat.id}
             id={chat.id}
+            userId={chat.userId}
             name={chat.name}
             avatar={chat.avatar}
             isMinimized={chat.isMinimized}
+            isNewChat={chat.isNewChat}
             onToggleMinimize={handleToggleMinimize}
             onClose={handleCloseChat}
+            onConversationCreated={handleConversationCreated}
           />
         ))}
       </div>

@@ -150,7 +150,7 @@ export function ProjectCard({
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 p-2 sm:p-4 lg:p-6">
         {projects.map((project) => (
           <Sheet key={project.id}>
-            <SheetTrigger className="text-left">
+            <SheetTrigger className="text-left" suppressHydrationWarning>
               <Card className="overflow-hidden border border-gray-200 hover:shadow-lg transition-shadow cursor-pointer">
                 <div className="relative group">
                   <Image

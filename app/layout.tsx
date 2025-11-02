@@ -6,6 +6,7 @@ import Header from "@/components/Header";
 import "./globals.css";
 import Footer from "@/components/Footer";
 import { Toaster } from "@/components/ui/sonner";
+import ChatTab from "@/components/ui/ChatTab";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -37,6 +38,7 @@ export default function RootLayout({
           {children}
           <SpeedInsights />
           <Toaster />
+          <ChatTab />
           <Footer />
         </body>
       </html>

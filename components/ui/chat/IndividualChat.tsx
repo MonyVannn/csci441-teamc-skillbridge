@@ -56,7 +56,7 @@ export default function IndividualChat({
             </AvatarFallback>
           </Avatar>
           <div className="w-full flex flex-col items-start min-w-0 font-semibold">
-            <div className="text-sm font-semibol line-clamp-1">{name}</div>
+            <div className="text-sm font-semibold line-clamp-1">{name}</div>
           </div>
         </div>
         <div className="flex items-center gap-0.5">

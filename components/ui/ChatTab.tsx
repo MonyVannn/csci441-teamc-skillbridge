@@ -166,7 +166,7 @@ export default function ChatTab() {
               M
             </AvatarFallback>
           </Avatar>
-          <div className="w-full flex flex-col items-start min-w-0 mr-18">
+          <div className="w-full flex flex-col items-start min-w-0 mr-16">
             <div className="text-sm font-semibold">Messaging</div>
           </div>
           <div className="flex items-center gap-1">

@@ -6,7 +6,7 @@ import Header from "@/components/Header";
 import "./globals.css";
 import Footer from "@/components/Footer";
 import { Toaster } from "@/components/ui/sonner";
-import ChatTab from "@/components/ui/ChatTab";
+import ChatTab from "@/components/ui/chat/ChatTab";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

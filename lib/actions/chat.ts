@@ -450,16 +450,20 @@ export async function markMessagesAsRead(conversationId: string) {
       (msg) => !msg.readBy.includes(currentUser.id)
     );
 
-    // Update each message
-    for (const message of messagesToUpdate) {
-      await prisma.message.update({
-        where: { id: message.id },
-        data: {
-          readBy: {
-            push: currentUser.id,
-          },
-        },
-      });
+    // Batch update all messages in a transaction for better performance
+    if (messagesToUpdate.length > 0) {
+      await prisma.$transaction(
+        messagesToUpdate.map((message) =>
+          prisma.message.update({
+            where: { id: message.id },
+            data: {
+              readBy: {
+                push: currentUser.id,
+              },
+            },
+          })
+        )
+      );
     }
 
     revalidatePath("/");
@@ -491,7 +495,7 @@ export async function getUnreadCount() {
       return 0;
     }
 
-    // Count conversations with unread messages
+    // Get all conversations for this user
     const conversations = await prisma.conversation.findMany({
       where: {
         participantIds: {
@@ -503,24 +507,28 @@ export async function getUnreadCount() {
       },
     });
 
-    let totalUnread = 0;
+    const conversationIds = conversations.map((conv) => conv.id);
 
-    for (const conv of conversations) {
-      const unreadMessages = await prisma.message.findMany({
-        where: {
-          conversationId: conv.id,
-          senderId: {
-            not: currentUser.id,
-          },
+    // Single query to get all unread messages across all conversations
+    const allMessages = await prisma.message.findMany({
+      where: {
+        conversationId: {
+          in: conversationIds,
         },
-      });
+        senderId: {
+          not: currentUser.id,
+        },
+      },
+      select: {
+        id: true,
+        readBy: true,
+      },
+    });
 
-      const unreadCount = unreadMessages.filter(
-        (msg) => !msg.readBy.includes(currentUser.id)
-      ).length;
-
-      totalUnread += unreadCount;
-    }
+    // Count messages where current user is not in readBy array
+    const totalUnread = allMessages.filter(
+      (msg) => !msg.readBy.includes(currentUser.id)
+    ).length;
 
     return totalUnread;
   } catch (error) {

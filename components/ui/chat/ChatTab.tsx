@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { MoreHorizontal, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -42,6 +42,74 @@ export default function ChatTab() {
     }
   }, []);
 
+  // Open a new chat window with a user (no existing conversation)
+  const openNewChatWindow = useCallback(
+    (userId: string, userName: string, userAvatar: string) => {
+      setOpenChats((prev) => {
+        // Check if chat window is already open with this user
+        const existingIndex = prev.findIndex(
+          (chat) => chat.userId === userId || chat.id === userId
+        );
+
+        if (existingIndex !== -1) {
+          // Chat already open - bring to front and expand
+          const updated = [...prev];
+          const [chat] = updated.splice(existingIndex, 1);
+          return [
+            ...updated.map((c) => ({ ...c, isMinimized: true })),
+            { ...chat, isMinimized: false },
+          ];
+        } else {
+          // New chat - minimize all others and add this one
+          return [
+            ...prev.map((c) => ({ ...c, isMinimized: true })),
+            {
+              id: userId, // Use userId as temporary ID
+              userId: userId,
+              name: userName,
+              avatar: userAvatar,
+              isMinimized: false,
+              isNewChat: true, // Flag this as a new chat
+            },
+          ];
+        }
+      });
+    },
+    []
+  );
+
+  // Open a chat window from conversation list (existing conversation)
+  const handleOpenChat = useCallback(
+    (conv: { id: string; name: string; avatar: string }) => {
+      setOpenChats((prev) => {
+        const existingIndex = prev.findIndex((chat) => chat.id === conv.id);
+
+        if (existingIndex !== -1) {
+          // Chat already open - move to end (front) and ensure it's not minimized
+          const updated = [...prev];
+          const [chat] = updated.splice(existingIndex, 1);
+          return [
+            ...updated.map((c) => ({ ...c, isMinimized: true })),
+            { ...chat, isMinimized: false },
+          ];
+        } else {
+          // New chat from existing conversation - minimize all others and add this one
+          return [
+            ...prev.map((c) => ({ ...c, isMinimized: true })),
+            {
+              id: conv.id,
+              name: conv.name,
+              avatar: conv.avatar,
+              isMinimized: false,
+              isNewChat: false, // This is an existing conversation
+            },
+          ];
+        }
+      });
+    },
+    []
+  );
+
   // Listen for global chat events
   useEffect(() => {
     const unsubscribe = chatEventBus.subscribe(async (event) => {
@@ -74,7 +142,7 @@ export default function ChatTab() {
     });
 
     return unsubscribe;
-  }, []); // Empty dependency array to avoid infinite loops
+  }, [handleOpenChat, openNewChatWindow]); // Added dependencies to satisfy exhaustive-deps
 
   const loadConversations = async () => {
     try {
@@ -102,76 +170,6 @@ export default function ChatTab() {
       loadConversations();
       loadUnreadCount();
     }
-  };
-
-  // Open a new chat window with a user (no existing conversation)
-  const openNewChatWindow = (
-    userId: string,
-    userName: string,
-    userAvatar: string
-  ) => {
-    setOpenChats((prev) => {
-      // Check if chat window is already open with this user
-      const existingIndex = prev.findIndex(
-        (chat) => chat.userId === userId || chat.id === userId
-      );
-
-      if (existingIndex !== -1) {
-        // Chat already open - bring to front and expand
-        const updated = [...prev];
-        const [chat] = updated.splice(existingIndex, 1);
-        return [
-          ...updated.map((c) => ({ ...c, isMinimized: true })),
-          { ...chat, isMinimized: false },
-        ];
-      } else {
-        // New chat - minimize all others and add this one
-        return [
-          ...prev.map((c) => ({ ...c, isMinimized: true })),
-          {
-            id: userId, // Use userId as temporary ID
-            userId: userId,
-            name: userName,
-            avatar: userAvatar,
-            isMinimized: false,
-            isNewChat: true, // Flag this as a new chat
-          },
-        ];
-      }
-    });
-  };
-
-  // Open a chat window from conversation list (existing conversation)
-  const handleOpenChat = (conv: {
-    id: string;
-    name: string;
-    avatar: string;
-  }) => {
-    setOpenChats((prev) => {
-      const existingIndex = prev.findIndex((chat) => chat.id === conv.id);
-
-      if (existingIndex !== -1) {
-        // Chat already open - move to end (front) and ensure it's not minimized
-        const updated = [...prev];
-        const [chat] = updated.splice(existingIndex, 1);
-        return [
-          ...updated.map((c) => ({ ...c, isMinimized: true })),
-          { ...chat, isMinimized: false },
-        ];
-      } else {
-        // New chat from existing conversation - minimize all others and add this one
-        return [
-          ...prev.map((c) => ({ ...c, isMinimized: true })),
-          {
-            id: conv.id,
-            name: conv.name,
-            avatar: conv.avatar,
-            isMinimized: false,
-            isNewChat: false, // This is an existing conversation
-          },
-        ];
-      }
-    });
   };
 
   // Handle when a conversation is created from a new chat

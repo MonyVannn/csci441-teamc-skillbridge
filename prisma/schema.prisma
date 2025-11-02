@@ -48,6 +48,11 @@ model User {
   postedProjects   Project[]     @relation("BusinessOwnerProjects") // Projects posted by this user
   assignedProjects Project[]     @relation("AssignedStudent") // Projects this student is assigned to
   applications     Application[] @relation("Applicant") // Applications made by this user
+
+  // Chat relations - many-to-many implicit relation
+  conversationIds String[]       @db.ObjectId
+  conversations   Conversation[] @relation("ConversationParticipants", fields: [conversationIds], references: [id])
+  sentMessages    Message[]      @relation("SentMessages")
 }
 
 // Embedded documents for MongoDB (No @id, no @map)
@@ -282,4 +287,59 @@ enum ApplicationStatus {
   ACCEPTED
   REJECTED
   WITHDRAWN
+}
+
+// --- CHAT MODELS ---
+
+model Conversation {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Participants (many-to-many relation)
+  participantIds String[] @db.ObjectId
+  participants   User[]   @relation("ConversationParticipants", fields: [participantIds], references: [id])
+
+  // Messages in this conversation
+  messages Message[]
+
+  // Last message info for quick list display
+  lastMessageAt      DateTime?
+  lastMessagePreview String?
+  lastMessageSender  String? // Name of sender for preview
+
+  @@index([participantIds])
+  @@index([updatedAt(sort: Desc)])
+}
+
+model Message {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Who sent it
+  senderId String @db.ObjectId
+  sender   User   @relation("SentMessages", fields: [senderId], references: [id])
+
+  // Which conversation
+  conversationId String       @db.ObjectId
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  // Read status tracking
+  readBy String[] @db.ObjectId // Array of user IDs who have read this message
+
+  // Optional: message types and attachments
+  messageType MessageType @default(TEXT)
+  attachments String[]    @default([]) // URLs to files if needed
+
+  @@index([conversationId, createdAt(sort: Desc)])
+  @@index([senderId])
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  FILE
+  SYSTEM // For system messages like "User joined project"
 }

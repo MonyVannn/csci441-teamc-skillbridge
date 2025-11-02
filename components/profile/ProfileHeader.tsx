@@ -3,9 +3,11 @@ import { Badge } from "@/components/ui/badge";
 import { User } from "@prisma/client";
 import { MapPin, Award, Clock, Briefcase } from "lucide-react";
 import Image from "next/image";
+import StartChatButton from "../ui/chat/StartChatButton";
 
 //helper checks
-const hasText = (v?: string | null) => typeof v === "string" && v.trim().length > 0;
+const hasText = (v?: string | null) =>
+  typeof v === "string" && v.trim().length > 0;
 const gt0 = (n?: number | null) => typeof n === "number" && n > 0;
 function hasArray<T>(v?: readonly T[] | null): v is readonly T[] {
   return Array.isArray(v) && v.length > 0;
@@ -46,6 +48,11 @@ export function ProfileHeader({ user }: ProfileHeaderProps) {
               <h1 className="text-3xl font-bold text-balance capitalize">
                 {user.firstName} {user.lastName}
               </h1>
+              <StartChatButton
+                userId={user.id}
+                userName={`${user.firstName} ${user.lastName}`}
+                userAvatar={user.imageUrl || ""}
+              />
             </div>
 
             <p className="text-xl text-muted-foreground mb-3 text-pretty">
@@ -99,39 +106,52 @@ export function ProfileHeader({ user }: ProfileHeaderProps) {
               )}
 
               {/* Stats */}
-              {(gt0(user.totalHoursContributed) || gt0(user.projectsCompleted)) && (
-                  <div className="flex items-center gap-6 text-sm">
-                    {gt0(user.totalHoursContributed) && (
-                      <div className="flex items-center gap-1">
-                        <Clock className="h-4 w-4 text-blue-600" />
-                        <span className="font-medium">{user.totalHoursContributed.toLocaleString()}</span>
-                        <span className="text-muted-foreground">hours contributed</span>
-                      </div>
-                    )}
-                    {gt0(user.projectsCompleted) && (
-                      <div className="flex items-center gap-1">
-                        <Briefcase className="h-4 w-4 text-green-600" />
-                        <span className="font-medium">{user.projectsCompleted}</span>
-                        <span className="text-muted-foreground">projects completed</span>
-                      </div>
-                    )}
-                  </div>
-                )}
+              {(gt0(user.totalHoursContributed) ||
+                gt0(user.projectsCompleted)) && (
+                <div className="flex items-center gap-6 text-sm">
+                  {gt0(user.totalHoursContributed) && (
+                    <div className="flex items-center gap-1">
+                      <Clock className="h-4 w-4 text-blue-600" />
+                      <span className="font-medium">
+                        {user.totalHoursContributed.toLocaleString()}
+                      </span>
+                      <span className="text-muted-foreground">
+                        hours contributed
+                      </span>
+                    </div>
+                  )}
+                  {gt0(user.projectsCompleted) && (
+                    <div className="flex items-center gap-1">
+                      <Briefcase className="h-4 w-4 text-green-600" />
+                      <span className="font-medium">
+                        {user.projectsCompleted}
+                      </span>
+                      <span className="text-muted-foreground">
+                        projects completed
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Industries */}
               {hasArray(user.industriesExperienced) && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium">Industries:</span>
-                    <div className="flex gap-1">
-                      {user.industriesExperienced.map((industry) => (
-                        <Badge key={industry} variant="secondary" className="text-xs">
-                          {industry}
-                        </Badge>
-                      ))}
-                    </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium">Industries:</span>
+                  <div className="flex gap-1">
+                    {user.industriesExperienced.map((industry) => (
+                      <Badge
+                        key={industry}
+                        variant="secondary"
+                        className="text-xs"
+                      >
+                        {industry}
+                      </Badge>
+                    ))}
                   </div>
-                )}
-              </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

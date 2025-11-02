@@ -43,7 +43,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { createProject } from "@/lib/actions/project";
 import { useUser } from "@clerk/nextjs";
 import { getUserByClerkId } from "@/lib/actions/user";
 import { ProjectCategory, ProjectScope } from "@prisma/client";
@@ -176,11 +175,6 @@ export function PostProjectModal({
 
     if (isSubmitting) return; // Prevent multiple submissions
 
-    const formDataWithSkills = {
-      ...data,
-      requiredSkills: selectedSkills,
-    };
-
     setIsSubmitting(true);
     try {
       const dbUser = await getUserByClerkId(user.user?.id);
@@ -189,15 +183,6 @@ export function PostProjectModal({
         toast.error("User account not found. Please try again.");
         return;
       }
-
-      const project = await createProject({
-        ...formDataWithSkills,
-        status: isDraft ? "DRAFT" : "OPEN",
-        isPublic: !isDraft, // Drafts are private by default
-        createdAt: new Date(),
-        assignedStudent: undefined,
-        businessOwner: { connect: { id: dbUser.id } },
-      });
 
       toast.success(
         isDraft

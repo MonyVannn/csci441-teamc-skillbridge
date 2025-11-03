@@ -1,10 +1,9 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { X, Send, Minus, ChevronUp } from "lucide-react";
+import { X, Minus, ChevronUp, SendHorizonal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Input } from "@/components/ui/input";
 import { Separator } from "../separator";
 import {
   getMessages,
@@ -12,14 +11,15 @@ import {
   markMessagesAsRead,
   getOrCreateConversation,
 } from "@/lib/actions/chat";
+import { Textarea } from "../textarea";
 
 export type IndividualChatProps = {
-  id: string; // Conversation ID (or userId for new chats)
-  userId?: string; // The other user's ID (for creating conversation on first message)
+  id: string;
+  userId?: string;
   name: string;
   avatar: string;
   isMinimized: boolean;
-  isNewChat?: boolean; // Flag to indicate this is a new chat without a conversation yet
+  isNewChat?: boolean;
   onToggleMinimize: (chatId: string) => void;
   onClose: (chatId: string) => void;
   onConversationCreated?: (oldId: string, newConversationId: string) => void;
@@ -250,8 +250,8 @@ export default function IndividualChat({
 
           {/* Input area */}
           <div className="px-2 py-2 border-t bg-card">
-            <div className="flex gap-2">
-              <Input
+            <div className="flex gap-2 items-end">
+              <Textarea
                 value={messageInput}
                 onChange={(e) => setMessageInput(e.target.value)}
                 placeholder="Write a message..."
@@ -267,11 +267,12 @@ export default function IndividualChat({
               <Button
                 onClick={handleSendMessage}
                 size="icon"
+                variant={"ghost"}
                 className="h-9 w-9 flex-shrink-0"
                 disabled={!messageInput.trim() || isSending}
                 aria-label="Send message"
               >
-                <Send className="h-4 w-4" />
+                <SendHorizonal className="h-4 w-4" />
               </Button>
             </div>
           </div>

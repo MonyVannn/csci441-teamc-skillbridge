@@ -28,11 +28,24 @@ export default function ChatTab() {
   const [unreadCount, setUnreadCount] = useState(0);
   const { user, isAuthenticated } = useUserAuth();
 
-  // Load conversations on mount
+  // Load conversations and unread count when user becomes authenticated
   useEffect(() => {
-    loadConversations();
-    loadUnreadCount();
-  }, []);
+    if (isAuthenticated) {
+      loadConversations();
+      loadUnreadCount();
+    }
+  }, [isAuthenticated]);
+
+  // Poll for unread count updates every 10 seconds (even when chat list is closed)
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const interval = setInterval(() => {
+      loadUnreadCount();
+    }, 10000); // Poll every 10 seconds
+
+    return () => clearInterval(interval);
+  }, [isAuthenticated]);
 
   // Measure button width
   useEffect(() => {
@@ -193,7 +206,20 @@ export default function ChatTab() {
     );
     // Refresh conversation list to include the new conversation
     loadConversations();
+    loadUnreadCount();
   };
+
+  // Handle when a message is sent - refresh conversations and unread count
+  const handleMessageSent = useCallback(() => {
+    loadConversations();
+    loadUnreadCount();
+  }, []);
+
+  // Handle when messages are read - refresh unread count
+  const handleMessagesRead = useCallback(() => {
+    loadUnreadCount();
+    loadConversations(); // Also refresh to update the unread indicator in the list
+  }, []);
 
   // Toggle minimize state of a chat
   const handleToggleMinimize = (chatId: string) => {
@@ -306,6 +332,8 @@ export default function ChatTab() {
             onToggleMinimize={handleToggleMinimize}
             onClose={handleCloseChat}
             onConversationCreated={handleConversationCreated}
+            onMessageSent={handleMessageSent}
+            onMessagesRead={handleMessagesRead}
           />
         ))}
       </div>

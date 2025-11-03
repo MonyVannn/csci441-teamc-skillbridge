@@ -23,6 +23,8 @@ export type IndividualChatProps = {
   onToggleMinimize: (chatId: string) => void;
   onClose: (chatId: string) => void;
   onConversationCreated?: (oldId: string, newConversationId: string) => void;
+  onMessageSent?: () => void;
+  onMessagesRead?: () => void;
 };
 
 type Message = {
@@ -45,6 +47,8 @@ export default function IndividualChat({
   onToggleMinimize,
   onClose,
   onConversationCreated,
+  onMessageSent,
+  onMessagesRead,
 }: IndividualChatProps) {
   const [messageInput, setMessageInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
@@ -60,7 +64,12 @@ export default function IndividualChat({
     if (!isMinimized && conversationId) {
       loadMessages();
       // Mark messages as read
-      markMessagesAsRead(conversationId);
+      markMessagesAsRead(conversationId).then(() => {
+        // Notify parent to refresh conversations and unread count
+        if (onMessagesRead) {
+          onMessagesRead();
+        }
+      });
     }
   }, [conversationId, isMinimized]);
 
@@ -120,10 +129,20 @@ export default function IndividualChat({
         // Now send the message with the new conversation ID
         const newMessage = await sendMessage(conversation.id, tempMessage);
         setMessages([newMessage]);
+
+        // Notify parent to refresh conversations
+        if (onMessageSent) {
+          onMessageSent();
+        }
       } else if (conversationId) {
         // Normal flow - conversation already exists
         const newMessage = await sendMessage(conversationId, tempMessage);
         setMessages((prev) => [...prev, newMessage]);
+
+        // Notify parent to refresh conversations
+        if (onMessageSent) {
+          onMessageSent();
+        }
       }
     } catch (error) {
       console.error("Error sending message:", error);

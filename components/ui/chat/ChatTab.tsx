@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState, useCallback } from "react";
-import { MoreHorizontal, ChevronUp } from "lucide-react";
+import { ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import ChatList, { type Conversation } from "@/components/ui/chat/ChatList";
@@ -10,14 +10,13 @@ import { getConversations, getUnreadCount } from "@/lib/actions/chat";
 import { chatEventBus } from "@/lib/chat-events";
 import { useUserAuth } from "@/lib/stores/userStore";
 
-// Type for individual chat state
 type ChatWindow = {
-  id: string; // This will be userId for new chats, conversationId for existing ones
-  userId?: string; // The other user's ID (for creating conversation on first message)
+  id: string;
+  userId?: string;
   name: string;
   avatar: string;
   isMinimized: boolean;
-  isNewChat?: boolean; // Flag to indicate this is a new chat without a conversation yet
+  isNewChat?: boolean;
 };
 
 export default function ChatTab() {
@@ -108,6 +107,14 @@ export default function ChatTab() {
       });
     },
     []
+  );
+
+  // Handle selecting a user from search (wrapper for openNewChatWindow)
+  const handleSelectUser = useCallback(
+    (user: { userId: string; name: string; avatar: string }) => {
+      openNewChatWindow(user.userId, user.name, user.avatar);
+    },
+    [openNewChatWindow]
   );
 
   // Listen for global chat events
@@ -230,6 +237,7 @@ export default function ChatTab() {
         avatar={user?.imageUrl || ""}
         onToggle={handleToggle}
         onSelectChat={handleOpenChat}
+        onSelectUser={handleSelectUser}
         onRefresh={loadConversations}
       />
 
@@ -253,7 +261,7 @@ export default function ChatTab() {
             </AvatarFallback>
           </Avatar>
           <div className="w-full flex flex-col items-start min-w-0 mr-16">
-            <div className="text-sm font-semibold">Messaging</div>
+            <div className="text-sm font-semibold">Contacts</div>
           </div>
           {unreadCount > 0 && (
             <span className="absolute top-1 right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
@@ -261,18 +269,6 @@ export default function ChatTab() {
             </span>
           )}
           <div className="flex items-center gap-1">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7"
-              onClick={(e) => {
-                e.stopPropagation();
-                // TODO: Handle more options
-              }}
-              aria-label="More options"
-            >
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
             <Button
               variant="ghost"
               size="icon"

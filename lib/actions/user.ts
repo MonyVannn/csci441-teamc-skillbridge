@@ -382,3 +382,79 @@ export async function editUserInformation(informationData: User) {
     throw new Error("Failed to edit user information.");
   }
 }
+
+/**
+ * Search for users by name or email
+ * Excludes the current user from results
+ */
+export async function searchUsers(query: string) {
+  const user = await currentUser();
+
+  if (!user) throw new Error("Not authenticated.");
+
+  try {
+    const currentDbUser = await prisma.user.findFirst({
+      where: { clerkId: user.id },
+    });
+
+    if (!currentDbUser) throw new Error("User not found.");
+
+    // Return empty array if query is empty
+    if (!query.trim()) {
+      return [];
+    }
+
+    // Search users by first name, last name, or email
+    const users = await prisma.user.findMany({
+      where: {
+        AND: [
+          {
+            id: {
+              not: currentDbUser.id, // Exclude current user
+            },
+            role: {
+              not: "ADMIN",
+            },
+          },
+          {
+            OR: [
+              {
+                firstName: {
+                  contains: query,
+                  mode: "insensitive",
+                },
+              },
+              {
+                lastName: {
+                  contains: query,
+                  mode: "insensitive",
+                },
+              },
+              {
+                email: {
+                  contains: query,
+                  mode: "insensitive",
+                },
+              },
+            ],
+          },
+        ],
+      },
+      select: {
+        id: true,
+        clerkId: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        imageUrl: true,
+        role: true,
+      },
+      take: 10, // Limit results
+    });
+
+    return users;
+  } catch (e) {
+    console.error("Error searching users, ", e);
+    throw new Error("Failed to search users.");
+  }
+}

@@ -486,7 +486,7 @@ export async function getUsersRecommendation() {
         },
         take: 5,
         orderBy: {
-          id: "asc", // You could also use a random ordering if your DB supports it
+          id: "asc",
         },
       });
     } else {
@@ -515,7 +515,7 @@ export async function getUsersRecommendation() {
 
     return recommendation;
   } catch (e) {
-    console.log("Error getting user recommendation ", e);
+    console.error("Error getting user recommendation ", e);
     throw new Error("Failed to get user recommendation.");
   }
 }

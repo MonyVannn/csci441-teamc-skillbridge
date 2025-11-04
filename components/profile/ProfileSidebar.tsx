@@ -62,7 +62,7 @@ export function ProfileSidebar({ peopleYouMayKnow }: ProfileSidebarProps) {
                 <Avatar className="w-10 h-10">
                   <AvatarImage src={person.imageUrl || ""} />
                   <AvatarFallback className="bg-muted">
-                    {person.firstName}
+                    {person.firstName?.[0] || person.lastName?.[0] || "U"}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">

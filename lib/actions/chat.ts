@@ -434,28 +434,9 @@ export async function markMessagesAsRead(conversationId: string) {
       throw new Error("Conversation not found or unauthorized");
     }
 
-    // Use updateMany to efficiently update all unread messages in a single query
-    // This is much more efficient than fetching all messages first
-    await prisma.message.updateMany({
-      where: {
-        conversationId,
-        senderId: {
-          not: currentUser.id,
-        },
-        readBy: {
-          // Only update messages where current user is not in readBy array
-          // Note: This uses array NOT contains operator
-          isEmpty: false, // Workaround: we'll filter in application logic
-        },
-      },
-      data: {
-        // Note: Prisma doesn't support conditional array push in updateMany
-        // So we need to use a different approach
-      },
-    });
-
-    // Since Prisma doesn't support conditional array push well in updateMany,
-    // we use a raw query for better performance
+    // Use raw SQL query for efficient batch update
+    // Prisma doesn't support conditional array push in updateMany,
+    // so we use a raw query for better performance
     await prisma.$executeRaw`
       UPDATE "Message"
       SET "readBy" = array_append("readBy", ${currentUser.id})

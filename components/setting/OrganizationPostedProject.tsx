@@ -25,10 +25,11 @@ import { getProjectsByOwnerId } from "@/lib/actions/project";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { ProjectWithAssignedStudent } from "@/type";
 import { cn } from "@/lib/utils";
-import Link from "next/link";
 import { Separator } from "../ui/separator";
+import { useClerkNavigation } from "@/lib/hooks/useClerkNavigation";
 
 export function OrganizationPostedProjects() {
+  const navigate = useClerkNavigation();
   const [projects, setProjects] = useState<ProjectWithAssignedStudent[]>();
   const [filteredProjects, setFilteredProjects] =
     useState<ProjectWithAssignedStudent[]>();
@@ -264,13 +265,12 @@ export function OrganizationPostedProjects() {
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0 space-y-2">
                   <div className="flex items-start gap-2 flex-wrap">
-                    <Link
-                      target="_top"
-                      href={`/project/${project.id}`}
-                      className="font-medium hover:underline text-gray-900 flex-1"
+                    <button
+                      onClick={() => navigate(`/project/${project.id}`)}
+                      className="font-medium hover:underline text-gray-900 flex-1 text-left cursor-pointer"
                     >
                       {project.title}
-                    </Link>
+                    </button>
                     <Badge
                       variant="outline"
                       className={cn(
@@ -322,9 +322,10 @@ export function OrganizationPostedProjects() {
                     )}
                   </div>
                   {project.assignedStudent && (
-                    <Link
-                      target="_top"
-                      href={`/profile/${project.assignedStudent.clerkId}`}
+                    <button
+                      onClick={() =>
+                        navigate(`/profile/${project.assignedStudent?.clerkId}`)
+                      }
                       className="flex items-center gap-2 hover:underline w-fit"
                     >
                       <Avatar className="h-5 w-5">
@@ -340,7 +341,7 @@ export function OrganizationPostedProjects() {
                         Assigned to {project.assignedStudent.firstName}{" "}
                         {project.assignedStudent.lastName}
                       </span>
-                    </Link>
+                    </button>
                   )}
                 </div>
               </div>

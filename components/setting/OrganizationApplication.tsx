@@ -44,9 +44,9 @@ import {
   getApplicationsForAllOwnerProjects,
   rejectApplication,
 } from "@/lib/actions/application";
-import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { toast } from "sonner";
+import { useClerkNavigation } from "@/lib/hooks/useClerkNavigation";
 
 // Updated interface to include project details for each application
 interface ApplicationDetails {
@@ -68,6 +68,7 @@ interface ApplicationDetails {
 }
 
 export function OrganizationApplication() {
+  const navigate = useClerkNavigation();
   const [applications, setApplications] = useState<
     ApplicationDetails[] | undefined
   >();
@@ -443,14 +444,17 @@ export function OrganizationApplication() {
                                       {app.applicant.firstName}{" "}
                                       {app.applicant.lastName}
                                     </h3>
-                                    <Link
-                                      target="_top"
-                                      href={`/profile/${app.applicant.clerkId}`}
+                                    <Button
+                                      size={"icon"}
+                                      variant={"ghost"}
+                                      onClick={() =>
+                                        navigate(
+                                          `/profile/${app.applicant.clerkId}`
+                                        )
+                                      }
                                     >
-                                      <Button size={"icon"} variant={"ghost"}>
-                                        <SquareArrowOutUpRight className="h-4 w-4" />
-                                      </Button>
-                                    </Link>
+                                      <SquareArrowOutUpRight className="h-4 w-4" />
+                                    </Button>
                                   </div>
                                   {app.status === "PENDING" && (
                                     <div className="flex items-center gap-2 flex-shrink-0 w-full sm:w-auto">

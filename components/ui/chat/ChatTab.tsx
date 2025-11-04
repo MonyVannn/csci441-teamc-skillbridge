@@ -13,6 +13,7 @@ import { useUserAuth } from "@/lib/stores/userStore";
 type ChatWindow = {
   id: string;
   userId?: string;
+  clerkId: string;
   name: string;
   avatar: string;
   isMinimized: boolean;
@@ -60,7 +61,7 @@ export default function ChatTab() {
 
   // Open a new chat window with a user (no existing conversation)
   const openNewChatWindow = useCallback(
-    (userId: string, userName: string, userAvatar: string) => {
+    (userId: string, clerkId: string, userName: string, userAvatar: string) => {
       setOpenChats((prev) => {
         // Check if chat window is already open with this user
         const existingIndex = prev.findIndex(
@@ -82,6 +83,7 @@ export default function ChatTab() {
             {
               id: userId, // Use userId as temporary ID
               userId: userId,
+              clerkId: clerkId,
               name: userName,
               avatar: userAvatar,
               isMinimized: false,
@@ -96,7 +98,7 @@ export default function ChatTab() {
 
   // Open a chat window from conversation list (existing conversation)
   const handleOpenChat = useCallback(
-    (conv: { id: string; name: string; avatar: string }) => {
+    (conv: { id: string; name: string; avatar: string; clerkId?: string }) => {
       setOpenChats((prev) => {
         const existingIndex = prev.findIndex((chat) => chat.id === conv.id);
 
@@ -114,6 +116,7 @@ export default function ChatTab() {
             ...prev.map((c) => ({ ...c, isMinimized: true })),
             {
               id: conv.id,
+              clerkId: conv.clerkId || "", // Use clerkId from conversation
               name: conv.name,
               avatar: conv.avatar,
               isMinimized: false,
@@ -128,8 +131,13 @@ export default function ChatTab() {
 
   // Handle selecting a user from search (wrapper for openNewChatWindow)
   const handleSelectUser = useCallback(
-    (user: { userId: string; name: string; avatar: string }) => {
-      openNewChatWindow(user.userId, user.name, user.avatar);
+    (user: {
+      userId: string;
+      clerkId: string;
+      name: string;
+      avatar: string;
+    }) => {
+      openNewChatWindow(user.userId, user.clerkId, user.name, user.avatar);
     },
     [openNewChatWindow]
   );
@@ -153,11 +161,13 @@ export default function ChatTab() {
             id: existingConversation.id,
             name: existingConversation.name,
             avatar: existingConversation.avatar,
+            clerkId: existingConversation.otherUserClerkId,
           });
         } else {
           // Open new chat (no conversation exists yet)
           openNewChatWindow(
             event.userId,
+            event.clerkId,
             event.userName,
             event.userAvatar || ""
           );
@@ -329,6 +339,7 @@ export default function ChatTab() {
             key={chat.id}
             id={chat.id}
             userId={chat.userId}
+            clerkId={chat.clerkId}
             name={chat.name}
             avatar={chat.avatar}
             isMinimized={chat.isMinimized}

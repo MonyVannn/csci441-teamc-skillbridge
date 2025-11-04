@@ -19,7 +19,7 @@ export async function getConversations() {
     // Get current user's database ID
     const currentUser = await prisma.user.findUnique({
       where: { clerkId: userId },
-      select: { id: true },
+      select: { id: true, clerkId: true },
     });
 
     if (!currentUser) {
@@ -117,6 +117,7 @@ export async function getConversations() {
           : getTimeString(conv.createdAt),
         unread,
         otherUserId: otherParticipant?.id,
+        otherUserClerkId: otherParticipant?.clerkId,
       };
     });
 

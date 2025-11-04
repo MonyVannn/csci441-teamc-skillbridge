@@ -8,6 +8,7 @@ type ChatEventListener = (data: ChatEventData) => void;
 type ChatEventData = {
   type: "OPEN_CHAT";
   userId: string;
+  clerkId: string;
   userName: string;
   userAvatar?: string;
 };
@@ -37,12 +38,14 @@ export const chatEventBus = new ChatEventBus();
  */
 export function openChatWithUser(
   userId: string,
+  clerkId: string,
   userName: string,
   userAvatar?: string
 ) {
   chatEventBus.emit({
     type: "OPEN_CHAT",
     userId,
+    clerkId,
     userName,
     userAvatar,
   });

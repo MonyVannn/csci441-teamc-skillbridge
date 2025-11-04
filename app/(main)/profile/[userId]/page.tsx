@@ -3,7 +3,7 @@ import { ProfileHeader } from "@/components/profile/ProfileHeader";
 import ProfileNotFoundPage from "@/components/profile/ProfileNotFound";
 import { ProfileSidebar } from "@/components/profile/ProfileSidebar";
 import { getCompletedProjectsByAssignedStudentId } from "@/lib/actions/project";
-import { getUserByClerkId } from "@/lib/actions/user";
+import { getUserByClerkId, getUsersRecommendation } from "@/lib/actions/user";
 
 interface ProfilePageProps {
   params: Promise<{
@@ -14,9 +14,10 @@ interface ProfilePageProps {
 export default async function ProfilePage({ params }: ProfilePageProps) {
   const { userId } = await params;
 
-  const [userData, completedProjects] = await Promise.all([
+  const [userData, completedProjects, recommendation] = await Promise.all([
     getUserByClerkId(userId),
     getCompletedProjectsByAssignedStudentId(userId),
+    getUsersRecommendation(),
   ]);
 
   if (!userData) {
@@ -31,7 +32,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
             <ProfileContent user={userData} projects={completedProjects} />
           </div>
           <div className="lg:col-span-1">
-            <ProfileSidebar />
+            <ProfileSidebar peopleYouMayKnow={recommendation} />
           </div>
         </div>
       </div>

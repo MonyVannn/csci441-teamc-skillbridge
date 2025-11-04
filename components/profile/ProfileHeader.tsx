@@ -50,8 +50,10 @@ export function ProfileHeader({ user }: ProfileHeaderProps) {
               </h1>
               <StartChatButton
                 userId={user.id}
+                clerkId={user.clerkId}
                 userName={`${user.firstName} ${user.lastName}`}
                 userAvatar={user.imageUrl || ""}
+                className="rounded-full bg-[#695dcc] hover:bg-[#695dcc]/80 text-white font-medium"
               />
             </div>
 

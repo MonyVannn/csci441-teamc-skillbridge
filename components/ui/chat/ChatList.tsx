@@ -15,6 +15,7 @@ export type Conversation = {
   time: string;
   unread: boolean;
   otherUserId?: string;
+  otherUserClerkId?: string;
 };
 
 export type SearchedUser = {
@@ -33,9 +34,15 @@ type ChatListProps = {
   isOpen: boolean;
   width: number;
   onToggle: () => void;
-  onSelectChat: (conv: { id: string; name: string; avatar: string }) => void;
+  onSelectChat: (conv: {
+    id: string;
+    name: string;
+    avatar: string;
+    clerkId?: string;
+  }) => void;
   onSelectUser?: (user: {
     userId: string;
+    clerkId: string;
     name: string;
     avatar: string;
   }) => void;
@@ -114,12 +121,14 @@ export default function ChatList({
         id: existingConversation.id,
         name: existingConversation.name,
         avatar: existingConversation.avatar,
+        clerkId: existingConversation.otherUserClerkId,
       });
     } else {
       // Create new chat with user - use onSelectUser if available, otherwise fall back to onSelectChat
       if (onSelectUser) {
         onSelectUser({
           userId: user.id, // Pass database ID for new chat
+          clerkId: user.clerkId, // Pass clerkId for profile link
           name: userName,
           avatar: user.imageUrl || "",
         });
@@ -200,7 +209,14 @@ export default function ChatList({
                 <Button
                   key={conv.id}
                   variant="ghost"
-                  onClick={() => onSelectChat(conv)}
+                  onClick={() =>
+                    onSelectChat({
+                      id: conv.id,
+                      name: conv.name,
+                      avatar: conv.avatar,
+                      clerkId: conv.otherUserClerkId,
+                    })
+                  }
                   className="w-full flex items-start gap-3 px-4 py-3 h-auto hover:bg-muted/50 transition-colors justify-start border-b border-border/50 rounded-none"
                 >
                   <Avatar className="h-10 w-10 flex-shrink-0">

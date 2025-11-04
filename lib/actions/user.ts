@@ -458,3 +458,64 @@ export async function searchUsers(query: string) {
     throw new Error("Failed to search users.");
   }
 }
+
+export async function getUsersRecommendation() {
+  const user = await currentUser();
+
+  if (!user) throw new Error("Not authenticated.");
+
+  try {
+    const currentUser = await prisma.user.findUnique({
+      where: { clerkId: user.id },
+    });
+
+    if (!currentUser) throw new Error("User not found.");
+
+    let recommendation;
+
+    if (currentUser.industriesExperienced.length === 0) {
+      // If user has no industry experience, get random users
+      recommendation = await prisma.user.findMany({
+        where: {
+          id: {
+            not: currentUser.id,
+          },
+          role: {
+            not: "ADMIN",
+          },
+        },
+        take: 5,
+        orderBy: {
+          id: "asc", // You could also use a random ordering if your DB supports it
+        },
+      });
+    } else {
+      // If user has industry experience, recommend based on shared industries
+      recommendation = await prisma.user.findMany({
+        where: {
+          AND: [
+            {
+              id: {
+                not: currentUser.id,
+              },
+              role: {
+                not: "ADMIN",
+              },
+            },
+            {
+              industriesExperienced: {
+                hasSome: currentUser.industriesExperienced,
+              },
+            },
+          ],
+        },
+        take: 5,
+      });
+    }
+
+    return recommendation;
+  } catch (e) {
+    console.log("Error getting user recommendation ", e);
+    throw new Error("Failed to get user recommendation.");
+  }
+}

@@ -434,31 +434,31 @@ export async function markMessagesAsRead(conversationId: string) {
       throw new Error("Conversation not found or unauthorized");
     }
 
-    // Find unread messages efficiently with a single query
-    // MongoDB Prisma doesn't support $executeRaw, so we use findMany + transaction
-    const unreadMessages = await prisma.message.findMany({
+    // Find messages that current user hasn't read yet
+    // Note: MongoDB Prisma doesn't support advanced array filtering in WHERE clause
+    // so we fetch messages and filter in application code, but optimize by selecting minimal fields
+    const messages = await prisma.message.findMany({
       where: {
         conversationId,
         senderId: {
           not: currentUser.id,
         },
-        readBy: {
-          // Only get messages where current user hasn't read yet
-          // Using 'none' to filter out messages already read by current user
-          not: {
-            has: currentUser.id,
-          },
-        },
       },
       select: {
         id: true,
+        readBy: true,
       },
     });
 
+    // Filter messages that current user hasn't read
+    const messagesToUpdate = messages.filter(
+      (msg) => !msg.readBy.includes(currentUser.id)
+    );
+
     // Batch update all unread messages in a transaction for better performance
-    if (unreadMessages.length > 0) {
+    if (messagesToUpdate.length > 0) {
       await prisma.$transaction(
-        unreadMessages.map((message) =>
+        messagesToUpdate.map((message) =>
           prisma.message.update({
             where: { id: message.id },
             data: {
@@ -514,9 +514,9 @@ export async function getUnreadCount() {
 
     const conversationIds = conversations.map((conv) => conv.id);
 
-    // Use count instead of fetching all messages for better performance
-    // Count messages where current user is not the sender and hasn't read them
-    const totalUnread = await prisma.message.count({
+    // Fetch messages and filter in application code
+    // MongoDB Prisma doesn't support NOT with array 'has' in WHERE clause
+    const allMessages = await prisma.message.findMany({
       where: {
         conversationId: {
           in: conversationIds,
@@ -524,14 +524,17 @@ export async function getUnreadCount() {
         senderId: {
           not: currentUser.id,
         },
-        // Using raw query would be more efficient but count with NOT condition works
-        NOT: {
-          readBy: {
-            has: currentUser.id,
-          },
-        },
+      },
+      select: {
+        id: true,
+        readBy: true,
       },
     });
+
+    // Count messages where current user is not in readBy array
+    const totalUnread = allMessages.filter(
+      (msg) => !msg.readBy.includes(currentUser.id)
+    ).length;
 
     return totalUnread;
   } catch (error) {

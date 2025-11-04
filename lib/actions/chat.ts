@@ -434,16 +434,42 @@ export async function markMessagesAsRead(conversationId: string) {
       throw new Error("Conversation not found or unauthorized");
     }
 
-    // Use raw SQL query for efficient batch update
-    // Prisma doesn't support conditional array push in updateMany,
-    // so we use a raw query for better performance
-    await prisma.$executeRaw`
-      UPDATE "Message"
-      SET "readBy" = array_append("readBy", ${currentUser.id})
-      WHERE "conversationId" = ${conversationId}
-        AND "senderId" != ${currentUser.id}
-        AND NOT (${currentUser.id} = ANY("readBy"))
-    `;
+    // Find unread messages efficiently with a single query
+    // MongoDB Prisma doesn't support $executeRaw, so we use findMany + transaction
+    const unreadMessages = await prisma.message.findMany({
+      where: {
+        conversationId,
+        senderId: {
+          not: currentUser.id,
+        },
+        readBy: {
+          // Only get messages where current user hasn't read yet
+          // Using 'none' to filter out messages already read by current user
+          not: {
+            has: currentUser.id,
+          },
+        },
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    // Batch update all unread messages in a transaction for better performance
+    if (unreadMessages.length > 0) {
+      await prisma.$transaction(
+        unreadMessages.map((message) =>
+          prisma.message.update({
+            where: { id: message.id },
+            data: {
+              readBy: {
+                push: currentUser.id,
+              },
+            },
+          })
+        )
+      );
+    }
 
     revalidatePath("/");
 

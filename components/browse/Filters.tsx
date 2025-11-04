@@ -117,7 +117,7 @@ export function Filters() {
   };
 
   return (
-    <div className="w-full lg:w-80 lg:border-r border-gray-200 p-4 lg:p-6 space-y-4 lg:space-y-6">
+    <div className="w-full lg:w-60 lg:border-r border-gray-200 p-4 lg:p-6 space-y-4 lg:space-y-6">
       <div className="flex items-center justify-between lg:hidden">
         <h2 className="text-lg font-semibold text-gray-900">Filters</h2>
         <Button

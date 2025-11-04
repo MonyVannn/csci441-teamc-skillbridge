@@ -2,11 +2,10 @@ import type { Metadata } from "next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Geist, Geist_Mono } from "next/font/google";
-import Header from "@/components/Header";
 import "./globals.css";
-import Footer from "@/components/Footer";
-import { Toaster } from "@/components/ui/sonner";
-import ChatTab from "@/components/ui/chat/ChatTab";
+import { RootProvider } from "fumadocs-ui/provider/next";
+import SearchDocs from "@/components/SearchDocs";
+import { Provider } from "@/provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,16 +29,14 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider>
-      <html lang="en">
+      <html lang="en" suppressHydrationWarning>
         <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+          className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}
         >
-          <Header />
-          {children}
-          <SpeedInsights />
-          <Toaster />
-          <ChatTab />
-          <Footer />
+          <Provider>
+            {children}
+            <SpeedInsights />
+          </Provider>
         </body>
       </html>
     </ClerkProvider>

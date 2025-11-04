@@ -3,6 +3,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { Button } from "./ui/button";
 import {
   ArrowRight,
+  BookOpenText,
   BriefcaseBusiness,
   FolderClock,
   GraduationCap,
@@ -66,7 +67,11 @@ const HeaderContent: React.FC<HeaderContentProps> = ({
     setUnseenApplicationCount(0);
   }, []);
 
-  if (pathname.startsWith("/sign-in") || pathname.startsWith("/sign-up"))
+  if (
+    pathname.startsWith("/sign-in") ||
+    pathname.startsWith("/sign-up") ||
+    pathname.startsWith("/docs")
+  )
     return null;
 
   return (
@@ -135,6 +140,15 @@ const HeaderContent: React.FC<HeaderContentProps> = ({
                   </div>
                 )}
               <UserButton>
+                <UserButton.MenuItems>
+                  <UserButton.Action label="manageAccount" />
+                  <UserButton.Link
+                    href="/docs"
+                    label="Documentation"
+                    labelIcon={<BookOpenText className="w-4 h-4" />}
+                  />
+                  <UserButton.Action label="signOut" />
+                </UserButton.MenuItems>
                 <UserButton.UserProfilePage
                   label="Bio"
                   url="bio"

@@ -583,7 +583,7 @@ export function ProjectDetail({ project, timeline }: ProjectDetailProps) {
             <AlertDialogDescription>
               Are you sure you want to mark this project as completed? This
               action will finalize the project and update its status to
-              COMPLETED. The student's work will be considered finished and
+              COMPLETED. The student&apos;s work will be considered finished and
               accepted.
             </AlertDialogDescription>
           </AlertDialogHeader>

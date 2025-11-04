@@ -2,7 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Globe, Users } from "lucide-react";
+import { Globe } from "lucide-react";
 import { Separator } from "../ui/separator";
 import { usePathname } from "next/navigation";
 import { User } from "@prisma/client";

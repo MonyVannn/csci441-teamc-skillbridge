@@ -7,6 +7,7 @@ import { Send } from "lucide-react";
 
 type StartChatButtonProps = {
   userId: string;
+  clerkId: string;
   userName?: string;
   userAvatar?: string;
   variant?: "default" | "outline" | "ghost";
@@ -16,14 +17,16 @@ type StartChatButtonProps = {
 
 export default function StartChatButton({
   userId,
+  clerkId,
   userName = "User",
   userAvatar = "",
+  className = "",
   variant = "default",
   size = "default",
 }: StartChatButtonProps) {
   const handleStartChat = () => {
     // Open the chat window immediately
-    openChatWithUser(userId, userName, userAvatar);
+    openChatWithUser(userId, clerkId, userName, userAvatar);
   };
 
   return (
@@ -31,7 +34,7 @@ export default function StartChatButton({
       onClick={handleStartChat}
       variant={variant}
       size={size}
-      className="rounded-full bg-[#695dcc] hover:bg-[#695dcc]/80 text-white font-medium"
+      className={className}
     >
       <Send />
       Message

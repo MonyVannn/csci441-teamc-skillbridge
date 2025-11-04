@@ -3,8 +3,6 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { RootProvider } from "fumadocs-ui/provider/next";
-import SearchDocs from "@/components/SearchDocs";
 import { Provider } from "@/provider";
 
 const geistSans = Geist({

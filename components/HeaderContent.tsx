@@ -10,6 +10,7 @@ import {
   Plus,
   ScanFace,
   ScrollText,
+  UserIcon,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
@@ -141,12 +142,18 @@ const HeaderContent: React.FC<HeaderContentProps> = ({
                 )}
               <UserButton>
                 <UserButton.MenuItems>
+                  <UserButton.Link
+                    href={`/profile/${dbUser?.clerkId}`}
+                    label="View profile"
+                    labelIcon={<UserIcon className="w-4 h-4" />}
+                  />
                   <UserButton.Action label="manageAccount" />
                   <UserButton.Link
                     href="/docs"
                     label="Documentation"
                     labelIcon={<BookOpenText className="w-4 h-4" />}
                   />
+
                   <UserButton.Action label="signOut" />
                 </UserButton.MenuItems>
                 <UserButton.UserProfilePage

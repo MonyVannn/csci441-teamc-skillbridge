@@ -1,31 +1,19 @@
 "use client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Globe, Users } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Globe } from "lucide-react";
 import { Separator } from "../ui/separator";
 import { usePathname } from "next/navigation";
+import { User } from "@prisma/client";
+import StartChatButton from "../ui/chat/StartChatButton";
 
-export function ProfileSidebar() {
+interface ProfileSidebarProps {
+  peopleYouMayKnow: User[];
+}
+
+export function ProfileSidebar({ peopleYouMayKnow }: ProfileSidebarProps) {
   const pathname = usePathname();
-
-  const peopleYouMayKnow = [
-    {
-      name: "Laylong U",
-      title: "Student at American University of Phnom Penh",
-      mutualConnections: 12,
-    },
-    {
-      name: "Kimsun Seng",
-      title: "Student at American University of Phnom Penh",
-      mutualConnections: 8,
-    },
-    {
-      name: "Kimtong Peng",
-      title: "GIS & GeoIT Receptionist at Sungkyunkwan University",
-      mutualConnections: 5,
-    },
-  ];
 
   return (
     <div className="space-y-6">
@@ -72,25 +60,30 @@ export function ProfileSidebar() {
             <div key={index} className="space-y-2">
               <div className="flex items-start gap-3">
                 <Avatar className="w-10 h-10">
+                  <AvatarImage src={person.imageUrl || ""} />
                   <AvatarFallback className="bg-muted">
-                    {person.name[0]}
+                    {person.firstName?.[0] || person.lastName?.[0] || "U"}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium">{person.name}</p>
+                  <p className="text-sm font-medium">
+                    {person.firstName + " " + person.lastName}
+                  </p>
                   <p className="text-xs text-muted-foreground leading-tight">
-                    {person.title}
+                    {person.intro}
                   </p>
                 </div>
               </div>
-              <Button
+
+              <StartChatButton
+                userId={person.id}
+                clerkId={person.clerkId}
+                userName={`${person.firstName} ${person.lastName}`}
+                userAvatar={person.imageUrl || ""}
                 variant="outline"
                 size="sm"
                 className="w-full text-xs bg-transparent"
-              >
-                <Users className="h-3 w-3 mr-1" />
-                Connect
-              </Button>
+              />
             </div>
           ))}
         </CardContent>

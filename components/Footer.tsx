@@ -4,7 +4,11 @@ import { usePathname } from "next/navigation";
 const Footer = () => {
   const pathname = usePathname();
 
-  if (pathname.startsWith("/sign-in") || pathname.startsWith("/sign-up"))
+  if (
+    pathname.startsWith("/sign-in") ||
+    pathname.startsWith("/sign-up") ||
+    pathname.startsWith("/docs")
+  )
     return null;
   return (
     <footer className="bg-[#121212] px-8 py-16">

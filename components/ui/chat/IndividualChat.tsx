@@ -12,10 +12,12 @@ import {
   getOrCreateConversation,
 } from "@/lib/actions/chat";
 import { Textarea } from "../textarea";
+import Link from "next/link";
 
 export type IndividualChatProps = {
   id: string;
   userId?: string;
+  clerkId?: string;
   name: string;
   avatar: string;
   isMinimized: boolean;
@@ -40,6 +42,7 @@ type Message = {
 export default function IndividualChat({
   id,
   userId,
+  clerkId,
   name,
   avatar,
   isMinimized,
@@ -169,8 +172,9 @@ export default function IndividualChat({
     >
       {/* Chat header */}
       <div className="flex items-center justify-between px-3 py-2 border-b bg-white">
-        <div
-          className={`flex items-center gap-2 flex-1 min-w-0 ${
+        <Link
+          href={`/profile/${clerkId}`}
+          className={`flex items-center gap-2 flex-1 min-w-0 group cursor-pointer ${
             isMinimized ? "overflow-hidden" : ""
           }`}
         >
@@ -180,10 +184,12 @@ export default function IndividualChat({
               {avatar}
             </AvatarFallback>
           </Avatar>
-          <div className="w-full flex flex-col items-start min-w-0 font-semibold">
-            <div className="text-sm font-semibold line-clamp-1">{name}</div>
+          <div className="w-full flex flex-col items-start min-w-0">
+            <div className="text-sm font-semibold line-clamp-1 group-hover:underline">
+              {name}
+            </div>
           </div>
-        </div>
+        </Link>
         <div className="flex items-center gap-0.5">
           <Button
             variant="ghost"

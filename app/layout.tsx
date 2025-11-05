@@ -3,9 +3,8 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { RootProvider } from "fumadocs-ui/provider/next";
-import SearchDocs from "@/components/SearchDocs";
 import { Provider } from "@/provider";
+import { NavigationProgress } from "@/components/NavigationProgress";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,6 +33,7 @@ export default function RootLayout({
           className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}
         >
           <Provider>
+            <NavigationProgress />
             {children}
             <SpeedInsights />
           </Provider>

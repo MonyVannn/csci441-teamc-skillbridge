@@ -63,6 +63,7 @@ export function ProjectDetail({ project, timeline }: ProjectDetailProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isArchiveDialogOpen, setIsArchiveDialogOpen] = useState(false);
+  const [isCompleteDialogOpen, setIsCompleteDialogOpen] = useState(false);
   const [pendingStatus, setPendingStatus] = useState<ProjectStatus | null>(
     null
   );
@@ -123,7 +124,7 @@ export function ProjectDetail({ project, timeline }: ProjectDetailProps) {
     try {
       await updateProjectStatus(project.id, "COMPLETED");
       toast.success("Project marked as completed!");
-      setIsDialogOpen(false);
+      setIsCompleteDialogOpen(false);
       setPendingStatus(null);
     } catch (error) {
       console.error("Failed to update project status:", error);
@@ -462,7 +463,7 @@ export function ProjectDetail({ project, timeline }: ProjectDetailProps) {
                     size={"sm"}
                     variant={"outline"}
                     className="w-full rounded-full mt-5"
-                    onClick={handleMarkAsCompleted}
+                    onClick={() => setIsCompleteDialogOpen(true)}
                   >
                     Mark as completed
                   </Button>
@@ -566,6 +567,34 @@ export function ProjectDetail({ project, timeline }: ProjectDetailProps) {
                 : project.status === "ARCHIVED"
                 ? "Unarchive Project"
                 : "Archive Project"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Mark as Completed Confirmation Dialog */}
+      <AlertDialog
+        open={isCompleteDialogOpen}
+        onOpenChange={setIsCompleteDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Mark Project as Completed</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to mark this project as completed? This
+              action will finalize the project and update its status to
+              COMPLETED. The student&apos;s work will be considered finished and
+              accepted.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isUpdating}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleMarkAsCompleted}
+              disabled={isUpdating}
+              className="bg-[#695DCC] hover:bg-[#695DCC]/80"
+            >
+              {isUpdating ? "Marking as Completed..." : "Mark as Completed"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

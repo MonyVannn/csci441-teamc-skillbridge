@@ -44,9 +44,9 @@ import {
   getApplicationsForAllOwnerProjects,
   rejectApplication,
 } from "@/lib/actions/application";
-import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { toast } from "sonner";
+import { useClerkNavigation } from "@/lib/hooks/useClerkNavigation";
 
 // Updated interface to include project details for each application
 interface ApplicationDetails {
@@ -68,6 +68,7 @@ interface ApplicationDetails {
 }
 
 export function OrganizationApplication() {
+  const navigate = useClerkNavigation();
   const [applications, setApplications] = useState<
     ApplicationDetails[] | undefined
   >();
@@ -421,7 +422,16 @@ export function OrganizationApplication() {
                             <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
                               <div className="flex-1 space-y-3">
                                 <div className="flex items-center justify-between">
-                                  <div className="flex items-center gap-2 flex-wrap">
+                                  <button
+                                    type="button"
+                                    aria-label={`View applicant ${app.applicant.firstName}`}
+                                    onClick={() =>
+                                      navigate(
+                                        `/profile/${app.applicant.clerkId}`
+                                      )
+                                    }
+                                    className="flex items-center gap-2 flex-wrap group cursor-pointer"
+                                  >
                                     <Avatar className="rounded-lg">
                                       <AvatarImage
                                         src={app.applicant.imageUrl || ""}
@@ -439,19 +449,11 @@ export function OrganizationApplication() {
                                         }`.toUpperCase() || "?"}
                                       </AvatarFallback>
                                     </Avatar>
-                                    <h3 className="font-semibold text-gray-900">
+                                    <h3 className="font-semibold text-gray-900 group-hover:underline">
                                       {app.applicant.firstName}{" "}
                                       {app.applicant.lastName}
                                     </h3>
-                                    <Link
-                                      target="_top"
-                                      href={`/profile/${app.applicant.clerkId}`}
-                                    >
-                                      <Button size={"icon"} variant={"ghost"}>
-                                        <SquareArrowOutUpRight className="h-4 w-4" />
-                                      </Button>
-                                    </Link>
-                                  </div>
+                                  </button>
                                   {app.status === "PENDING" && (
                                     <div className="flex items-center gap-2 flex-shrink-0 w-full sm:w-auto">
                                       <Button

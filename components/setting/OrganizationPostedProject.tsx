@@ -27,6 +27,7 @@ import { ProjectWithAssignedStudent } from "@/type";
 import { cn } from "@/lib/utils";
 import { Separator } from "../ui/separator";
 import { useClerkNavigation } from "@/lib/hooks/useClerkNavigation";
+import Link from "next/link";
 
 export function OrganizationPostedProjects() {
   const navigate = useClerkNavigation();
@@ -266,6 +267,8 @@ export function OrganizationPostedProjects() {
                 <div className="flex-1 min-w-0 space-y-2">
                   <div className="flex items-start gap-2 flex-wrap">
                     <button
+                      type="button"
+                      aria-label={`View project ${project.title}`}
                       onClick={() => navigate(`/project/${project.id}`)}
                       className="font-medium hover:underline text-gray-900 flex-1 text-left cursor-pointer"
                     >
@@ -323,10 +326,12 @@ export function OrganizationPostedProjects() {
                   </div>
                   {project.assignedStudent && (
                     <button
+                      type="button"
+                      aria-label={`View project ${project.title}`}
                       onClick={() =>
                         navigate(`/profile/${project.assignedStudent?.clerkId}`)
                       }
-                      className="flex items-center gap-2 hover:underline w-fit"
+                      className="flex items-center gap-2 hover:underline w-fit cursor-pointer"
                     >
                       <Avatar className="h-5 w-5">
                         <AvatarImage

@@ -24,27 +24,17 @@ export function useClerkNavigation() {
       }
 
       // Also try to close by finding and clicking the Clerk modal close button
-      const clerkCloseButton = document.querySelector(
-        "[data-clerk-close-button]"
-      );
+      // Using the actual Clerk close button class
+      const clerkCloseButton = document.querySelector(".cl-modalCloseButton");
       if (clerkCloseButton) {
         (clerkCloseButton as HTMLElement).click();
       }
 
-      // Alternative: Press Escape key to close modal
-      const escapeEvent = new KeyboardEvent("keydown", {
-        key: "Escape",
-        code: "Escape",
-        keyCode: 27,
-        bubbles: true,
-        cancelable: true,
-      });
-      document.dispatchEvent(escapeEvent);
-
-      // Small delay to ensure modal closes before navigation
-      setTimeout(() => {
+      // Use requestAnimationFrame to ensure modal closes before navigation
+      // This waits for the next browser paint cycle, ensuring DOM updates are complete
+      requestAnimationFrame(() => {
         router.push(href);
-      }, 50);
+      });
     },
     [router]
   );

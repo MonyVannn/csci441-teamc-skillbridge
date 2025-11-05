@@ -1,0 +1,16 @@
+{
+  "title": "Documentation",
+  "pages": [
+    "index",
+    "---Introduction",
+    "introduction",
+    "---Onboarding",
+    "onboarding",
+    "---For Students",
+    "student",
+    "---For Businesses",
+    "business",
+    "---",
+    "faq"
+  ]
+}

@@ -1,0 +1,337 @@
+---
+title: Platform Architecture
+description: Technical overview of SkillBridge's architecture and technology stack
+---
+
+# Platform Architecture
+
+SkillBridge is built on modern, scalable technologies designed to provide a fast, secure, and reliable experience.
+
+## Technology Stack
+
+### Frontend Architecture
+
+#### Next.js 15
+Our application framework provides:
+- **App Router**: Modern file-based routing system
+- **Server Components**: Improved performance with server-side rendering
+- **API Routes**: Built-in backend capabilities
+- **Turbopack**: Fast development builds
+- **Optimized Production Builds**: Automatic code splitting and optimization
+
+#### React 19
+Latest features for superior user experience:
+- **Concurrent Rendering**: Smoother UI updates
+- **Server Actions**: Simplified data mutations
+- **Improved Hooks**: Better state management
+- **Error Boundaries**: Graceful error handling
+
+#### Tailwind CSS
+Utility-first CSS framework:
+- **Responsive Design**: Mobile-first approach
+- **Custom Design System**: Consistent styling
+- **Dark Mode Support**: User preference respect
+- **Performance**: Minimal CSS output
+
+#### shadcn/ui
+High-quality component library:
+- **Accessible Components**: ARIA-compliant
+- **Customizable**: Fully adaptable to our needs
+- **Type-Safe**: Full TypeScript support
+- **Radix UI Foundation**: Proven component primitives
+
+### Backend Architecture
+
+#### MongoDB
+NoSQL database for flexible data storage:
+- **Document-Based**: Natural JSON structure
+- **Scalability**: Horizontal scaling capabilities
+- **Performance**: Fast reads and writes
+- **Aggregation**: Powerful query capabilities
+
+#### Prisma ORM
+Type-safe database access:
+- **Schema Definition**: Single source of truth
+- **Type Generation**: Automatic TypeScript types
+- **Migration System**: Version-controlled database changes
+- **Query Builder**: Intuitive API for database operations
+
+**Database Schema Overview:**
+```typescript
+// Core Models
+- User (students and business owners)
+- Project (project listings)
+- Application (student applications)
+- Profile (extended user information)
+- Message (chat system)
+- Badge (achievements and skills)
+```
+
+### Authentication & Security
+
+#### Clerk
+Modern authentication solution:
+- **Social Login**: Google, GitHub, etc.
+- **Email/Password**: Traditional authentication
+- **Multi-Factor Authentication**: Enhanced security
+- **Session Management**: Secure token handling
+- **User Management**: Built-in admin dashboard
+
+**Security Features:**
+- Password encryption (bcrypt)
+- JWT-based sessions
+- CSRF protection
+- Rate limiting on API endpoints
+- Secure cookies (httpOnly, secure, sameSite)
+
+### Documentation
+
+#### Fumadocs
+Documentation framework:
+- **MDX Support**: Enhanced markdown with React components
+- **Search Functionality**: Fast document search
+- **Syntax Highlighting**: Code examples with highlighting
+- **Responsive Layout**: Mobile-friendly documentation
+- **Auto-generated TOC**: Table of contents
+
+## System Architecture
+
+### Application Structure
+
+```
+┌─────────────────────────────────────────────┐
+│           Client Browser                     │
+│  (React Components + Next.js Pages)         │
+└──────────────┬──────────────────────────────┘
+               │
+               │ HTTPS
+               ▼
+┌─────────────────────────────────────────────┐
+│         Next.js Server                       │
+│  - Server Components                         │
+│  - API Routes                                │
+│  - Server Actions                            │
+└──────────────┬──────────────────────────────┘
+               │
+       ┌───────┴────────┐
+       │                │
+       ▼                ▼
+┌──────────┐    ┌──────────────┐
+│  Clerk   │    │   MongoDB    │
+│  Auth    │    │   Database   │
+└──────────┘    └──────────────┘
+```
+
+### Data Flow
+
+#### User Actions
+1. **User Interaction** → Component event handler
+2. **Client Validation** → Form validation and UI feedback
+3. **Server Action** → Next.js server action
+4. **Business Logic** → Server-side processing
+5. **Database Query** → Prisma ORM → MongoDB
+6. **Response** → Updated UI state
+
+#### Real-time Features
+- **Chat System**: Server-sent events for real-time messaging
+- **Notifications**: Automatic UI updates on data changes
+- **Status Updates**: Live application status tracking
+
+### Performance Optimization
+
+#### Frontend Optimizations
+- **Code Splitting**: Automatic chunk optimization
+- **Image Optimization**: Next.js Image component with WebP
+- **Lazy Loading**: Components loaded on demand
+- **Prefetching**: Next.js automatic link prefetching
+- **Caching**: Aggressive caching strategies
+
+#### Backend Optimizations
+- **Database Indexing**: Optimized queries
+- **Connection Pooling**: Efficient database connections
+- **Query Optimization**: Prisma query optimization
+- **API Response Caching**: Reduced database load
+- **Incremental Static Regeneration**: Fast page loads
+
+## Deployment Architecture
+
+### Environment Structure
+
+#### Development
+- Local MongoDB instance or MongoDB Atlas
+- Local Clerk development instance
+- Hot module replacement
+- Debug tools enabled
+
+#### Production
+- **Hosting**: Vercel platform
+- **Database**: MongoDB Atlas (cloud)
+- **CDN**: Automatic via Vercel
+- **SSL/TLS**: Automatic certificate management
+- **Edge Functions**: Global distribution
+
+### Scalability
+
+#### Horizontal Scaling
+- **Serverless Functions**: Auto-scaling server capacity
+- **Database Sharding**: MongoDB horizontal partitioning
+- **CDN Distribution**: Global content delivery
+- **Load Balancing**: Automatic traffic distribution
+
+#### Vertical Scaling
+- **Database Resources**: Upgradable MongoDB Atlas tiers
+- **Compute Resources**: Vercel pro features
+- **Storage**: Expandable as needed
+
+## Data Management
+
+### Database Design Principles
+
+#### Schema Design
+- **Denormalization**: Optimized for read performance
+- **Embedded Documents**: Related data stored together
+- **References**: Relationships where necessary
+- **Indexing Strategy**: Optimized for common queries
+
+#### Data Models
+
+**User Model:**
+```typescript
+{
+  id: string
+  clerkId: string
+  email: string
+  role: 'STUDENT' | 'BUSINESS_OWNER' | 'ADMIN'
+  profile: Profile (relation)
+  projects: Project[] (for business owners)
+  applications: Application[] (for students)
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+```
+
+**Project Model:**
+```typescript
+{
+  id: string
+  title: string
+  description: string
+  category: string
+  skills: string[]
+  status: 'OPEN' | 'IN_PROGRESS' | 'COMPLETED' | 'CLOSED'
+  owner: User (relation)
+  applications: Application[]
+  createdAt: DateTime
+  deadline: DateTime
+}
+```
+
+**Application Model:**
+```typescript
+{
+  id: string
+  student: User (relation)
+  project: Project (relation)
+  status: 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'WITHDRAWN'
+  coverLetter: string
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+```
+
+### Data Security
+
+#### Encryption
+- **At Rest**: MongoDB encrypted storage
+- **In Transit**: TLS/SSL for all connections
+- **Sensitive Data**: Additional field-level encryption
+
+#### Access Control
+- **Role-Based**: User roles determine access
+- **Row-Level Security**: Users see only their data
+- **API Authentication**: Clerk-verified requests only
+- **Rate Limiting**: Prevent abuse
+
+## API Architecture
+
+### RESTful Endpoints
+
+#### Public Endpoints
+```
+GET  /api/projects           # List projects
+GET  /api/projects/[id]      # Project details
+```
+
+#### Protected Endpoints
+```
+POST   /api/projects         # Create project (business only)
+PATCH  /api/projects/[id]    # Update project (owner only)
+DELETE /api/projects/[id]    # Delete project (owner only)
+
+POST   /api/applications     # Create application (student only)
+PATCH  /api/applications/[id] # Update application status
+```
+
+#### Webhook Endpoints
+```
+POST /api/webhooks/clerk     # Clerk user sync
+```
+
+### Response Format
+
+Standard API response structure:
+```json
+{
+  "success": true,
+  "data": {
+    // Response payload
+  },
+  "message": "Operation successful",
+  "timestamp": "2024-01-15T12:00:00Z"
+}
+```
+
+Error response structure:
+```json
+{
+  "success": false,
+  "error": {
+    "code": "ERROR_CODE",
+    "message": "Human-readable error message"
+  },
+  "timestamp": "2024-01-15T12:00:00Z"
+}
+```
+
+## Monitoring & Observability
+
+### Logging
+- **Application Logs**: Structured logging
+- **Error Tracking**: Automated error reporting
+- **Performance Metrics**: Response times and throughput
+- **User Analytics**: Usage patterns and behavior
+
+### Health Checks
+- **Database Connection**: MongoDB health monitoring
+- **API Availability**: Endpoint health checks
+- **Authentication Service**: Clerk status monitoring
+
+## Future Considerations
+
+### Planned Improvements
+- **WebSocket Integration**: Enhanced real-time features
+- **File Upload System**: S3 or similar for documents
+- **Advanced Search**: Elasticsearch integration
+- **Analytics Dashboard**: Business intelligence
+- **Mobile Apps**: React Native applications
+- **AI Recommendations**: ML-based project matching
+
+### Scalability Roadmap
+- **Microservices**: Service decomposition for scale
+- **Caching Layer**: Redis for session and data caching
+- **Message Queue**: Background job processing
+- **GraphQL API**: More flexible data fetching
+
+---
+
+> **💡 For Developers**: Check out our [GitHub repository](https://github.com/MonyVannn/csci441-teamc-skillbridge) for detailed setup instructions and contribution guidelines.

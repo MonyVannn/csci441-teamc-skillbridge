@@ -435,23 +435,28 @@ export async function markMessagesAsRead(conversationId: string) {
       throw new Error("Conversation not found or unauthorized");
     }
 
-    // Update all unread messages in this conversation
-    // Find messages that the current user hasn't read yet
-    const unreadMessages = await prisma.message.findMany({
+    // Find messages that current user hasn't read yet
+    // Note: MongoDB Prisma doesn't support advanced array filtering in WHERE clause
+    // so we fetch messages and filter in application code, but optimize by selecting minimal fields
+    const messages = await prisma.message.findMany({
       where: {
         conversationId,
         senderId: {
           not: currentUser.id,
         },
       },
+      select: {
+        id: true,
+        readBy: true,
+      },
     });
 
     // Filter messages that current user hasn't read
-    const messagesToUpdate = unreadMessages.filter(
+    const messagesToUpdate = messages.filter(
       (msg) => !msg.readBy.includes(currentUser.id)
     );
 
-    // Batch update all messages in a transaction for better performance
+    // Batch update all unread messages in a transaction for better performance
     if (messagesToUpdate.length > 0) {
       await prisma.$transaction(
         messagesToUpdate.map((message) =>
@@ -510,7 +515,8 @@ export async function getUnreadCount() {
 
     const conversationIds = conversations.map((conv) => conv.id);
 
-    // Single query to get all unread messages across all conversations
+    // Fetch messages and filter in application code
+    // MongoDB Prisma doesn't support NOT with array 'has' in WHERE clause
     const allMessages = await prisma.message.findMany({
       where: {
         conversationId: {

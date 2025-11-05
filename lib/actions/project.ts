@@ -36,59 +36,56 @@ export async function getAvailableProjects(
   const scopeList =
     scopes.length > 0 ? (scopes.split(",") as ProjectScope[]) : undefined;
 
+  // Build where clause once to avoid duplication
+  const whereClause = {
+    status: "OPEN" as const,
+    title: { contains: query, mode: "insensitive" as const },
+    category: { in: categoryList },
+    scope: { in: scopeList },
+    budget: {
+      gte: minBudget ? Number(minBudget) : undefined,
+      lte: maxBudget ? Number(maxBudget) : undefined,
+    },
+  };
+
   try {
-    const totalProjects = await prisma.project.count({
-      where: {
-        status: "OPEN",
-        title: { contains: query, mode: "insensitive" },
-        category: { in: categoryList },
-        scope: { in: scopeList },
-        budget: {
-          gte: minBudget ? Number(minBudget) : undefined,
-          lte: maxBudget ? Number(maxBudget) : undefined,
-        },
-      },
-    });
-    const availableProjects = await prisma.project.findMany({
-      skip: skip,
-      take: pageSize,
-      where: {
-        status: "OPEN",
-        title: { contains: query, mode: "insensitive" },
-        category: { in: categoryList },
-        scope: { in: scopeList },
-        budget: {
-          gte: minBudget ? Number(minBudget) : undefined,
-          lte: maxBudget ? Number(maxBudget) : undefined,
-        },
-      },
-      include: {
-        businessOwner: {
-          select: {
-            id: true,
-            clerkId: true,
-            imageUrl: true,
-            firstName: true,
-            lastName: true,
-            address: true,
-            bio: true,
-            intro: true,
+    // Use Promise.all to run both queries in parallel
+    const [availableProjects, totalProjects] = await Promise.all([
+      prisma.project.findMany({
+        skip: skip,
+        take: pageSize,
+        where: whereClause,
+        include: {
+          businessOwner: {
+            select: {
+              id: true,
+              clerkId: true,
+              imageUrl: true,
+              firstName: true,
+              lastName: true,
+              address: true,
+              bio: true,
+              intro: true,
+            },
           },
-        },
-        assignedStudent: {
-          select: {
-            id: true,
-            imageUrl: true,
-            firstName: true,
-            lastName: true,
+          assignedStudent: {
+            select: {
+              id: true,
+              imageUrl: true,
+              firstName: true,
+              lastName: true,
+            },
           },
+          applications: true,
         },
-        applications: true,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
+        orderBy: {
+          createdAt: "desc",
+        },
+      }),
+      prisma.project.count({
+        where: whereClause,
+      }),
+    ]);
 
     return { availableProjects, totalProjects };
   } catch (e) {

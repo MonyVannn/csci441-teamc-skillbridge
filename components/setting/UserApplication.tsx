@@ -39,8 +39,8 @@ import {
   withdrawApplication,
   markApplicationsAsSeen,
 } from "@/lib/actions/application";
-import Link from "next/link";
 import { toast } from "sonner";
+import { useClerkNavigation } from "@/lib/hooks/useClerkNavigation";
 
 // Define the shape of the application data the component will work with
 interface Application {
@@ -65,6 +65,7 @@ interface UserApplicationsProps {
 export function UserApplications({
   onApplicationsSeen,
 }: UserApplicationsProps) {
+  const navigate = useClerkNavigation();
   const [applications, setApplications] = useState<Application[] | undefined>();
   const [filteredApplications, setFilteredApplications] = useState<
     Application[] | undefined
@@ -391,13 +392,12 @@ export function UserApplications({
                   <div className="flex-1 min-w-0 space-y-3">
                     {/* Title and Status */}
                     <div className="flex items-start gap-2 flex-wrap justify-between">
-                      <Link
-                        target="_top"
-                        href={`/project/${app.project.id}`}
-                        className="font-medium hover:underline text-gray-900 flex-1"
+                      <button
+                        onClick={() => navigate(`/project/${app.project.id}`)}
+                        className="font-medium hover:underline text-gray-900 flex-1 text-left"
                       >
                         {app.project.title}
-                      </Link>
+                      </button>
                       <Badge
                         variant="outline"
                         className={`border shrink-0 ${getStatusBadgeVariant(

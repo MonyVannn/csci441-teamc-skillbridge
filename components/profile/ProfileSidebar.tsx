@@ -7,6 +7,7 @@ import { Separator } from "../ui/separator";
 import { usePathname } from "next/navigation";
 import { User } from "@prisma/client";
 import StartChatButton from "../ui/chat/StartChatButton";
+import Link from "next/link";
 
 interface ProfileSidebarProps {
   peopleYouMayKnow: User[];
@@ -58,7 +59,10 @@ export function ProfileSidebar({ peopleYouMayKnow }: ProfileSidebarProps) {
         <CardContent className="space-y-4">
           {peopleYouMayKnow.map((person, index) => (
             <div key={index} className="space-y-2">
-              <div className="flex items-start gap-3">
+              <Link
+                href={`/profile/${person.clerkId}`}
+                className="flex items-start gap-3 group cursor-pointer"
+              >
                 <Avatar className="w-10 h-10">
                   <AvatarImage src={person.imageUrl || ""} />
                   <AvatarFallback className="bg-muted">
@@ -66,14 +70,14 @@ export function ProfileSidebar({ peopleYouMayKnow }: ProfileSidebarProps) {
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium">
+                  <p className="text-sm font-medium group-hover:underline">
                     {person.firstName + " " + person.lastName}
                   </p>
                   <p className="text-xs text-muted-foreground leading-tight">
                     {person.intro}
                   </p>
                 </div>
-              </div>
+              </Link>
 
               <StartChatButton
                 userId={person.id}

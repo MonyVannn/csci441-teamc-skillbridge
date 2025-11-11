@@ -1,0 +1,434 @@
+---
+title: Platform Architecture
+description: Technical overview of SkillBridge's architecture and technology stack
+---
+
+<Callout title="Technical Stack Overview" type="info">
+Our architecture leverages industry-standard technologies including Next.js 15, React 19, MongoDB, and Clerk for authentication, ensuring enterprise-grade performance and security.
+</Callout>
+
+## Technology Stack
+
+### Frontend Architecture
+
+<Cards>
+  <Card title="Next.js 15">
+    Modern app framework with App Router, Server Components, API Routes, Turbopack for fast builds, and automatic code splitting.
+  </Card>
+  <Card title="React 19">
+    Latest React features including concurrent rendering, server actions, improved hooks, and enhanced error boundaries.
+  </Card>
+  <Card title="Tailwind CSS">
+    Utility-first CSS framework providing responsive design, custom design system, dark mode support, and minimal output.
+  </Card>
+  <Card title="shadcn/ui">
+    High-quality, accessible component library built on Radix UI with full TypeScript support and customization.
+  </Card>
+</Cards>
+
+**Next.js 15 Features**
+
+- **App Router**: Modern file-based routing system with nested layouts
+- **Server Components**: Improved performance with server-side rendering
+- **API Routes**: Built-in backend API capabilities
+- **Turbopack**: Lightning-fast development builds
+- **Production Optimization**: Automatic code splitting and tree shaking
+
+**React 19 Capabilities**
+
+- **Concurrent Rendering**: Smoother UI updates and better responsiveness
+- **Server Actions**: Simplified data mutations without API routes
+- **Enhanced Hooks**: Better state management and lifecycle control
+- **Error Boundaries**: Graceful error handling and recovery
+
+### Backend Architecture
+
+<Cards>
+  <Card title="MongoDB">
+    NoSQL document database providing flexible schema, horizontal scalability, and powerful aggregation capabilities.
+  </Card>
+  <Card title="Prisma ORM">
+    Type-safe database client with schema definition, automatic TypeScript types, and intuitive query builder.
+  </Card>
+  <Card title="Clerk Authentication">
+    Enterprise-grade authentication with social login, MFA, session management, and user administration.
+  </Card>
+  <Card title="Fumadocs">
+    Modern documentation framework with MDX support, search functionality, and responsive layouts.
+  </Card>
+</Cards>
+
+**Database Schema Overview**
+
+Core data models powering the platform:
+
+- **User**: Students and business owners with authentication and profile data
+- **Project**: Project listings with requirements, timelines, and status
+- **Application**: Student applications to projects with cover letters and status
+- **Profile**: Extended user information including skills and experience
+- **Message**: Real-time chat system for communication
+- **Badge**: Achievements, skills, and completion verification
+### Authentication & Security
+
+<Tabs items={['Clerk Authentication', 'Security Features']}>
+  <Tab value="Clerk Authentication">
+**Modern Authentication Solution**
+
+Clerk provides enterprise-grade authentication with social login (Google, GitHub), traditional email/password, multi-factor authentication, secure session management, and built-in user administration dashboard.
+
+**Key Features:** Passwordless authentication options, social login integrations, custom authentication flows, user profile management, organization support, and webhook integrations.
+  </Tab>
+  
+  <Tab value="Security Features">
+**Comprehensive Security Measures**
+
+Password encryption using bcrypt, JWT-based session tokens, CSRF protection on all forms, rate limiting on API endpoints, secure cookies with httpOnly, secure, and sameSite flags.
+
+**Additional Security:** SQL injection prevention through Prisma ORM, XSS protection, content security policy headers, and regular security audits.
+  </Tab>
+</Tabs>
+
+## System Architecture
+
+### Application Structure
+
+The platform follows a modern serverless architecture with clear separation of concerns.
+
+```
+┌─────────────────────────────────────────────┐
+│           Client Browser                     │
+│  (React Components + Next.js Pages)         │
+└──────────────┬──────────────────────────────┘
+               │
+               │ HTTPS
+               ▼
+┌─────────────────────────────────────────────┐
+│         Next.js Server                       │
+│  - Server Components                         │
+│  - API Routes                                │
+│  - Server Actions                            │
+└──────────────┬──────────────────────────────┘
+               │
+       ┌───────┴────────┐
+       │                │
+       ▼                ▼
+┌──────────┐    ┌──────────────┐
+│  Clerk   │    │   MongoDB    │
+│  Auth    │    │   Database   │
+└──────────┘    └──────────────┘
+```
+
+### Data Flow
+
+<Callout title="Request Flow" type="success">
+User interactions flow through client-side validation, server actions for business logic, Prisma ORM for database access, and back to updated UI state—ensuring type safety at every step.
+</Callout>
+
+**User Action Workflow**
+
+1. **User Interaction**: Component event handler triggered
+2. **Client Validation**: Form validation and immediate UI feedback
+3. **Server Action**: Next.js server action processes request
+4. **Business Logic**: Server-side validation and processing
+5. **Database Query**: Prisma ORM queries MongoDB
+6. **Response**: Updated UI state with new data
+
+**Real-Time Features**
+
+- **Chat System**: Server-sent events enable real-time messaging
+- **Notifications**: Automatic UI updates on data changes
+- **Status Updates**: Live application status tracking
+- **Presence Indicators**: Online/offline user status
+
+### Performance Optimization
+
+<Cards>
+  <Card title="Code Splitting">
+    Automatic chunk optimization ensures users only download code for pages they visit.
+  </Card>
+  <Card title="Image Optimization">
+    Next.js Image component with WebP format and responsive sizing for faster loads.
+  </Card>
+  <Card title="Lazy Loading">
+    Components and routes loaded on demand to reduce initial bundle size.
+  </Card>
+  <Card title="Prefetching">
+    Automatic link prefetching for instant navigation between pages.
+  </Card>
+  <Card title="Database Indexing">
+    Optimized MongoDB queries with strategic indexes on frequently accessed fields.
+  </Card>
+  <Card title="API Caching">
+    Aggressive caching strategies reduce database load and improve response times.
+  </Card>
+</Cards>
+
+## Deployment Architecture
+
+### Environment Configuration
+
+<Tabs items={['Development', 'Production']}>
+  <Tab value="Development">
+**Development Environment**
+
+Local MongoDB instance or MongoDB Atlas for database, Clerk development instance for authentication, hot module replacement for instant updates, comprehensive debug tools enabled, and detailed error messages.
+
+**Development Workflow:** Local server with Turbopack, automatic code reload, TypeScript type checking, ESLint for code quality, and Prettier for formatting.
+  </Tab>
+  
+  <Tab value="Production">
+**Production Environment**
+
+Hosted on Vercel platform with automatic deployments, MongoDB Atlas cloud database, global CDN distribution, automatic SSL/TLS certificates, and edge functions for optimal performance.
+
+**Production Features:** Automatic scaling, zero-downtime deployments, rollback capabilities, environment variable management, and performance monitoring.
+  </Tab>
+</Tabs>
+
+### Scalability Strategy
+
+<Cards>
+  <Card title="Serverless Functions">
+    Auto-scaling server capacity adapts to traffic demands without manual intervention.
+  </Card>
+  <Card title="Database Sharding">
+    MongoDB horizontal partitioning enables unlimited data growth and query performance.
+  </Card>
+  <Card title="CDN Distribution">
+    Global content delivery network ensures fast load times worldwide.
+  </Card>
+  <Card title="Load Balancing">
+    Automatic traffic distribution across multiple server instances for reliability.
+  </Card>
+</Cards>
+
+## Data Management
+
+### Database Design Principles
+
+<Callout title="Schema Design" type="info">
+Our database schema balances normalization for data integrity with strategic denormalization for read performance, ensuring optimal query efficiency.
+</Callout>
+
+**Design Approach**
+
+- **Denormalization**: Optimized for read-heavy workloads
+- **Embedded Documents**: Related data stored together for atomic operations
+- **References**: Relationships maintained where data independence is required
+- **Indexing Strategy**: Optimized indexes for common query patterns
+
+### Core Data Models
+
+**User Model**
+
+```typescript
+{
+  id: string
+  clerkId: string              // Clerk authentication ID
+  email: string
+  role: 'STUDENT' | 'BUSINESS_OWNER' | 'ADMIN'
+  profile: Profile             // One-to-one relation
+  projects: Project[]          // For business owners
+  applications: Application[]  // For students
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+```
+
+**Project Model**
+
+```typescript
+{
+  id: string
+  title: string
+  description: string
+  category: string
+  skills: string[]
+  status: 'OPEN' | 'IN_PROGRESS' | 'COMPLETED' | 'CLOSED'
+  owner: User                  // Relation to business owner
+  applications: Application[]
+  createdAt: DateTime
+  deadline: DateTime
+}
+```
+
+**Application Model**
+
+```typescript
+{
+  id: string
+  student: User                // Relation to student
+  project: Project             // Relation to project
+  status: 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'WITHDRAWN'
+  coverLetter: string
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+```
+
+### Data Security
+
+<Cards>
+  <Card title="Encryption at Rest">
+    MongoDB encrypted storage protects data stored on disk from unauthorized access.
+  </Card>
+  <Card title="Encryption in Transit">
+    TLS/SSL for all connections ensures data security during transmission.
+  </Card>
+  <Card title="Role-Based Access">
+    User roles determine data access permissions enforced at the application level.
+  </Card>
+  <Card title="Rate Limiting">
+    API request limits prevent abuse and ensure fair resource allocation.
+  </Card>
+</Cards>
+
+## API Architecture
+
+### API Endpoint Structure
+
+**Public Endpoints**
+
+```
+GET  /api/projects           # List all available projects
+GET  /api/projects/[id]      # Get specific project details
+```
+
+**Protected Endpoints**
+
+```
+POST   /api/projects         # Create project (business only)
+PATCH  /api/projects/[id]    # Update project (owner only)
+DELETE /api/projects/[id]    # Delete project (owner only)
+
+POST   /api/applications     # Submit application (student only)
+PATCH  /api/applications/[id] # Update application status
+```
+
+**Webhook Endpoints**
+
+```
+POST /api/webhooks/clerk     # Clerk user synchronization
+```
+
+### Response Format
+
+<Tabs items={['Success Response', 'Error Response']}>
+  <Tab value="Success Response">
+**Standard Success Response**
+
+```json
+{
+  "success": true,
+  "data": {
+    // Response payload
+  },
+  "message": "Operation successful",
+  "timestamp": "2024-01-15T12:00:00Z"
+}
+```
+  </Tab>
+  
+  <Tab value="Error Response">
+**Standard Error Response**
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "ERROR_CODE",
+    "message": "Human-readable error message"
+  },
+  "timestamp": "2024-01-15T12:00:00Z"
+}
+```
+  </Tab>
+</Tabs>
+
+## Performance & Monitoring
+
+### Optimization Strategies
+
+<Cards>
+  <Card title="Code Splitting">
+    Automatic chunk optimization ensures users only download necessary JavaScript.
+  </Card>
+  <Card title="Image Optimization">
+    Next.js Image component with WebP format and responsive sizing reduces bandwidth.
+  </Card>
+  <Card title="Database Indexing">
+    Strategic indexes on frequently queried fields accelerate database operations.
+  </Card>
+  <Card title="API Caching">
+    Intelligent caching strategies reduce database load and improve response times.
+  </Card>
+</Cards>
+
+### Monitoring & Observability
+
+**Application Monitoring**
+
+- Structured logging for debugging and analysis
+- Automated error tracking and reporting
+- Performance metrics including response times and throughput
+- User analytics for usage patterns and behavior
+
+**System Health Checks**
+
+- Database connection monitoring with automatic alerts
+- API endpoint availability and response time tracking
+- Authentication service status monitoring
+- Resource utilization metrics
+
+## Future Roadmap
+
+### Planned Enhancements
+
+<Cards>
+  <Card title="WebSocket Integration">
+    Real-time bidirectional communication for instant updates and live collaboration features.
+  </Card>
+  <Card title="File Upload System">
+    Document and portfolio file uploads using cloud storage solutions.
+  </Card>
+  <Card title="Advanced Search">
+    Elasticsearch integration for powerful full-text search capabilities.
+  </Card>
+  <Card title="Analytics Dashboard">
+    Business intelligence tools providing insights into platform usage and trends.
+  </Card>
+  <Card title="Mobile Applications">
+    Native iOS and Android apps built with React Native for mobile-first users.
+  </Card>
+  <Card title="AI Recommendations">
+    Machine learning-based project matching and skill development suggestions.
+  </Card>
+</Cards>
+
+### Scalability Evolution
+
+<Callout title="Long-term Architecture Goals" type="success">
+As the platform grows, we plan to evolve toward microservices architecture, implement Redis caching, add message queues for background processing, and potentially introduce GraphQL for more flexible data fetching.
+</Callout>
+
+**Technical Roadmap**
+
+- **Microservices**: Service decomposition for independent scaling
+- **Caching Layer**: Redis for session management and data caching
+- **Message Queue**: Background job processing with RabbitMQ or similar
+- **GraphQL API**: Flexible data fetching alongside REST endpoints
+- **Containerization**: Docker and Kubernetes for deployment orchestration
+
+## Developer Resources
+
+<Cards>
+  <Card href="https://github.com/MonyVannn/csci441-teamc-skillbridge" title="GitHub Repository" external>
+    Access source code, setup instructions, and contribution guidelines.
+  </Card>
+  <Card href="/docs/introduction/key-features" title="Feature Documentation">
+    Detailed documentation of all platform features and capabilities.
+  </Card>
+  <Card href="/docs/introduction/getting-started" title="Getting Started">
+    Quick start guide for developers setting up the development environment.
+  </Card>
+</Cards>

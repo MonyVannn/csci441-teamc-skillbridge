@@ -73,18 +73,13 @@ export async function getProjectScopeHours(scope: string): Promise<number> {
 /**
  * Check and update skill level badges based on projects completed
  */
-async function checkSkillLevelBadges(
-  userId: string,
+/**
+ * Internal helper to check skill level badges without database access
+ */
+function checkSkillLevelBadgesInternal(
+  currentBadges: SkillLevelBadge[],
   projectsCompleted: number
-): Promise<SkillLevelBadge[]> {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { earnedSkillBadges: true },
-  });
-
-  if (!user) return [];
-
-  const currentBadges = user.earnedSkillBadges;
+): SkillLevelBadge[] {
   const earnedBadges: SkillLevelBadge[] = [];
 
   // Check each skill level and award if criteria met
@@ -119,45 +114,16 @@ async function checkSkillLevelBadges(
     earnedBadges.push(SkillLevelBadge.NEWBIE);
   }
 
-  // Update user with new badges if any earned
-  if (earnedBadges.length > 0) {
-    await prisma.user.update({
-      where: { id: userId },
-      data: {
-        earnedSkillBadges: [...currentBadges, ...earnedBadges],
-      },
-    });
-  }
-
   return earnedBadges;
 }
 
 /**
- * Check and update specialization badges based on project categories
+ * Internal helper to check specialization badges without database access
  */
-async function checkSpecializationBadges(
-  userId: string
-): Promise<SpecializationBadge[]> {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { earnedSpecializationBadges: true },
-  });
-
-  if (!user) return [];
-
-  // Get all completed projects grouped by category
-  const projectsByCategory = await prisma.project.groupBy({
-    by: ["category"],
-    where: {
-      assignedStudentId: userId,
-      status: "COMPLETED",
-    },
-    _count: {
-      category: true,
-    },
-  });
-
-  const currentBadges = user.earnedSpecializationBadges;
+function checkSpecializationBadgesInternal(
+  currentBadges: SpecializationBadge[],
+  projectsByCategory: Array<{ category: string; _count: { category: number } }>
+): SpecializationBadge[] {
   const earnedBadges: SpecializationBadge[] = [];
 
   // Check Web Developer Pro
@@ -215,35 +181,17 @@ async function checkSpecializationBadges(
     earnedBadges.push(SpecializationBadge.AI_INNOVATOR);
   }
 
-  // Update user with new badges if any earned
-  if (earnedBadges.length > 0) {
-    await prisma.user.update({
-      where: { id: userId },
-      data: {
-        earnedSpecializationBadges: [...currentBadges, ...earnedBadges],
-      },
-    });
-  }
-
   return earnedBadges;
 }
 
 /**
- * Check and update engagement badges based on activity and contributions
+ * Internal helper to check engagement badges without database access
  */
-async function checkEngagementBadges(
-  userId: string,
+function checkEngagementBadgesInternal(
+  currentBadges: EngagementBadge[],
   projectsCompleted: number,
   totalHours: number
-): Promise<EngagementBadge[]> {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { earnedEngagementBadges: true },
-  });
-
-  if (!user) return [];
-
-  const currentBadges = user.earnedEngagementBadges;
+): EngagementBadge[] {
   const earnedBadges: EngagementBadge[] = [];
 
   // Check Top Contributor
@@ -271,16 +219,6 @@ async function checkEngagementBadges(
     !currentBadges.includes(EngagementBadge.CONSISTENT_PERFORMER)
   ) {
     earnedBadges.push(EngagementBadge.CONSISTENT_PERFORMER);
-  }
-
-  // Update user with new badges if any earned
-  if (earnedBadges.length > 0) {
-    await prisma.user.update({
-      where: { id: userId },
-      data: {
-        earnedEngagementBadges: [...currentBadges, ...earnedBadges],
-      },
-    });
   }
 
   return earnedBadges;
@@ -367,23 +305,38 @@ export async function updateUserBadges(
   userId: string
 ): Promise<BadgeUpdateResult> {
   try {
-    // Get current user stats
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        projectsCompleted: true,
-        totalHoursContributed: true,
-        industriesExperienced: true,
-      },
-    });
+    // Get all necessary data in a single transaction for efficiency
+    const [user, projectsByCategory] = await Promise.all([
+      prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          projectsCompleted: true,
+          totalHoursContributed: true,
+          industriesExperienced: true,
+          earnedSkillBadges: true,
+          earnedSpecializationBadges: true,
+          earnedEngagementBadges: true,
+        },
+      }),
+      prisma.project.groupBy({
+        by: ["category"],
+        where: {
+          assignedStudentId: userId,
+          status: "COMPLETED",
+        },
+        _count: {
+          category: true,
+        },
+      }),
+    ]);
 
     if (!user) throw new Error("User not found");
 
     const newBadges: BadgeUpdateResult["newBadges"] = {};
 
     // Check and update skill level badges
-    const skillBadges = await checkSkillLevelBadges(
-      userId,
+    const skillBadges = checkSkillLevelBadgesInternal(
+      user.earnedSkillBadges,
       user.projectsCompleted
     );
     if (skillBadges.length > 0) {
@@ -391,19 +344,48 @@ export async function updateUserBadges(
     }
 
     // Check and update specialization badges
-    const specializationBadges = await checkSpecializationBadges(userId);
+    const specializationBadges = checkSpecializationBadgesInternal(
+      user.earnedSpecializationBadges,
+      projectsByCategory
+    );
     if (specializationBadges.length > 0) {
       newBadges.specialization = specializationBadges;
     }
 
     // Check and update engagement badges
-    const engagementBadges = await checkEngagementBadges(
-      userId,
+    const engagementBadges = checkEngagementBadgesInternal(
+      user.earnedEngagementBadges,
       user.projectsCompleted,
       user.totalHoursContributed
     );
     if (engagementBadges.length > 0) {
       newBadges.engagement = engagementBadges;
+    }
+
+    // Update all badges at once if any were earned
+    const allNewBadges = {
+      ...(skillBadges.length > 0 && {
+        earnedSkillBadges: [...user.earnedSkillBadges, ...skillBadges],
+      }),
+      ...(specializationBadges.length > 0 && {
+        earnedSpecializationBadges: [
+          ...user.earnedSpecializationBadges,
+          ...specializationBadges,
+        ],
+      }),
+      ...(engagementBadges.length > 0 && {
+        earnedEngagementBadges: [
+          ...user.earnedEngagementBadges,
+          ...engagementBadges,
+        ],
+      }),
+    };
+
+    if (Object.keys(allNewBadges).length > 0) {
+      await prisma.user.update({
+        where: { id: userId },
+        data: allNewBadges,
+      });
     }
 
     return {

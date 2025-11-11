@@ -88,9 +88,8 @@ describe("Prisma client module", () => {
       delete (global as any).prisma;
       // Import module fresh
       require("@/lib/prisma");
-      // Note: The current implementation still attaches to global even in production
-      // This test documents the actual behavior
-      expect((global as any).prisma).toBeDefined();
+      // In production, prisma should NOT be attached to global
+      expect((global as any).prisma).toBeUndefined();
     });
 
     it("should still export valid prisma instance in production", () => {

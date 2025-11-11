@@ -1,0 +1,33 @@
+{
+  "title": "Documentation",
+  "pages": [
+    "index",
+    "---Introduction---",
+    "introduction/index",
+    "introduction/key-features",
+    "introduction/getting-started",
+    "introduction/architecture",
+    "introduction/features",
+    "introduction/quick-start",
+    "---Onboarding---",
+    "onboarding/account-creation",
+    "onboarding/student-profile-setup",
+    "onboarding/business-profile-setup",
+    "onboarding/first-steps",
+    "---For Students---",
+    "student/index",
+    "student/finding-projects",
+    "student/applying-to-projects",
+    "student/managing-applications",
+    "student/building-portfolio",
+    "---For Businesses---",
+    "business/index",
+    "business/posting-projects",
+    "business/managing-applications",
+    "business/communication",
+    "business/dashboard",
+    "business/best-practices",
+    "---Help---",
+    "faq"
+  ]
+}

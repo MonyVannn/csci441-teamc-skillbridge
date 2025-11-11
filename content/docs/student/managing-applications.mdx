@@ -3,6 +3,9 @@ title: Managing Your Applications
 description: Track and manage your project applications effectively
 ---
 
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+
 # Managing Your Applications
 
 Stay organized and professional by effectively managing your applications and active projects.
@@ -11,21 +14,59 @@ Stay organized and professional by effectively managing your applications and ac
 
 ### Accessing Your Applications
 
-Navigate to **Dashboard** → **Applications** to see:
+Navigate to **Dashboard** → **Applications** to see all your application activity.
 
-**Active Applications:**
-- Projects you've applied to
-- Current status
-- Submission date
-- Organization responses
+### Application Status Types
 
-**Application Status:**
-- **Pending**: Under review
-- **Reviewing**: Organization is actively considering
-- **Interview Requested**: Organization wants to talk
-- **Accepted**: You got the project!
-- **Rejected**: Not selected this time
-- **Withdrawn**: You withdrew your application
+<Tabs items={['Pending', 'Reviewing', 'Interview Requested', 'Accepted', 'Rejected', 'Withdrawn']}>
+  <Tab value="Pending">
+    **Pending**: Application submitted and under initial review
+    
+    - Organization has received your application
+    - Typically stays in this status for 3-7 days
+    - No action required from you at this stage
+    - Be patient while they review candidates
+  </Tab>
+  <Tab value="Reviewing">
+    **Reviewing**: Organization is actively considering your application
+    
+    - You're in the consideration pool
+    - Organization may reach out with questions
+    - Check notifications regularly
+    - Response may come within a few days
+  </Tab>
+  <Tab value="Interview Requested">
+    **Interview Requested**: Organization wants to speak with you
+    
+    - Great sign - you're a strong candidate!
+    - Respond within 24 hours to schedule
+    - Prepare thoroughly for the interview
+    - Review project details and organization mission
+  </Tab>
+  <Tab value="Accepted">
+    **Accepted**: You got the project!
+    
+    - Congratulations! Respond promptly with enthusiasm
+    - Confirm start date and availability
+    - Ask about onboarding and next steps
+    - Prepare for kickoff meeting
+  </Tab>
+  <Tab value="Rejected">
+    **Rejected**: Not selected for this project
+    
+    - Normal part of the process - don't be discouraged
+    - Respond professionally and graciously
+    - Optionally request feedback for improvement
+    - Apply lessons learned to future applications
+  </Tab>
+  <Tab value="Withdrawn">
+    **Withdrawn**: You withdrew your application
+    
+    - You chose to remove yourself from consideration
+    - Decision is final and can't be undone
+    - Professional withdrawal leaves door open for future
+  </Tab>
+</Tabs>
 
 ## Tracking Applications
 
@@ -70,59 +111,74 @@ Each application shows:
 
 ### When Organizations Reach Out
 
-**Common Requests:**
-- Clarifying questions
-- Additional portfolio examples
-- Interview scheduling
-- Availability confirmation
+<Callout type="info" title="Response Best Practices">
+  - **Reply within 24 hours** to show professionalism and interest
+  - **Answer completely and clearly** to all questions asked
+  - **Maintain professional tone** in all communications
+  - **Ask your own questions** if you need clarification
+</Callout>
 
-**Response Best Practices:**
-- Reply within 24 hours
-- Answer completely and clearly
-- Maintain professional tone
-- Ask own questions if needed
+**Common Requests:**
+- Clarifying questions about your experience or availability
+- Additional portfolio examples or work samples
+- Interview scheduling and availability
+- Availability confirmation for project timeline
 
 ### Interview Preparation
 
-**If Invited to Interview:**
-
-**Prepare:**
-- Review project description thoroughly
-- Research organization
-- Prepare questions
-- Test technology (for video calls)
-- Have portfolio examples ready
-
-**Common Interview Questions:**
-- Why are you interested in this project?
-- Walk me through your relevant experience
-- How would you approach this project?
-- What's your availability like?
-- Do you have questions for us?
-
-**Your Questions to Ask:**
-- What does success look like for this project?
-- What support and resources will be available?
-- What's the review and feedback process?
-- Are there opportunities for future projects?
+<Tabs items={['Preparation Steps', 'Common Questions', 'Your Questions']}>
+  <Tab value="Preparation Steps">
+    **If Invited to Interview, Prepare By:**
+    - **Review project description** thoroughly to speak confidently about it
+    - **Research organization** - their mission, work, values, recent projects
+    - **Prepare your questions** to show genuine interest
+    - **Test technology** for video calls (camera, mic, internet)
+    - **Have portfolio examples ready** to share screen if needed
+    - **Dress professionally** even for video interviews
+    
+    Treat this like a job interview - because it is!
+  </Tab>
+  <Tab value="Common Questions">
+    **Common Interview Questions:**
+    - **Why are you interested in this project?** (Be specific to their work)
+    - **Walk me through your relevant experience** (Use specific examples)
+    - **How would you approach this project?** (Show your methodology)
+    - **What's your availability like?** (Be honest and realistic)
+    - **Do you have questions for us?** (Always have 2-3 ready)
+    - **What do you hope to learn?** (Show growth mindset)
+    
+    Practice your answers out loud before the interview!
+  </Tab>
+  <Tab value="Your Questions">
+    **Your Questions to Ask:**
+    - **What does success look like for this project?** (Understand expectations)
+    - **What support and resources will be available?** (Gauge mentorship)
+    - **What's the review and feedback process?** (Know communication style)
+    - **Are there opportunities for future projects?** (Show long-term interest)
+    - **What's the team structure?** (Understand who you'll work with)
+    
+    Asking thoughtful questions demonstrates professionalism and interest.
+  </Tab>
+</Tabs>
 
 ## Managing Acceptance
 
 ### When You're Accepted
 
-**Immediate Steps:**
-1. ✅ Respond with enthusiasm
-2. ✅ Confirm start date and availability
-3. ✅ Ask about onboarding process
-4. ✅ Request project details/resources
-5. ✅ Schedule kickoff meeting
+<Callout type="success" title="Immediate Steps After Acceptance">
+  1. **Respond with enthusiasm** within 24 hours
+  2. **Confirm start date** and availability commitment
+  3. **Ask about onboarding** process and requirements
+  4. **Request project details** and necessary resources
+  5. **Schedule kickoff meeting** to align on expectations
+</Callout>
 
 **What to Clarify:**
-- Communication expectations
-- Deliverable timeline
-- Review process
-- Access to tools/resources
-- Point of contact
+- Communication expectations (frequency, tools, response time)
+- Deliverable timeline and milestones
+- Review and feedback process
+- Access to tools, resources, and systems
+- Point of contact for questions
 
 ### Starting the Project
 
@@ -144,79 +200,93 @@ Each application shows:
 
 ### Professional Response
 
-**If Not Selected:**
+<Tabs items={['Good Response Example', 'Why This Works']}>
+  <Tab value="Good Response Example">
+    ```
+    Hi [Name],
 
-**Good Response:**
-```
-Hi [Name],
+    Thank you for considering my application and for the update. While 
+    I'm disappointed, I appreciate you taking the time to review my 
+    materials.
 
-Thank you for considering my application and for the update. While 
-I'm disappointed, I appreciate you taking the time to review my 
-materials.
+    I remain very interested in [Organization Name]'s mission. If similar 
+    opportunities arise in the future, I'd welcome the chance to apply 
+    again.
 
-I remain very interested in [Organization Name]'s mission. If similar 
-opportunities arise in the future, I'd welcome the chance to apply 
-again.
+    Best wishes with your project!
 
-Best wishes with your project!
-
-[Your Name]
-```
-
-**Why This Works:**
-- Professional and gracious
-- Leaves door open
-- Maintains relationship
-- Shows maturity
+    [Your Name]
+    ```
+  </Tab>
+  <Tab value="Why This Works">
+    **This Response Is Effective Because:**
+    - **Professional and gracious** tone throughout
+    - **Leaves door open** for future opportunities
+    - **Maintains positive relationship** with organization
+    - **Shows maturity** and professionalism
+    - **Brief and respectful** of their time
+    
+    Organizations remember students who handle rejection well.
+  </Tab>
+</Tabs>
 
 ### Learning from Rejection
 
-**Productive Steps:**
-- Request feedback (optional)
-- Review your application
-- Identify improvement areas
-- Update profile if needed
-- Apply lessons to next application
-
-**Questions to Ask:**
-- Was there anything specific that could have strengthened my application?
-- What skills or experience would you recommend developing?
-- Would you be open to my applying to future projects?
+<Callout type="info" title="Productive Steps After Rejection">
+  - **Request feedback** (optional but valuable) - "What could have strengthened my application?"
+  - **Review your application** objectively for improvement areas
+  - **Identify areas to develop** - skills, experience, portfolio
+  - **Update profile** if you found gaps
+  - **Apply lessons learned** to your next application
+  
+  Every rejection is a learning opportunity that makes you stronger!
+</Callout>
 
 ## Withdrawing Applications
 
 ### When to Withdraw
 
-**Valid Reasons:**
-- Accepted another project
-- Schedule changed
-- No longer available
-- Skills mismatch discovered
-- Personal circumstances
+<Callout type="warn" title="Valid Reasons to Withdraw">
+  - **Accepted another project** with conflicting timeline
+  - **Schedule changed** unexpectedly (exams, work, personal)
+  - **No longer available** for the commitment required
+  - **Skills mismatch discovered** upon further review
+  - **Personal circumstances** that prevent participation
+  
+  Always withdraw professionally - don't just ghost the organization!
+</Callout>
 
 ### How to Withdraw Professionally
 
-**Process:**
-1. Navigate to application
-2. Click "Withdraw Application"
-3. Select reason
-4. Add optional message
-5. Confirm withdrawal
+<Tabs items={['Withdrawal Process', 'Message Example']}>
+  <Tab value="Withdrawal Process">
+    **Steps to Withdraw:**
+    1. Navigate to your application in the dashboard
+    2. Click "Withdraw Application" button
+    3. Select reason from dropdown
+    4. Add optional explanatory message
+    5. Confirm withdrawal (this is final)
+    
+    Be prompt - don't wait if you know you need to withdraw.
+  </Tab>
+  <Tab value="Message Example">
+    ```
+    Hi [Name],
 
-**Message Example:**
-```
-Hi [Name],
+    I need to withdraw my application for [Project Name]. I've accepted 
+    another project that overlaps with this timeline, and I don't want 
+    to overcommit and deliver poor quality work.
 
-I need to withdraw my application for [Project Name]. I've accepted 
-another project that overlaps with this timeline, and I don't want 
-to overcommit.
+    Thank you for your consideration, and I hope to apply for future 
+    opportunities with [Organization].
 
-Thank you for your consideration, and I hope to apply for future 
-opportunities with [Organization].
-
-Best regards,
-[Your Name]
-```
+    Best regards,
+    [Your Name]
+    ```
+    
+    **Key Elements:** Honest reason, appreciation, future interest, professionalism
+  </Tab>
+</Tabs>
 
 ## Managing Multiple Projects
 
@@ -262,52 +332,69 @@ Best regards,
 
 ### Regular Updates
 
-**Proactive Communication:**
-- Weekly progress updates
-- Early warning of delays
-- Questions before stuck
-- Sharing relevant insights
+<Tabs items={['Proactive Communication', 'Update Template']}>
+  <Tab value="Proactive Communication">
+    **Communicate Proactively:**
+    - **Weekly progress updates** keep everyone aligned
+    - **Early warning of delays** prevents surprises
+    - **Ask questions before getting stuck** to save time
+    - **Share relevant insights** that could improve the project
+    
+    Organizations value students who communicate well!
+  </Tab>
+  <Tab value="Update Template">
+    ```
+    Hi [Name],
 
-**Update Template:**
-```
-Hi [Name],
+    Quick update on [Project Name]:
 
-Quick update on [Project Name]:
+    Completed this week:
+    • [Item 1]
+    • [Item 2]
 
-Completed this week:
-• [Item 1]
-• [Item 2]
+    In progress:
+    • [Item 3]
 
-In progress:
-• [Item 3]
+    Next week's goals:
+    • [Item 4]
+    • [Item 5]
 
-Next week's goals:
-• [Item 4]
-• [Item 5]
+    Questions/blockers:
+    • [Any issues]
 
-Questions/blockers:
-• [Any issues]
+    On track for [milestone date]!
 
-On track for [milestone date]!
-
-[Your Name]
-```
+    [Your Name]
+    ```
+    
+    **Adapt this template** to your project's communication style.
+  </Tab>
+</Tabs>
 
 ### Professional Etiquette
 
-**Do:**
-- ✅ Respond promptly (within 24 hours)
-- ✅ Be clear and concise
-- ✅ Use professional language
-- ✅ Proofread messages
-- ✅ Set expectations if unavailable
-
-**Don't:**
-- ❌ Ghost organizations
-- ❌ Make excuses constantly
-- ❌ Over-promise and under-deliver
-- ❌ Use overly casual language
-- ❌ Wait until deadline to communicate issues
+<Tabs items={['Do These', 'Avoid These']}>
+  <Tab value="Do These">
+    **Professional Behaviors:**
+    - Respond promptly within 24 hours
+    - Be clear, concise, and specific
+    - Use professional language
+    - Proofread all messages
+    - Set expectations if unavailable
+    - Communicate problems early
+    - Show appreciation for feedback
+  </Tab>
+  <Tab value="Avoid These">
+    **Unprofessional Behaviors:**
+    - Ghost organizations without explanation
+    - Make constant excuses for missed deadlines
+    - Over-promise and under-deliver
+    - Use overly casual language or slang
+    - Wait until deadline to communicate issues
+    - Ignore messages or feedback
+    - Be defensive about constructive criticism
+  </Tab>
+</Tabs>
 
 ## Completing Projects
 
@@ -359,19 +446,19 @@ Best,
 
 ### Analytics & Insights
 
-**Track Your Success:**
-- Application success rate
-- Average response time
-- Projects completed
-- Skills developed
-- Organizations worked with
-
-**Improve Over Time:**
-- Identify patterns
-- Refine strategy
-- Update approach
-- Build on strengths
+<Callout type="info" title="Track Your Success">
+  **Your dashboard shows:**
+  - **Application success rate** (acceptances vs. total applications)
+  - **Average response time** from organizations
+  - **Projects completed** and currently active
+  - **Skills developed** across all projects
+  - **Organizations worked with** and relationship history
+  
+  Use these insights to refine your strategy and improve over time!
+</Callout>
 
 ---
 
-> **📊 Pro Tip**: Treat application management like a job - stay organized, communicate professionally, and track your progress!
+<Callout type="success" title="Pro Strategy">
+  Treat application management like a professional job - stay organized, communicate professionally, meet deadlines, and track your progress for continuous improvement!
+</Callout>

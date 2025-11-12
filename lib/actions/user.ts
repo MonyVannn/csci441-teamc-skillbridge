@@ -60,7 +60,7 @@ export async function getUserByClerkId(userId: string) {
     return user;
   } catch (e) {
     console.error("Error fetching user data, ", e);
-    throw new Error("Failed to fatch user Data.");
+    return null;
   }
 }
 

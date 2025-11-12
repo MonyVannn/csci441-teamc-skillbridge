@@ -94,6 +94,82 @@ export async function getAvailableProjects(
   }
 }
 
+export async function searchProjectsQuick(query: string) {
+  try {
+    // If no query, return empty results
+    if (!query.trim()) {
+      return { projects: [], total: 0, hasMore: false };
+    }
+
+    // Build where clause for search
+    const whereClause = {
+      AND: [
+        {
+          status: "OPEN" as const,
+          isPublic: true,
+        },
+        {
+          OR: [
+            {
+              title: {
+                contains: query,
+                mode: "insensitive" as const,
+              },
+            },
+            {
+              description: {
+                contains: query,
+                mode: "insensitive" as const,
+              },
+            },
+          ],
+        },
+      ],
+    };
+
+    // Get top 5 projects (to check if there are more than 4)
+    const [projects, total] = await Promise.all([
+      prisma.project.findMany({
+        where: whereClause,
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          category: true,
+          scope: true,
+          budget: true,
+          createdAt: true,
+          businessOwner: {
+            select: {
+              id: true,
+              imageUrl: true,
+              firstName: true,
+              lastName: true,
+              address: true,
+            },
+          },
+        },
+        take: 5,
+        orderBy: {
+          createdAt: "desc",
+        },
+      }),
+      prisma.project.count({
+        where: whereClause,
+      }),
+    ]);
+
+    return {
+      projects: projects.slice(0, 4), // Return only top 4
+      total,
+      hasMore: total > 4,
+    };
+  } catch (e) {
+    console.error("Error searching projects, ", e);
+    throw new Error("Failed to search projects.");
+  }
+}
+
 export async function getProjectsByOwnerId() {
   const user = await currentUser();
 

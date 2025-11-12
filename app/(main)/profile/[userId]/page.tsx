@@ -14,15 +14,19 @@ interface ProfilePageProps {
 export default async function ProfilePage({ params }: ProfilePageProps) {
   const { userId } = await params;
 
-  const [userData, completedProjects, recommendation] = await Promise.all([
-    getUserByClerkId(userId),
-    getCompletedProjectsByAssignedStudentId(userId),
-    getUsersRecommendation(),
-  ]);
+  // First check if user exists
+  const userData = await getUserByClerkId(userId);
 
   if (!userData) {
     return <ProfileNotFoundPage />;
   }
+
+  // Only fetch additional data if user exists
+  const [completedProjects, recommendation] = await Promise.all([
+    getCompletedProjectsByAssignedStudentId(userId),
+    getUsersRecommendation(),
+  ]);
+
   return (
     <div className="min-h-screen bg-muted/30">
       <div className="max-w-7xl mx-auto">

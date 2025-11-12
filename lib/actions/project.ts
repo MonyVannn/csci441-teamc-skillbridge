@@ -109,20 +109,10 @@ export async function searchProjectsQuick(query: string) {
           isPublic: true,
         },
         {
-          OR: [
-            {
-              title: {
-                contains: query,
-                mode: "insensitive" as const,
-              },
-            },
-            {
-              description: {
-                contains: query,
-                mode: "insensitive" as const,
-              },
-            },
-          ],
+          title: {
+            contains: query,
+            mode: "insensitive" as const,
+          },
         },
       ],
     };
@@ -207,7 +197,7 @@ export async function getCompletedProjectsByAssignedStudentId(userId: string) {
       where: { clerkId: userId },
     });
 
-    if (!user) throw new Error("User not found.");
+    if (!user) return [];
 
     const completedProjects = await prisma.project.findMany({
       where: {
@@ -235,11 +225,17 @@ export async function getCompletedProjectsByAssignedStudentId(userId: string) {
     return completedProjects;
   } catch (e) {
     console.error("Error fetching completed projects, ", e);
-    throw new Error("Failed to fetch completed projects.");
+    return [];
   }
 }
 export async function getProjectByProjectId(projectId: string) {
   try {
+    // Validate MongoDB ObjectID format (24 hex characters)
+    if (!/^[0-9a-fA-F]{24}$/.test(projectId)) {
+      console.error("Invalid project ID format:", projectId);
+      return null;
+    }
+
     const project = await prisma.project.findUnique({
       where: { id: projectId },
       include: {
@@ -275,12 +271,10 @@ export async function getProjectByProjectId(projectId: string) {
       },
     });
 
-    if (!project) throw new Error("Project not found.");
-
     return project;
   } catch (e) {
     console.error("Error fetching project data, ", e);
-    throw new Error("Failed to fetch project data.");
+    return null;
   }
 }
 

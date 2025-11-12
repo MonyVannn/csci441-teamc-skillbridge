@@ -1,4 +1,5 @@
 import { ProjectDetail } from "@/components/project/ProjectDetail";
+import ProjectNotFound from "@/components/project/ProjectNotFound";
 import {
   getProjectByProjectId,
   getProjectTimelineByProjectId,
@@ -15,6 +16,11 @@ export default async function ProjectDetailPage({
 }: ProjectDetailPageProps) {
   const { projectId } = await params;
   const project = await getProjectByProjectId(projectId);
+
+  if (!project) {
+    return <ProjectNotFound />;
+  }
+
   const timeline =
     project.status !== "OPEN"
       ? await getProjectTimelineByProjectId(

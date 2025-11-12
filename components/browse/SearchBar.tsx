@@ -178,8 +178,12 @@ export function SearchBar() {
                       </p>
                       <div className="flex items-center gap-2 mt-1 text-xs text-gray-400">
                         <span>
-                          {project.businessOwner.firstName}{" "}
-                          {project.businessOwner.lastName}
+                          {[
+                            project.businessOwner.firstName,
+                            project.businessOwner.lastName,
+                          ]
+                            .filter(Boolean)
+                            .join(" ") || "Unknown"}
                         </span>
                         <span>•</span>
                         <span>${project.budget.toLocaleString()}</span>

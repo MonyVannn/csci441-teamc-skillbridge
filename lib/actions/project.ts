@@ -127,7 +127,7 @@ export async function searchProjectsQuick(query: string) {
       ],
     };
 
-    // Get top 6 projects (to check if there are more than 5)
+    // Get top 5 projects (to check if there are more than 4)
     const [projects, total] = await Promise.all([
       prisma.project.findMany({
         where: whereClause,
@@ -149,7 +149,7 @@ export async function searchProjectsQuick(query: string) {
             },
           },
         },
-        take: 6,
+        take: 5,
         orderBy: {
           createdAt: "desc",
         },

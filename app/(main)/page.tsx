@@ -33,8 +33,6 @@ export default async function MarketplacePage({
       {/* Mobile Floating Filter Button */}
       <MobileFilters />
 
-      <></>
-
       {/* Main Content Area */}
       <div className="container mx-auto flex pb-20">
         {/* Filtering Sidebar - Hidden on mobile/tablet, shown on desktop */}

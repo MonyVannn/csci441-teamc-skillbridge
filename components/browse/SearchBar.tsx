@@ -59,7 +59,7 @@ export function SearchBar() {
       clearTimeout(timeoutId);
       setIsSearching(false);
     };
-  }, [query, isHomePage, router, searchParams, pathname]);
+  }, [query, isHomePage, router, pathname]);
 
   // Fetch search results for non-home pages
   useEffect(() => {

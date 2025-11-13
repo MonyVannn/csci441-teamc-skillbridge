@@ -35,7 +35,6 @@ import {
   FileText,
   Check,
   X,
-  SquareArrowOutUpRight,
   Search,
   MoreVertical,
 } from "lucide-react";

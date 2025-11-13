@@ -167,6 +167,18 @@ export function PostProjectModal({
     },
   });
 
+  const handleCloseModal = (open: boolean) => {
+    if (!open && form.formState.isDirty && !isSubmitting) {
+      const confirmClose = window.confirm(
+        "You have unsaved changes. Are you sure you want to close this form? All your progress will be lost."
+      );
+      if (!confirmClose) {
+        return;
+      }
+    }
+    onOpenChange(open);
+  };
+
   const createProjectWithStatus = async (data: FormData, isDraft: boolean) => {
     if (!user.isSignedIn) {
       toast.error("You must be signed in to create a project.");
@@ -266,7 +278,7 @@ export function PostProjectModal({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleCloseModal}>
       <DialogContent className="w-[95vw] sm:w-full sm:max-w-2xl lg:max-w-4xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader className="text-left">
           <DialogTitle className="text-lg sm:text-xl">
@@ -661,7 +673,7 @@ export function PostProjectModal({
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => onOpenChange(false)}
+                onClick={() => handleCloseModal(false)}
                 className="w-full sm:w-auto"
                 disabled={isSubmitting}
               >

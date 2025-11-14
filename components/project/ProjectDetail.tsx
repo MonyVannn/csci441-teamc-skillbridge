@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import dynamic from "next/dynamic";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Badge } from "../ui/badge";
 import { AvailableProject, TimelineEntry } from "@/type";
@@ -47,10 +48,14 @@ import {
 } from "@/lib/actions/project";
 import { useUser } from "@clerk/nextjs";
 import { ProjectStatus, User } from "@prisma/client";
-import { EditProjectModal } from "./EditProjectModal";
 import { useRouter } from "next/navigation";
 import { getUser } from "@/lib/actions/user";
 import { toast } from "sonner";
+
+// Lazy load the EditProjectModal as it's only needed when editing
+const EditProjectModal = dynamic(() => import("./EditProjectModal").then(mod => ({ default: mod.EditProjectModal })), {
+  ssr: false,
+});
 
 interface ProjectDetailProps {
   project: AvailableProject;

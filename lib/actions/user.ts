@@ -211,7 +211,7 @@ export async function editExperience(experienceData: Experience) {
     console.log("Experience updated:", updatedExperience);
     return updatedExperience;
   } catch (e) {
-    console.error("Error editting user experience, ", e);
+    console.error("Error editing user experience, ", e);
     throw new Error("Failed to edit user experience.");
   }
 }
@@ -319,11 +319,11 @@ export async function editEducation(educationData: Education) {
       },
     });
 
-    console.log("Edcation updated:", updatedEducation);
+    console.log("Education updated:", updatedEducation);
     return updatedEducation;
   } catch (e) {
-    console.error("Error editting user edcation, ", e);
-    throw new Error("Failed to edit user edcation.");
+    console.error("Error editing user education, ", e);
+    throw new Error("Failed to edit user education.");
   }
 }
 

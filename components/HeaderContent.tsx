@@ -18,7 +18,6 @@ import { SignedIn, SignedOut, UserButton, useUser } from "@clerk/nextjs";
 import { UserExperience } from "./setting/UserExperience";
 import { UserEducation } from "./setting/UserEducation";
 import { UserInformation } from "./setting/UserInformation";
-import { PostProjectModal } from "./project/PostProjectModal";
 import { User } from "@prisma/client";
 import { OrganizationPostedProjects } from "./setting/OrganizationPostedProject";
 import { SearchBar } from "./browse/SearchBar";
@@ -37,7 +36,6 @@ const HeaderContent: React.FC<HeaderContentProps> = ({
   totalUnrespondedApplications,
 }) => {
   const pathname = usePathname();
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const { user: clerkUser, isLoaded } = useUser();
   const [dbUser, setDbUser] = useState<User | null>(serverUser);
   const [unseenApplicationCount, setUnseenApplicationCount] = useState<
@@ -110,19 +108,12 @@ const HeaderContent: React.FC<HeaderContentProps> = ({
         <SignedIn>
           <div className="flex items-center gap-2 sm:gap-4 lg:gap-10">
             {dbUser?.role === "BUSINESS_OWNER" && (
-              <div>
-                <Button
-                  onClick={() => setIsModalOpen(true)}
-                  className="flex items-center rounded-full gap-1 px-3 sm:px-4 lg:px-6 py-2 sm:py-3 bg-[#695DCC] hover:bg-[#695DCC]/80 font-semibold text-xs sm:text-sm"
-                >
+              <Link href="/project/new">
+                <Button className="flex items-center rounded-full gap-1 px-3 sm:px-4 lg:px-6 py-2 sm:py-3 bg-[#695DCC] hover:bg-[#695DCC]/80 font-semibold text-xs sm:text-sm">
                   <Plus className="h-4 w-4 sm:h-5 sm:w-5" />
                   <span>Post a Project</span>
                 </Button>
-                <PostProjectModal
-                  open={isModalOpen}
-                  onOpenChange={setIsModalOpen}
-                />
-              </div>
+              </Link>
             )}
 
             <div className="relative pt-2">

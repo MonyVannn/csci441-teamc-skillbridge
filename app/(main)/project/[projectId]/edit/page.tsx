@@ -269,6 +269,9 @@ export default function EditProjectPage({ params }: PageProps) {
             : undefined,
           budget: projectData.budget || 0,
         });
+
+        // Reset unsaved changes flag after initial form population
+        setHasUnsavedChanges(false);
       } catch (error) {
         console.error("Error fetching project:", error);
         toast.error("An error occurred. Please try again.");
@@ -388,19 +391,79 @@ export default function EditProjectPage({ params }: PageProps) {
   };
 
   const handlePublishDraft = async () => {
-    if (!project) return;
+    if (!project || !dbUser) return;
 
-    setIsSubmitting(true);
-    try {
-      await publishDraftProject(project.id);
-      toast.success("Draft published successfully!");
-      setHasUnsavedChanges(false);
-      router.push(`/project/${project.id}`);
-    } catch (e) {
-      console.error("Failed to publish draft: ", e);
-      toast.error("Failed to publish draft. Please try again.");
-    } finally {
-      setIsSubmitting(false);
+    // If there are unsaved changes, validate and save them first
+    if (hasUnsavedChanges) {
+      const isValid = await form.trigger();
+      if (!isValid) {
+        toast.error("Please fix form errors before publishing.");
+        return;
+      }
+
+      // Save the form changes before publishing
+      const data = form.getValues();
+
+      setIsSubmitting(true);
+      try {
+        // Format responsibilities and deliverables as bullet points
+        const formattedResponsibilities = data.responsibilities
+          .filter((r) => r.trim() !== "")
+          .map((r) => `• ${r}`)
+          .join("\n");
+
+        const formattedDeliverables = data.deliverables
+          .filter((d) => d.trim() !== "")
+          .map((d) => `• ${d}`)
+          .join("\n");
+
+        // Update the project with changes
+        await editProject(
+          {
+            title: data.title,
+            description: data.description,
+            responsibilities: formattedResponsibilities,
+            deliverables: formattedDeliverables,
+            requiredSkills: data.requiredSkills,
+            category: data.category,
+            scope: data.scope,
+            startDate: data.startDate,
+            estimatedEndDate: data.estimatedEndDate,
+            applicationDeadline: data.applicationDeadline,
+            budget: data.budget,
+            status: "DRAFT",
+            businessOwner: {
+              connect: { id: dbUser.id },
+            },
+          },
+          project.id
+        );
+
+        // Then publish the draft
+        await publishDraftProject(project.id);
+        toast.success("Changes saved and draft published successfully!");
+        setHasUnsavedChanges(false);
+        router.push(`/project/${project.id}`);
+      } catch (e) {
+        console.error("Failed to publish draft: ", e);
+        toast.error("Failed to publish draft. Please try again.");
+      } finally {
+        setIsSubmitting(false);
+      }
+    } else {
+      // No unsaved changes, just publish
+      setIsSubmitting(true);
+      try {
+        await publishDraftProject(project.id);
+        toast.success("Draft published successfully!");
+        setHasUnsavedChanges(false);
+        router.push(`/project/${project.id}`);
+      } catch (e) {
+        console.error("Failed to publish draft: ", e);
+        toast.error("Failed to publish draft. Please try again.");
+      } finally {
+        setIsSubmitting(false);
+      }
     }
   };
 
@@ -985,7 +1048,7 @@ export default function EditProjectPage({ params }: PageProps) {
                             }
                           }}
                           numberOfMonths={2}
-                          disabled={(date) => date < new Date()}
+                          disabled={isSubmitting}
                           initialFocus
                           className="rounded-lg"
                         />
@@ -1035,7 +1098,7 @@ export default function EditProjectPage({ params }: PageProps) {
                               mode="single"
                               selected={field.value}
                               onSelect={field.onChange}
-                              disabled={(date) => date < new Date()}
+                              disabled={isSubmitting}
                               initialFocus
                             />
                           </PopoverContent>

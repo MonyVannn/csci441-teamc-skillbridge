@@ -95,7 +95,6 @@ export async function createUser(userData: UserJSON) {
         earnedEngagementBadges: [],
       },
     });
-    console.log("User created in DB:", newUser.email);
 
     return newUser;
   } catch (error) {
@@ -127,7 +126,6 @@ export async function updateUser(userData: UserJSON) {
       },
     });
 
-    console.log("User updated in DB:", updatedUser.email);
     return updatedUser;
   } catch (error) {
     console.error("Error updating user in DB:", error);
@@ -177,7 +175,6 @@ export async function createExperience(experienceData: Omit<Experience, "id">) {
       },
     });
 
-    console.log("Experience added:", updatedUser);
     return updatedUser;
   } catch (e) {
     console.error("Error adding an experience: ", e);
@@ -208,7 +205,6 @@ export async function editExperience(experienceData: Experience) {
       },
     });
 
-    console.log("Experience updated:", updatedExperience);
     return updatedExperience;
   } catch (e) {
     console.error("Error editing user experience, ", e);
@@ -237,7 +233,6 @@ export async function deleteExperience(experienceId: string) {
         },
       },
     });
-    console.log("Experience deleted:", updatedUser);
     return updatedUser;
   } catch (e) {
     console.error("Error deleting user experience, ", e);
@@ -288,7 +283,6 @@ export async function createEducation(educationData: Omit<Education, "id">) {
       },
     });
 
-    console.log("Education added:", updatedUser);
     return updatedUser;
   } catch (e) {
     console.error("Error adding an education: ", e);
@@ -319,7 +313,6 @@ export async function editEducation(educationData: Education) {
       },
     });
 
-    console.log("Education updated:", updatedEducation);
     return updatedEducation;
   } catch (e) {
     console.error("Error editing user education, ", e);
@@ -346,7 +339,6 @@ export async function deleteEducation(educationId: string) {
         },
       },
     });
-    console.log("Education deleted:", updatedUser);
     return updatedUser;
   } catch (e) {
     console.error("Error deleting user education, ", e);
@@ -375,8 +367,6 @@ export async function editUserInformation(informationData: User) {
     });
 
     revalidatePath("/");
-
-    console.log("Information updated.", updatedInformation);
   } catch (e) {
     console.error("Error editing user information, ", e);
     throw new Error("Failed to edit user information.");

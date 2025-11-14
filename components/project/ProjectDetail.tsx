@@ -47,10 +47,10 @@ import {
 } from "@/lib/actions/project";
 import { useUser } from "@clerk/nextjs";
 import { ProjectStatus, User } from "@prisma/client";
-import { EditProjectModal } from "./EditProjectModal";
 import { useRouter } from "next/navigation";
 import { getUser } from "@/lib/actions/user";
 import { toast } from "sonner";
+import Link from "next/link";
 
 interface ProjectDetailProps {
   project: AvailableProject;
@@ -61,7 +61,6 @@ export function ProjectDetail({ project, timeline }: ProjectDetailProps) {
   const { user } = useUser();
   const router = useRouter();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isArchiveDialogOpen, setIsArchiveDialogOpen] = useState(false);
   const [isCompleteDialogOpen, setIsCompleteDialogOpen] = useState(false);
   const [pendingStatus, setPendingStatus] = useState<ProjectStatus | null>(
@@ -222,9 +221,11 @@ export function ProjectDetail({ project, timeline }: ProjectDetailProps) {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => setIsEditModalOpen(true)}>
-                      <Pencil className="h-4 w-4 mr-2" />
-                      Edit Project
+                    <DropdownMenuItem asChild>
+                      <Link href={`/project/${project.id}/edit`}>
+                        <Pencil className="h-4 w-4 mr-2" />
+                        Edit Project
+                      </Link>
                     </DropdownMenuItem>
                     {project.status === "ARCHIVED" ? (
                       <DropdownMenuItem
@@ -285,9 +286,11 @@ export function ProjectDetail({ project, timeline }: ProjectDetailProps) {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => setIsEditModalOpen(true)}>
-                      <Pencil className="h-4 w-4 mr-2" />
-                      Edit Project
+                    <DropdownMenuItem asChild>
+                      <Link href={`/project/${project.id}/edit`}>
+                        <Pencil className="h-4 w-4 mr-2" />
+                        Edit Project
+                      </Link>
                     </DropdownMenuItem>
                     {project.status === "ARCHIVED" ? (
                       <DropdownMenuItem
@@ -599,15 +602,6 @@ export function ProjectDetail({ project, timeline }: ProjectDetailProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      {/* Edit Project Modal */}
-      {isOwner && (
-        <EditProjectModal
-          open={isEditModalOpen}
-          onOpenChange={setIsEditModalOpen}
-          project={project}
-        />
-      )}
     </div>
   );
 }

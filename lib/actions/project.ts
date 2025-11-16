@@ -401,8 +401,6 @@ export async function createProject(projectData: Prisma.ProjectCreateInput) {
       data: projectData,
     });
 
-    console.log("Project successfully created.");
-
     // Revalidate homepage and settings page
     revalidatePath("/");
     revalidatePath("/settings");

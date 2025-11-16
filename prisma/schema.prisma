@@ -53,6 +53,9 @@ model User {
   conversationIds String[]       @db.ObjectId
   conversations   Conversation[] @relation("ConversationParticipants", fields: [conversationIds], references: [id])
   sentMessages    Message[]      @relation("SentMessages")
+
+  @@index([role])
+  @@index([industriesExperienced])
 }
 
 // Embedded documents for MongoDB (No @id, no @map)
@@ -173,6 +176,12 @@ model Project {
   assignedStudent   User?   @relation("AssignedStudent", fields: [assignedStudentId], references: [id])
 
   applications Application[] @relation("ProjectApplications") // All applications for this project
+
+  @@index([status, isPublic, createdAt(sort: Desc)])
+  @@index([category])
+  @@index([scope])
+  @@index([businessOwnerId])
+  @@index([assignedStudentId, status])
 }
 
 // Enums for Project Model
@@ -279,6 +288,9 @@ model Application {
   applicant User    @relation("Applicant", fields: [applicantId], references: [id])
 
   @@unique([projectId, applicantId]) // A student can only apply once to a project
+  @@index([applicantId, status])
+  @@index([projectId, status])
+  @@index([status, seenByApplicant])
 }
 
 // Enum for Application Status

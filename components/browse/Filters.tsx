@@ -6,7 +6,7 @@ import { Checkbox } from "../ui/checkbox";
 import { Separator } from "../ui/separator";
 import { Slider } from "../ui/slider";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 
 export function Filters() {
   const router = useRouter();
@@ -116,6 +116,30 @@ export function Filters() {
     setBudgetRange([5, 5000]);
   };
 
+  // Memoize category display transformation to avoid recalculating on every render
+  const categoryDisplayMap = useMemo(() => {
+    const formatCategoryDisplay = (categoryKey: string) =>
+      categoryKey
+        .replace(/_/g, " ")
+        .replace(
+          /\w\S*/g,
+          (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
+        )
+        .replace("Ui Ux Design", "UI/UX Design");
+    
+    return Object.keys(ProjectCategory).reduce((acc, key) => {
+      acc[key] = formatCategoryDisplay(key);
+      return acc;
+    }, {} as Record<string, string>);
+  }, []);
+
+  // Memoize sorted category keys
+  const sortedCategories = useMemo(() => {
+    return Object.keys(ProjectCategory).sort((a, b) => 
+      categoryDisplayMap[a].localeCompare(categoryDisplayMap[b])
+    );
+  }, [categoryDisplayMap]);
+
   return (
     <div className="w-full lg:w-60 lg:border-r border-gray-200 p-4 lg:p-6 space-y-4 lg:space-y-6">
       <div className="flex items-center justify-between lg:hidden">
@@ -146,56 +170,27 @@ export function Filters() {
       <div className="space-y-3">
         <h3 className="font-medium text-gray-900">Category</h3>
         <div className="space-y-2 max-h-96 overflow-y-auto">
-          {Object.keys(ProjectCategory)
-            .sort((a, b) => {
-              const aDisplay = a
-                .replace(/_/g, " ")
-                .replace(
-                  /\w\S*/g,
-                  (txt) =>
-                    txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
-                )
-                .replace("Ui Ux Design", "UI/UX Design");
+          {sortedCategories.map((categoryKey) => {
+            const displayText = categoryDisplayMap[categoryKey];
 
-              const bDisplay = b
-                .replace(/_/g, " ")
-                .replace(
-                  /\w\S*/g,
-                  (txt) =>
-                    txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
-                )
-                .replace("Ui Ux Design", "UI/UX Design");
-
-              return aDisplay.localeCompare(bDisplay);
-            })
-            .map((categoryKey) => {
-              const displayText = categoryKey
-                .replace(/_/g, " ")
-                .replace(
-                  /\w\S*/g,
-                  (txt) =>
-                    txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
-                )
-                .replace("Ui Ux Design", "UI/UX Design");
-
-              return (
-                <div key={categoryKey} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={categoryKey}
-                    checked={selectedCategories.includes(categoryKey)}
-                    onCheckedChange={(checked) =>
-                      handleCategoryChange(categoryKey, !!checked)
-                    }
-                  />
-                  <label
-                    htmlFor={categoryKey}
-                    className="text-sm text-gray-700"
-                  >
-                    {displayText}
-                  </label>
-                </div>
-              );
-            })}
+            return (
+              <div key={categoryKey} className="flex items-center space-x-2">
+                <Checkbox
+                  id={categoryKey}
+                  checked={selectedCategories.includes(categoryKey)}
+                  onCheckedChange={(checked) =>
+                    handleCategoryChange(categoryKey, !!checked)
+                  }
+                />
+                <label
+                  htmlFor={categoryKey}
+                  className="text-sm text-gray-700"
+                >
+                  {displayText}
+                </label>
+              </div>
+            );
+          })}
         </div>
       </div>
 

@@ -8,7 +8,7 @@ import { AvailableProject } from "@/type";
 import { Separator } from "../ui/separator";
 import { formatDate } from "@/lib/utils";
 import { Button } from "../ui/button";
-import { useCallback, useEffect } from "react";
+import { useCallback } from "react";
 import {
   ChevronLeft,
   ChevronRight,
@@ -49,10 +49,6 @@ export function ProjectCard({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { isAuthenticated } = useUserAuth();
-
-  useEffect(() => {
-    router.push(`${pathname}?query=&page=1`);
-  }, [router, pathname]);
 
   const createQueryString = useCallback(
     (name: string, value: string) => {
@@ -156,8 +152,9 @@ export function ProjectCard({
                   <Image
                     src={getCategoryThumbnail(project.category)}
                     alt={project.title}
-                    width={1000}
-                    height={1000}
+                    width={600}
+                    height={400}
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                     className="w-full h-40 sm:h-48 lg:h-52 object-cover -mt-6"
                   />
                 </div>

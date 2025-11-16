@@ -11,11 +11,6 @@ const config = {
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
   
-  // Optimize CSS
-  experimental: {
-    optimizeCss: true,
-  },
-  
   // Compress output
   compress: true,
   

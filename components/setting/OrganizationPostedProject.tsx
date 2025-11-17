@@ -155,7 +155,7 @@ export function OrganizationPostedProjects() {
           </Button>
           <h1 className="text-3xl font-bold">Manage your Projects</h1>
           <p className="text-muted-foreground mt-2">
-            Manage and browse throught all your posted projects here
+            Manage and browse through all your posted projects here
           </p>
         </div>
       </div>

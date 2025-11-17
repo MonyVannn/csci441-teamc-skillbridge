@@ -161,7 +161,7 @@ export function ProjectCard({
 
                 {/* Card Content */}
                 <div className="px-3 sm:px-4 -mt-4">
-                  <div className="mb-3 sm:mb-4 flex items-center gap-1 flex-wrap">
+                  <div className="mb-3 sm:mb-4 flex items-center gap-1 flex-1">
                     <Badge className="bg-[#695DCC] text-xs">
                       {project.category.replaceAll("_", " ")}
                     </Badge>

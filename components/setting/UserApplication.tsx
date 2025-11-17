@@ -33,6 +33,7 @@ import {
   X,
   Calendar as CalendarIcon,
   Building2,
+  ArrowLeft,
 } from "lucide-react";
 import {
   getApplicationsByUserId,
@@ -41,6 +42,8 @@ import {
 } from "@/lib/actions/application";
 import { toast } from "sonner";
 import { useClerkNavigation } from "@/lib/hooks/useClerkNavigation";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 // Define the shape of the application data the component will work with
 interface Application {
@@ -66,6 +69,7 @@ export function UserApplications({
   onApplicationsSeen,
 }: UserApplicationsProps) {
   const navigate = useClerkNavigation();
+  const router = useRouter();
   const [applications, setApplications] = useState<Application[] | undefined>();
   const [filteredApplications, setFilteredApplications] = useState<
     Application[] | undefined
@@ -261,15 +265,22 @@ export function UserApplications({
       </AlertDialog>
 
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="font-bold text-gray-900">My Applications</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            Showing {totalApplications} of {applications?.length || 0}{" "}
-            application
-            {applications?.length !== 1 ? "s" : ""}
-          </p>
-        </div>
+      <div>
+        <Button
+          variant="ghost"
+          className="mb-4 -ml-2"
+          onClick={() => {
+            router.push("/");
+          }}
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Projects
+        </Button>
+        <h1 className="text-3xl font-bold">Manage Incoming Applications</h1>
+        <p className="text-muted-foreground mt-2">
+          Showing {totalApplications} of {applications?.length || 0} application
+          {applications?.length !== 1 ? "s" : ""}
+        </p>
       </div>
 
       {/* Search and Filters */}
@@ -392,12 +403,12 @@ export function UserApplications({
                   <div className="flex-1 min-w-0 space-y-3">
                     {/* Title and Status */}
                     <div className="flex items-start gap-2 flex-wrap justify-between">
-                      <button
-                        onClick={() => navigate(`/project/${app.project.id}`)}
+                      <Link
+                        href={`/project/${app.project.id}`}
                         className="font-medium hover:underline text-gray-900 flex-1 text-left"
                       >
                         {app.project.title}
-                      </button>
+                      </Link>
                       <Badge
                         variant="outline"
                         className={`border shrink-0 ${getStatusBadgeVariant(

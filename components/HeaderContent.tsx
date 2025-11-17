@@ -145,6 +145,40 @@ const HeaderContent: React.FC<HeaderContentProps> = ({
                       labelIcon={<Layers className="w-4 h-4" />}
                     />
                   )}
+                  {dbUser?.role === "BUSINESS_OWNER" && (
+                    <UserButton.Link
+                      href={`/profile/${dbUser?.clerkId}/applications`}
+                      label="Manage Applications"
+                      labelIcon={
+                        <>
+                          <ScrollText className="w-4 h-4" />{" "}
+                          {totalUnrespondedApplications &&
+                          totalUnrespondedApplications > 0 ? (
+                            <div className="absolute top-1/2 -translate-y-1/2 right-5 w-4 h-4 z-50 bg-red-400 rounded-full text-white font-bold text-[10px] flex items-center justify-center">
+                              {totalUnrespondedApplications}
+                            </div>
+                          ) : null}
+                        </>
+                      }
+                    />
+                  )}
+                  {dbUser?.role === "USER" && (
+                    <UserButton.Link
+                      href={`/profile/${dbUser?.clerkId}/applications`}
+                      label="Manage Applications"
+                      labelIcon={
+                        <>
+                          <ScrollText className="w-4 h-4" />{" "}
+                          {unseenApplicationCount &&
+                          unseenApplicationCount > 0 ? (
+                            <div className="absolute top-1/2 -translate-y-1/2 right-5 w-4 h-4 z-50 bg-red-400 rounded-full text-white font-bold text-[10px] flex items-center justify-center">
+                              {unseenApplicationCount}
+                            </div>
+                          ) : null}
+                        </>
+                      }
+                    />
+                  )}
                   <UserButton.Link
                     href="/docs"
                     label="Documentation"
@@ -175,46 +209,6 @@ const HeaderContent: React.FC<HeaderContentProps> = ({
                     labelIcon={<GraduationCap className="w-4 h-4" />}
                   >
                     <UserEducation />
-                  </UserButton.UserProfilePage>
-                )}
-                {dbUser?.role === "USER" && (
-                  <UserButton.UserProfilePage
-                    label="Applications"
-                    url="applications"
-                    labelIcon={
-                      <>
-                        <ScrollText className="w-4 h-4" />{" "}
-                        {unseenApplicationCount &&
-                        unseenApplicationCount > 0 ? (
-                          <div className="absolute top-0 -right-28 w-4 h-4 z-50 bg-red-400 rounded-full text-white font-bold text-[10px] flex items-center justify-center">
-                            {unseenApplicationCount}
-                          </div>
-                        ) : null}
-                      </>
-                    }
-                  >
-                    <UserApplications
-                      onApplicationsSeen={handleApplicationsSeen}
-                    />
-                  </UserButton.UserProfilePage>
-                )}
-                {dbUser?.role === "BUSINESS_OWNER" && (
-                  <UserButton.UserProfilePage
-                    label="Applications"
-                    url="applications"
-                    labelIcon={
-                      <>
-                        <ScrollText className="w-4 h-4" />{" "}
-                        {totalUnrespondedApplications &&
-                        totalUnrespondedApplications > 0 ? (
-                          <div className="absolute top-0 -right-28 w-4 h-4 z-50 bg-red-400 rounded-full text-white font-bold text-[10px] flex items-center justify-center">
-                            {totalUnrespondedApplications}
-                          </div>
-                        ) : null}
-                      </>
-                    }
-                  >
-                    <OrganizationApplication />
                   </UserButton.UserProfilePage>
                 )}
                 <UserButton.UserProfileLink

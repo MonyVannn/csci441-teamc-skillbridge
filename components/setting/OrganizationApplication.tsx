@@ -37,6 +37,7 @@ import {
   X,
   Search,
   MoreVertical,
+  ArrowLeft,
 } from "lucide-react";
 import {
   approveApplication,
@@ -46,6 +47,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { toast } from "sonner";
 import { useClerkNavigation } from "@/lib/hooks/useClerkNavigation";
+import { useRouter } from "next/navigation";
 
 // Updated interface to include project details for each application
 interface ApplicationDetails {
@@ -68,6 +70,7 @@ interface ApplicationDetails {
 
 export function OrganizationApplication() {
   const navigate = useClerkNavigation();
+  const router = useRouter();
   const [applications, setApplications] = useState<
     ApplicationDetails[] | undefined
   >();
@@ -266,13 +269,21 @@ export function OrganizationApplication() {
 
   return (
     <div>
-      <div className="space-y-1">
-        <h1 className="font-bold text-gray-900">All Project Applications</h1>
-        <p className="text-sm text-gray-500">
-          Showing {totalApplications} of {applications?.length || 0} application
-          {applications?.length !== 1 ? "s" : ""}
-        </p>
-      </div>
+      <Button
+        variant="ghost"
+        className="mb-4 -ml-2"
+        onClick={() => {
+          router.push("/");
+        }}
+      >
+        <ArrowLeft className="h-4 w-4 mr-2" />
+        Back to Projects
+      </Button>
+      <h1 className="text-3xl font-bold">Manage Incoming Applications</h1>
+      <p className="text-muted-foreground mt-2">
+        Showing {totalApplications} of {applications?.length || 0} application
+        {applications?.length !== 1 ? "s" : ""}
+      </p>
       <Separator className="my-5" />
 
       {/* Search and Filters */}

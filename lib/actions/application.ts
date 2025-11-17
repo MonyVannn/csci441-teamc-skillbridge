@@ -208,12 +208,8 @@ export async function approveApplication(applicationId: string) {
       );
     }
 
-    const project = await prisma.project.findUnique({
-      where: { id: application.projectId },
-    });
-
-    if (!project) throw new Error("Project not found.");
-    if (project.status !== "OPEN") throw new Error("Unavailable project.");
+    // Use project from the application include instead of fetching again
+    if (application.project.status !== "OPEN") throw new Error("Unavailable project.");
 
     const updatedApplication = await prisma.application.update({
       where: {

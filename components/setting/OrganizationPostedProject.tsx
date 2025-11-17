@@ -19,6 +19,7 @@ import {
   Briefcase,
   Calendar as CalendarIcon,
   MoreVertical,
+  ArrowLeft,
 } from "lucide-react";
 import { ProjectStatus } from "@prisma/client";
 import { getProjectsByOwnerId } from "@/lib/actions/project";
@@ -27,10 +28,11 @@ import { ProjectWithAssignedStudent } from "@/type";
 import { cn } from "@/lib/utils";
 import { Separator } from "../ui/separator";
 import { useClerkNavigation } from "@/lib/hooks/useClerkNavigation";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export function OrganizationPostedProjects() {
   const navigate = useClerkNavigation();
+  const router = useRouter();
   const [projects, setProjects] = useState<ProjectWithAssignedStudent[]>();
   const [filteredProjects, setFilteredProjects] =
     useState<ProjectWithAssignedStudent[]>();
@@ -141,10 +143,19 @@ export function OrganizationPostedProjects() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="font-bold text-gray-900">Posted Projects</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            Showing {totalProjects} of {projects?.length || 0} project
-            {projects?.length !== 1 ? "s" : ""}
+          <Button
+            variant="ghost"
+            className="mb-4 -ml-2"
+            onClick={() => {
+              router.push("/");
+            }}
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Projects
+          </Button>
+          <h1 className="text-3xl font-bold">Manage your Projects</h1>
+          <p className="text-muted-foreground mt-2">
+            Manage and browse through all your posted projects here
           </p>
         </div>
       </div>
@@ -157,7 +168,7 @@ export function OrganizationPostedProjects() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input
-              placeholder="Search projects..."
+              placeholder="Search posted projects..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10"

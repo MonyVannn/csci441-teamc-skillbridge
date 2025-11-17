@@ -265,9 +265,14 @@ export function ProjectCard({
                 </SheetTitle>
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
                   <div className="w-full sm:w-auto">
-                    <SheetDescription className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 mt-2">
-                      {project.title}
-                    </SheetDescription>
+                    <Link
+                      href={`/project/${project.id}`}
+                      className="hover:underline"
+                    >
+                      <SheetDescription className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 mt-2">
+                        {project.title}
+                      </SheetDescription>
+                    </Link>
                     <div className="flex flex-wrap items-center gap-1 sm:gap-0">
                       <SheetDescription className="font-medium text-xs sm:text-sm truncate">
                         {project.businessOwner.address}

@@ -13,6 +13,16 @@ import {
 } from "@/lib/actions/chat";
 import { Textarea } from "../textarea";
 import Link from "next/link";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export type IndividualChatProps = {
   id: string;
@@ -60,7 +70,9 @@ export default function IndividualChat({
   const [conversationId, setConversationId] = useState<string | null>(
     isNewChat ? null : id
   );
+  const [showCloseAlert, setShowCloseAlert] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const hasScrolledToBottomRef = useRef(false);
 
   // Load messages when chat opens or is expanded (only if conversation exists)
   useEffect(() => {
@@ -76,6 +88,21 @@ export default function IndividualChat({
     }
   }, [conversationId, isMinimized]);
 
+  // Scroll to bottom when messages first load
+  useEffect(() => {
+    if (messages.length > 0 && !hasScrolledToBottomRef.current) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "instant" });
+      hasScrolledToBottomRef.current = true;
+    }
+  }, [messages]);
+
+  // Reset scroll flag when chat is minimized/closed
+  useEffect(() => {
+    if (isMinimized) {
+      hasScrolledToBottomRef.current = false;
+    }
+  }, [isMinimized]);
+
   // Poll for new messages every 3 seconds when chat is open (only if conversation exists)
   useEffect(() => {
     if (isMinimized || !conversationId) return;
@@ -86,15 +113,6 @@ export default function IndividualChat({
 
     return () => clearInterval(interval);
   }, [conversationId, isMinimized]);
-
-  // Auto-scroll to bottom when new messages arrive
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
 
   const loadMessages = async (silent = false) => {
     if (!conversationId) return; // Can't load messages without a conversation
@@ -156,6 +174,19 @@ export default function IndividualChat({
     }
   };
 
+  const handleCloseChat = () => {
+    if (messageInput.trim()) {
+      setShowCloseAlert(true);
+    } else {
+      onClose(id);
+    }
+  };
+
+  const confirmCloseChat = () => {
+    setShowCloseAlert(false);
+    onClose(id);
+  };
+
   const formatTime = (date: Date) => {
     return new Date(date).toLocaleTimeString("en-US", {
       hour: "numeric",
@@ -174,7 +205,7 @@ export default function IndividualChat({
       <div className="flex items-center justify-between px-3 py-2 border-b bg-white">
         <Link
           href={`/profile/${clerkId}`}
-          className={`flex items-center gap-2 flex-1 min-w-0 group cursor-pointer ${
+          className={`flex items-center gap-2 min-w-0 group cursor-pointer ${
             isMinimized ? "overflow-hidden" : ""
           }`}
         >
@@ -184,10 +215,8 @@ export default function IndividualChat({
               {avatar}
             </AvatarFallback>
           </Avatar>
-          <div className="w-full flex flex-col items-start min-w-0">
-            <div className="text-sm font-semibold line-clamp-1 group-hover:underline">
-              {name}
-            </div>
+          <div className="text-sm font-semibold line-clamp-1 group-hover:underline">
+            {name}
           </div>
         </Link>
         <div className="flex items-center gap-0.5">
@@ -208,7 +237,7 @@ export default function IndividualChat({
             variant="ghost"
             size="icon"
             className="h-7 w-7 text-muted-foreground hover:text-foreground"
-            onClick={() => onClose(id)}
+            onClick={handleCloseChat}
             aria-label="Close chat"
           >
             <X className="h-4 w-4" />
@@ -303,6 +332,25 @@ export default function IndividualChat({
           </div>
         </>
       )}
+
+      {/* Unsaved changes alert */}
+      <AlertDialog open={showCloseAlert} onOpenChange={setShowCloseAlert}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Unsaved Message</AlertDialogTitle>
+            <AlertDialogDescription>
+              You have an unsaved message. Are you sure you want to close this
+              chat? Your message will be lost.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmCloseChat}>
+              Close Chat
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

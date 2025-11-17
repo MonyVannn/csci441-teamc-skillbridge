@@ -321,6 +321,12 @@ export function ProjectDetail({ project, timeline }: ProjectDetailProps) {
                 ))}
             </div>
           </div>
+          <div className="flex items-center gap-2 mt-2">
+            <Badge variant={"outline"}>
+              {project.category.replaceAll("_", " ")}
+            </Badge>
+            <Badge variant={"outline"}>{project.scope}</Badge>
+          </div>
         </div>
         <div className="grid flex-1 auto-rows-min gap-6 overflow-y-auto pt-10">
           <h2 className="font-semibold text-xl text-gray-900">

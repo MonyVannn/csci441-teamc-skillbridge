@@ -5,8 +5,8 @@ import {
   ArrowRight,
   BookOpenText,
   BriefcaseBusiness,
-  FolderClock,
   GraduationCap,
+  Layers,
   Plus,
   ScanFace,
   ScrollText,
@@ -19,7 +19,6 @@ import { UserExperience } from "./setting/UserExperience";
 import { UserEducation } from "./setting/UserEducation";
 import { UserInformation } from "./setting/UserInformation";
 import { User } from "@prisma/client";
-import { OrganizationPostedProjects } from "./setting/OrganizationPostedProject";
 import { SearchBar } from "./browse/SearchBar";
 import { UserApplications } from "./setting/UserApplication";
 import { OrganizationApplication } from "./setting/OrganizationApplication";
@@ -139,12 +138,18 @@ const HeaderContent: React.FC<HeaderContentProps> = ({
                     labelIcon={<UserIcon className="w-4 h-4" />}
                   />
                   <UserButton.Action label="manageAccount" />
+                  {dbUser?.role === "BUSINESS_OWNER" && (
+                    <UserButton.Link
+                      href={`/profile/${dbUser?.clerkId}/postedprojects`}
+                      label="Manage Projects"
+                      labelIcon={<Layers className="w-4 h-4" />}
+                    />
+                  )}
                   <UserButton.Link
                     href="/docs"
                     label="Documentation"
                     labelIcon={<BookOpenText className="w-4 h-4" />}
                   />
-
                   <UserButton.Action label="signOut" />
                 </UserButton.MenuItems>
                 <UserButton.UserProfilePage
@@ -191,15 +196,6 @@ const HeaderContent: React.FC<HeaderContentProps> = ({
                     <UserApplications
                       onApplicationsSeen={handleApplicationsSeen}
                     />
-                  </UserButton.UserProfilePage>
-                )}
-                {dbUser?.role === "BUSINESS_OWNER" && (
-                  <UserButton.UserProfilePage
-                    label="Posted Projects"
-                    url="projects"
-                    labelIcon={<FolderClock className="w-4 h-4" />}
-                  >
-                    <OrganizationPostedProjects />
                   </UserButton.UserProfilePage>
                 )}
                 {dbUser?.role === "BUSINESS_OWNER" && (

@@ -461,7 +461,7 @@ export default function PostProjectPage() {
         </AlertDialogContent>
       </AlertDialog>
 
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen bg-muted/30 pb-12">
         <div className="container mx-auto px-4 py-8 max-w-5xl">
           {/* Header with Back Button */}
           <div className="mb-6">

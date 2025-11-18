@@ -129,7 +129,7 @@ export function ApplyButton({ project, user }: ApplyButtonProps) {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction asChild>
-              <Link href="/settings">Go to Settings</Link>
+              <Link href={`/profile/${user?.clerkId}`}>Go to Profile</Link>
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

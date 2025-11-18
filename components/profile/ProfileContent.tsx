@@ -1,9 +1,22 @@
+"use client";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Project, User } from "@prisma/client";
 
-import { Building2, Calendar, GraduationCap, FolderOpen } from "lucide-react";
+import {
+  Building2,
+  Calendar,
+  GraduationCap,
+  FolderOpen,
+  Pencil,
+} from "lucide-react";
 import Link from "next/link";
 import { Badge } from "../ui/badge";
+import { Button } from "../ui/button";
+import { EditAboutDialog } from "./edit/EditAboutDialog";
+import { AddExperienceDialog } from "./edit/AddExperienceDialog";
+import { AddEducationDialog } from "./edit/AddEducationDialog";
+import { EditLinksDialog } from "./edit/EditLinksDialog";
 
 // Check if a string has non-empty text and array with at least 1 element
 const hasText = (v?: string | null): v is string =>
@@ -12,9 +25,14 @@ const hasText = (v?: string | null): v is string =>
 interface ProfileContentProps {
   user: User;
   projects: Project[];
+  isOwnProfile: boolean;
 }
 
-export function ProfileContent({ user, projects }: ProfileContentProps) {
+export function ProfileContent({
+  user,
+  projects,
+  isOwnProfile,
+}: ProfileContentProps) {
   const formatDate = (date: Date) => {
     return date.toLocaleDateString("en-US", {
       month: "short",
@@ -48,6 +66,9 @@ export function ProfileContent({ user, projects }: ProfileContentProps) {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-lg">About</CardTitle>
+          {isOwnProfile && (
+            <EditAboutDialog currentBio={user.bio} currentIntro={user.intro} />
+          )}
         </CardHeader>
         <CardContent>
           {/* Show bio if available, otherwise fallback message */}
@@ -55,7 +76,9 @@ export function ProfileContent({ user, projects }: ProfileContentProps) {
             <p className="text-sm leading-relaxed text-pretty">{user.bio}</p>
           ) : (
             <p className="text-sm text-muted-foreground">
-              No information provided by the user.
+              {isOwnProfile
+                ? "Click 'Edit' to add information about yourself"
+                : "No information provided by the user."}
             </p>
           )}
         </CardContent>
@@ -67,6 +90,18 @@ export function ProfileContent({ user, projects }: ProfileContentProps) {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-lg">Experience</CardTitle>
+              {isOwnProfile && (
+                <div className="flex items-center">
+                  <AddExperienceDialog />
+                  {user.experiences.length > 0 && (
+                    <Link href={`/profile/${user.clerkId}/experience`}>
+                      <Button size="sm" variant="ghost">
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    </Link>
+                  )}
+                </div>
+              )}
             </CardHeader>
             <CardContent className="space-y-6">
               {user.experiences.length > 0 ? (
@@ -111,7 +146,9 @@ export function ProfileContent({ user, projects }: ProfileContentProps) {
               ) : (
                 <div>
                   <p className="text-sm text-muted-foreground">
-                    No experiences provided by the user.
+                    {isOwnProfile
+                      ? "Click 'Add' to add your work experience"
+                      : "No experiences provided by the user."}
                   </p>
                 </div>
               )}
@@ -121,6 +158,18 @@ export function ProfileContent({ user, projects }: ProfileContentProps) {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-lg">Education</CardTitle>
+              {isOwnProfile && (
+                <div className="flex items-center">
+                  <AddEducationDialog />
+                  {user.education.length > 0 && (
+                    <Link href={`/profile/${user.clerkId}/education`}>
+                      <Button size="sm" variant="ghost">
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    </Link>
+                  )}
+                </div>
+              )}
             </CardHeader>
             <CardContent className="space-y-6">
               {user.education.length > 0 ? (
@@ -160,7 +209,9 @@ export function ProfileContent({ user, projects }: ProfileContentProps) {
               ) : (
                 <div>
                   <p className="text-sm text-muted-foreground">
-                    No education provided by the user.
+                    {isOwnProfile
+                      ? "Click 'Add' to add your education"
+                      : "No education provided by the user."}
                   </p>
                 </div>
               )}
@@ -240,11 +291,12 @@ export function ProfileContent({ user, projects }: ProfileContentProps) {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-lg">Links</CardTitle>
+          {isOwnProfile && <EditLinksDialog currentLinks={user.socialLinks} />}
         </CardHeader>
         <CardContent className="space-y-6">
           {user.socialLinks.length > 0 ? (
-            user.socialLinks.map((link) => (
-              <div key={link.url}>
+            user.socialLinks.map((link, index) => (
+              <div key={`${link.type}-${index}`}>
                 <p className="text-sm font-semibold">{link.type}</p>
                 <Link
                   href={link.url}
@@ -258,7 +310,11 @@ export function ProfileContent({ user, projects }: ProfileContentProps) {
             ))
           ) : (
             <div>
-              <p className="text-sm text-muted-foreground">No link provided.</p>
+              <p className="text-sm text-muted-foreground">
+                {isOwnProfile
+                  ? "Click 'Edit Links' to add your social media and website links"
+                  : "No links provided."}
+              </p>
             </div>
           )}
         </CardContent>

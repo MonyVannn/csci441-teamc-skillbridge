@@ -20,8 +20,6 @@ import { UserEducation } from "./setting/UserEducation";
 import { UserInformation } from "./setting/UserInformation";
 import { User } from "@prisma/client";
 import { SearchBar } from "./browse/SearchBar";
-import { UserApplications } from "./setting/UserApplication";
-import { OrganizationApplication } from "./setting/OrganizationApplication";
 import { getUserByClerkId } from "@/lib/actions/user";
 import { getUnseenApplicationCount } from "@/lib/actions/application";
 
@@ -60,10 +58,6 @@ const HeaderContent: React.FC<HeaderContentProps> = ({
         );
     }
   }, [dbUser?.role]);
-
-  const handleApplicationsSeen = useCallback(() => {
-    setUnseenApplicationCount(0);
-  }, []);
 
   if (
     pathname.startsWith("/sign-in") ||

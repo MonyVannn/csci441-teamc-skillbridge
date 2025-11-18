@@ -140,6 +140,8 @@ export async function createApplication(
   if (!user) throw new Error("Not authenticated.");
 
   try {
+    // Fetch user with all necessary fields for profile completeness check
+    // Note: education, skills, etc. are embedded types in MongoDB and are included by default
     const existingUser = await prisma.user.findFirst({
       where: { clerkId: user.id },
     });
@@ -149,6 +151,7 @@ export async function createApplication(
       throw new Error("User must be a student.");
 
     // Check if user has complete profile
+    // This checks: firstName, lastName, bio, intro, skills, and education
     const profileCheck = hasCompleteProfile(existingUser);
     if (!profileCheck.isComplete) {
       const missingFieldsList = profileCheck.missingFields.join(", ");

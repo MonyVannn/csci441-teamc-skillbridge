@@ -43,7 +43,12 @@ export function hasCompleteProfile(user: User | null): {
     missingFields.push("Skills");
   }
 
-  if (!user.education || user.education.length === 0) {
+  // Handle education - check for undefined, null, or empty array
+  if (
+    !user.education ||
+    !Array.isArray(user.education) ||
+    user.education.length === 0
+  ) {
     missingFields.push("Education");
   }
 

@@ -23,6 +23,7 @@ import {
 import { createApplication, isApplied } from "@/lib/actions/application";
 import { useEffect, useState } from "react";
 import { Label } from "../ui/label";
+import { Textarea } from "../ui/textarea";
 import { toast } from "sonner";
 import { LoaderCircle, ShieldAlert } from "lucide-react";
 import { User } from "@prisma/client";
@@ -153,7 +154,8 @@ export function ApplyButton({ project, user }: ApplyButtonProps) {
           </DialogHeader>
           <div className="flex flex-col space-y-2">
             <Label htmlFor="coverLetter">Cover Letter</Label>
-            <textarea
+            <Textarea
+              id="coverLetter"
               value={formData.coverLetter}
               onChange={(e) =>
                 setFormData((prev) => ({
@@ -162,7 +164,7 @@ export function ApplyButton({ project, user }: ApplyButtonProps) {
                 }))
               }
               disabled={isSubmitting}
-              className="col-span-3 min-h-[200px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              className="min-h-[200px]"
               placeholder="Write your cover letter here..."
             />
           </div>

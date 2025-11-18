@@ -3,6 +3,7 @@
 import { currentUser } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import prisma from "../prisma";
+import { hasCompleteProfile } from "../utils";
 
 export async function getApplicationsByUserId() {
   const user = await currentUser();
@@ -147,6 +148,15 @@ export async function createApplication(
     if (existingUser.role !== "USER")
       throw new Error("User must be a student.");
 
+    // Check if user has complete profile
+    const profileCheck = hasCompleteProfile(existingUser);
+    if (!profileCheck.isComplete) {
+      const missingFieldsList = profileCheck.missingFields.join(", ");
+      throw new Error(
+        `Please complete your profile before applying. Missing: ${missingFieldsList}`
+      );
+    }
+
     const project = await prisma.project.findUnique({
       where: { id: projectId },
     });
@@ -163,9 +173,13 @@ export async function createApplication(
       },
     });
 
+    revalidatePath("/");
     return application;
   } catch (e) {
     console.error("Error creating an application, ", e);
+    if (e instanceof Error) {
+      throw e; // Re-throw the original error to preserve the message
+    }
     throw new Error("Failed to create an application");
   }
 }
@@ -209,7 +223,8 @@ export async function approveApplication(applicationId: string) {
     }
 
     // Use project from the application include instead of fetching again
-    if (application.project.status !== "OPEN") throw new Error("Unavailable project.");
+    if (application.project.status !== "OPEN")
+      throw new Error("Unavailable project.");
 
     const updatedApplication = await prisma.application.update({
       where: {

@@ -10,22 +10,36 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { createApplication, isApplied } from "@/lib/actions/application";
 import { useEffect, useState } from "react";
 import { Label } from "../ui/label";
 import { toast } from "sonner";
-import { LoaderCircle } from "lucide-react";
+import { LoaderCircle, ShieldAlert } from "lucide-react";
+import { User } from "@prisma/client";
+import { hasCompleteProfile } from "@/lib/utils";
+import Link from "next/link";
 
 interface ApplyButtonProps {
   project: AvailableProject;
+  user?: User | null;
 }
 
-export function ApplyButton({ project }: ApplyButtonProps) {
+export function ApplyButton({ project, user }: ApplyButtonProps) {
   const [isAppliedButton, setIsAppliedButton] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showIncompleteProfileDialog, setShowIncompleteProfileDialog] =
+    useState(false);
   const [formData, setFormData] = useState({
     coverLetter: "",
   });
@@ -39,6 +53,16 @@ export function ApplyButton({ project }: ApplyButtonProps) {
 
     checkApplied();
   }, [project.id]);
+
+  const handleApplyClick = () => {
+    // Check if user has complete profile before opening the dialog
+    const profileCheck = hasCompleteProfile(user || null);
+    if (!profileCheck.isComplete) {
+      setShowIncompleteProfileDialog(true);
+      return;
+    }
+    setOpenDialog(true);
+  };
 
   const handleApply = async () => {
     if (!formData.coverLetter) {
@@ -57,64 +81,114 @@ export function ApplyButton({ project }: ApplyButtonProps) {
       toast.success("Application submitted successfully!");
     } catch (error) {
       console.error("Failed to submit application:", error);
-      toast.error("Failed to submit application. Please try again.");
+      const errorMessage =
+        error instanceof Error ? error.message : "Please try again.";
+      toast.error(`Failed to submit application. ${errorMessage}`);
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  const profileCheck = hasCompleteProfile(user || null);
+
   return (
-    <Dialog open={openDialog} onOpenChange={setOpenDialog}>
-      <DialogTrigger
-        className="bg-[#695DCC] text-white p-2 hover:bg-[#695DCC]/90 inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm cursor-pointer font-semibold transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive"
-        disabled={!isAppliedButton}
+    <>
+      {/* Incomplete Profile Alert Dialog */}
+      <AlertDialog
+        open={showIncompleteProfileDialog}
+        onOpenChange={setShowIncompleteProfileDialog}
       >
-        {isAppliedButton ? "Apply Now" : "Applied"}
-      </DialogTrigger>
-      <DialogContent className="shadow-2xl">
-        <DialogHeader>
-          <DialogTitle>Applying to {project.title}</DialogTitle>
-          <DialogDescription>
-            This action will submit your application and notify the project
-            owner.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="flex flex-col space-y-2">
-          <Label htmlFor="coverLetter">Cover Letter</Label>
-          <textarea
-            value={formData.coverLetter}
-            onChange={(e) =>
-              setFormData((prev) => ({
-                ...prev,
-                coverLetter: e.target.value,
-              }))
-            }
-            disabled={isSubmitting}
-            className="col-span-3 min-h-[200px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-            placeholder="Write your cover letter here..."
-          />
-        </div>
-        <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="secondary" disabled={isSubmitting}>
-              Cancel
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <ShieldAlert className="h-5 w-5 text-amber-500" />
+              Complete Your Profile
+            </AlertDialogTitle>
+            <div className="space-y-3">
+              <p>
+                To apply for projects, you need to complete your profile first.
+                This helps project owners understand your qualifications better.
+              </p>
+              <div>
+                <p className="font-semibold text-foreground mb-2">
+                  Missing Information:
+                </p>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  {profileCheck.missingFields.map((field) => (
+                    <li key={field}>{field}</li>
+                  ))}
+                </ul>
+              </div>
+              <p className="text-sm">
+                Please update your profile in the settings page to include all
+                required information.
+              </p>
+            </div>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction asChild>
+              <Link href="/settings">Go to Settings</Link>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Application Dialog */}
+      <Dialog open={openDialog} onOpenChange={setOpenDialog}>
+        <Button
+          onClick={handleApplyClick}
+          className="bg-[#695DCC] text-white p-2 hover:bg-[#695DCC]/90 inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm cursor-pointer font-semibold transition-all disabled:pointer-events-none disabled:opacity-50"
+          disabled={!isAppliedButton}
+        >
+          {isAppliedButton ? "Apply Now" : "Applied"}
+        </Button>
+        <DialogContent className="shadow-2xl">
+          <DialogHeader>
+            <DialogTitle>Applying to {project.title}</DialogTitle>
+            <DialogDescription>
+              This action will submit your application and notify the project
+              owner.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col space-y-2">
+            <Label htmlFor="coverLetter">Cover Letter</Label>
+            <textarea
+              value={formData.coverLetter}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  coverLetter: e.target.value,
+                }))
+              }
+              disabled={isSubmitting}
+              className="col-span-3 min-h-[200px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              placeholder="Write your cover letter here..."
+            />
+          </div>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="secondary" disabled={isSubmitting}>
+                Cancel
+              </Button>
+            </DialogClose>
+            <Button
+              onClick={handleApply}
+              className="bg-[#695DCC]"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <>
+                  <LoaderCircle className="h-4 w-4 mr-2 animate-spin" />
+                  Submitting...
+                </>
+              ) : (
+                "Submit Application"
+              )}
             </Button>
-          </DialogClose>
-          <Button
-            onClick={handleApply}
-            className="bg-[#695DCC]"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? (
-              <>
-                <LoaderCircle className="h-4 w-4 mr-2 animate-spin" />
-                Submitting...
-              </>
-            ) : (
-              "Submit Application"
-            )}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

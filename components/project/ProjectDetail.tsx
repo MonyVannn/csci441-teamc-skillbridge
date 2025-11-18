@@ -54,9 +54,15 @@ import { toast } from "sonner";
 import Link from "next/link";
 
 // Lazy load the EditProjectModal as it's only needed when editing
-const EditProjectModal = dynamic(() => import("./EditProjectModal").then(mod => ({ default: mod.EditProjectModal })), {
-  ssr: false,
-});
+const EditProjectModal = dynamic(
+  () =>
+    import("./EditProjectModal").then((mod) => ({
+      default: mod.EditProjectModal,
+    })),
+  {
+    ssr: false,
+  }
+);
 
 interface ProjectDetailProps {
   project: AvailableProject;
@@ -258,7 +264,9 @@ export function ProjectDetail({ project, timeline }: ProjectDetailProps) {
                   // Loading skeleton for Apply button
                   <div className="h-10 w-32 bg-gray-200 animate-pulse rounded" />
                 ) : (
-                  dbUser.role === "USER" && <ApplyButton project={project} />
+                  dbUser.role === "USER" && (
+                    <ApplyButton project={project} user={dbUser} />
+                  )
                 ))}
             </div>
           </div>
@@ -323,7 +331,9 @@ export function ProjectDetail({ project, timeline }: ProjectDetailProps) {
                   // Loading skeleton for Apply button
                   <div className="h-10 w-32 bg-gray-200 animate-pulse rounded" />
                 ) : (
-                  dbUser.role === "USER" && <ApplyButton project={project} />
+                  dbUser.role === "USER" && (
+                    <ApplyButton project={project} user={dbUser} />
+                  )
                 ))}
             </div>
           </div>

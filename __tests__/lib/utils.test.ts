@@ -1,4 +1,5 @@
-import { cn, formatDate } from "@/lib/utils";
+import { cn, formatDate, hasCompleteProfile } from "@/lib/utils";
+import { User } from "@prisma/client";
 
 describe("cn utility function", () => {
   describe("basic functionality", () => {
@@ -223,6 +224,238 @@ describe("formatDate utility function", () => {
       const invalidDate = new Date("invalid");
       const result = formatDate(invalidDate);
       expect(result).toContain("NaN");
+    });
+  });
+});
+
+describe("hasCompleteProfile utility function", () => {
+  // Helper to create a complete user object
+  const createCompleteUser = (): User => ({
+    id: "user123",
+    clerkId: "clerk123",
+    email: "test@example.com",
+    firstName: "John",
+    lastName: "Doe",
+    bio: "A passionate developer",
+    intro: "Hello, I'm John",
+    address: "123 Main St",
+    skills: ["JavaScript", "TypeScript"],
+    imageUrl: "https://example.com/image.jpg",
+    role: "USER" as const,
+    occupied: false,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    socialLinks: [],
+    experiences: [],
+    education: [
+      {
+        id: "edu1",
+        degree: "Computer Science",
+        institution: "University",
+        startDate: new Date(),
+        endDate: null,
+        description: null,
+      },
+    ],
+    previousProjects: [],
+    earnedSkillBadges: [],
+    earnedSpecializationBadges: [],
+    earnedEngagementBadges: [],
+    totalHoursContributed: 0,
+    projectsCompleted: 0,
+    industriesExperienced: [],
+    conversationIds: [],
+  });
+
+  describe("complete profiles", () => {
+    it("should return isComplete: true for a complete user profile", () => {
+      const user = createCompleteUser();
+      const result = hasCompleteProfile(user);
+
+      expect(result.isComplete).toBe(true);
+      expect(result.missingFields).toEqual([]);
+    });
+  });
+
+  describe("null or undefined user", () => {
+    it("should handle null user", () => {
+      const result = hasCompleteProfile(null);
+
+      expect(result.isComplete).toBe(false);
+      expect(result.missingFields).toEqual(["User not found"]);
+    });
+  });
+
+  describe("missing firstName", () => {
+    it("should detect missing firstName", () => {
+      const user = createCompleteUser();
+      user.firstName = null;
+      const result = hasCompleteProfile(user);
+
+      expect(result.isComplete).toBe(false);
+      expect(result.missingFields).toContain("First Name");
+    });
+
+    it("should detect empty firstName", () => {
+      const user = createCompleteUser();
+      user.firstName = "   ";
+      const result = hasCompleteProfile(user);
+
+      expect(result.isComplete).toBe(false);
+      expect(result.missingFields).toContain("First Name");
+    });
+  });
+
+  describe("missing lastName", () => {
+    it("should detect missing lastName", () => {
+      const user = createCompleteUser();
+      user.lastName = null;
+      const result = hasCompleteProfile(user);
+
+      expect(result.isComplete).toBe(false);
+      expect(result.missingFields).toContain("Last Name");
+    });
+
+    it("should detect empty lastName", () => {
+      const user = createCompleteUser();
+      user.lastName = "";
+      const result = hasCompleteProfile(user);
+
+      expect(result.isComplete).toBe(false);
+      expect(result.missingFields).toContain("Last Name");
+    });
+  });
+
+  describe("missing bio", () => {
+    it("should detect missing bio", () => {
+      const user = createCompleteUser();
+      user.bio = null;
+      const result = hasCompleteProfile(user);
+
+      expect(result.isComplete).toBe(false);
+      expect(result.missingFields).toContain("Bio");
+    });
+
+    it("should detect empty bio", () => {
+      const user = createCompleteUser();
+      user.bio = "";
+      const result = hasCompleteProfile(user);
+
+      expect(result.isComplete).toBe(false);
+      expect(result.missingFields).toContain("Bio");
+    });
+  });
+
+  describe("missing intro", () => {
+    it("should detect missing intro", () => {
+      const user = createCompleteUser();
+      user.intro = null;
+      const result = hasCompleteProfile(user);
+
+      expect(result.isComplete).toBe(false);
+      expect(result.missingFields).toContain("Professional Introduction");
+    });
+
+    it("should detect empty intro", () => {
+      const user = createCompleteUser();
+      user.intro = "  ";
+      const result = hasCompleteProfile(user);
+
+      expect(result.isComplete).toBe(false);
+      expect(result.missingFields).toContain("Professional Introduction");
+    });
+  });
+
+  describe("missing skills", () => {
+    it("should detect empty skills array", () => {
+      const user = createCompleteUser();
+      user.skills = [];
+      const result = hasCompleteProfile(user);
+
+      expect(result.isComplete).toBe(false);
+      expect(result.missingFields).toContain("Skills");
+    });
+  });
+
+  describe("missing education", () => {
+    it("should detect empty education array", () => {
+      const user = createCompleteUser();
+      user.education = [];
+      const result = hasCompleteProfile(user);
+
+      expect(result.isComplete).toBe(false);
+      expect(result.missingFields).toContain("Education");
+    });
+
+    it("should handle undefined education", () => {
+      const user = createCompleteUser();
+      // @ts-expect-error - Testing edge case where education might be undefined
+      user.education = undefined;
+      const result = hasCompleteProfile(user);
+
+      expect(result.isComplete).toBe(false);
+      expect(result.missingFields).toContain("Education");
+    });
+
+    it("should handle null education", () => {
+      const user = createCompleteUser();
+      // @ts-expect-error - Testing edge case where education might be null
+      user.education = null;
+      const result = hasCompleteProfile(user);
+
+      expect(result.isComplete).toBe(false);
+      expect(result.missingFields).toContain("Education");
+    });
+
+    it("should handle non-array education", () => {
+      const user = createCompleteUser();
+      // @ts-expect-error - Testing edge case where education might not be an array
+      user.education = "not an array";
+      const result = hasCompleteProfile(user);
+
+      expect(result.isComplete).toBe(false);
+      expect(result.missingFields).toContain("Education");
+    });
+  });
+
+  describe("multiple missing fields", () => {
+    it("should detect multiple missing fields", () => {
+      const user = createCompleteUser();
+      user.firstName = null;
+      user.lastName = "";
+      user.bio = null;
+      user.education = [];
+
+      const result = hasCompleteProfile(user);
+
+      expect(result.isComplete).toBe(false);
+      expect(result.missingFields).toContain("First Name");
+      expect(result.missingFields).toContain("Last Name");
+      expect(result.missingFields).toContain("Bio");
+      expect(result.missingFields).toContain("Education");
+      expect(result.missingFields.length).toBe(4);
+    });
+
+    it("should detect all missing fields", () => {
+      const user = createCompleteUser();
+      user.firstName = null;
+      user.lastName = null;
+      user.bio = null;
+      user.intro = null;
+      user.skills = [];
+      user.education = [];
+
+      const result = hasCompleteProfile(user);
+
+      expect(result.isComplete).toBe(false);
+      expect(result.missingFields).toEqual([
+        "First Name",
+        "Last Name",
+        "Bio",
+        "Professional Introduction",
+        "Skills",
+        "Education",
+      ]);
     });
   });
 });

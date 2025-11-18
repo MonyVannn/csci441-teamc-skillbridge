@@ -291,7 +291,7 @@ export function ProjectCard({
                   </div>
                   {isAuthenticated && user?.role === "USER" && (
                     <div className="w-full sm:w-auto">
-                      <ApplyButton project={project} />
+                      <ApplyButton project={project} user={user} />
                     </div>
                   )}
                 </div>

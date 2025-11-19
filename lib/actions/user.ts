@@ -356,7 +356,7 @@ export async function deleteEducation(educationId: string) {
 }
 
 // Bio and Intro
-export async function updateBioAndIntro(bio: string, intro: string) {
+export async function updateBio(bio: string) {
   const user = await currentUser();
 
   if (!user) throw new Error("Not authenticated.");
@@ -372,7 +372,6 @@ export async function updateBioAndIntro(bio: string, intro: string) {
       where: { clerkId: user.id },
       data: {
         bio: bio,
-        intro: intro,
       },
     });
 
@@ -597,6 +596,16 @@ export async function createSocialLink(type: string, url: string) {
 
     if (!existingUser) throw new Error("User not found.");
 
+    // Check if URL already exists
+    const urlExists = existingUser.socialLinks.some((link) => link.url === url);
+
+    if (urlExists) {
+      return {
+        success: false,
+        error: "This URL already exists in your social links.",
+      };
+    }
+
     // Add new social link to existing links
     await prisma.user.update({
       where: { clerkId: user.id },
@@ -614,7 +623,7 @@ export async function createSocialLink(type: string, url: string) {
     return { success: true };
   } catch (e) {
     console.error("Error creating social link: ", e);
-    throw new Error("Failed to create social link.");
+    return { success: false, error: "Failed to create social link." };
   }
 }
 
@@ -632,11 +641,16 @@ export async function updateSocialLinks(
 
     if (!existingUser) throw new Error("User not found.");
 
+    // Ensure URLs are unique as a safety measure (frontend should already handle this)
+    const uniqueLinks = links.filter(
+      (link, index, self) => index === self.findIndex((l) => l.url === link.url)
+    );
+
     // Replace all social links
     await prisma.user.update({
       where: { clerkId: user.id },
       data: {
-        socialLinks: links,
+        socialLinks: uniqueLinks,
       },
     });
 
@@ -644,7 +658,7 @@ export async function updateSocialLinks(
     return { success: true };
   } catch (e) {
     console.error("Error updating social links: ", e);
-    throw new Error("Failed to update social links.");
+    return { success: false, error: "Failed to update social links." };
   }
 }
 
@@ -665,6 +679,11 @@ export async function deleteSocialLink(linkUrl: string) {
       (link) => link.url !== linkUrl
     );
 
+    // Check if link was actually found and removed
+    if (updatedLinks.length === existingUser.socialLinks.length) {
+      return { success: false, error: "Social link not found." };
+    }
+
     await prisma.user.update({
       where: { clerkId: user.id },
       data: {
@@ -676,6 +695,6 @@ export async function deleteSocialLink(linkUrl: string) {
     return { success: true };
   } catch (e) {
     console.error("Error deleting social link: ", e);
-    throw new Error("Failed to delete social link.");
+    return { success: false, error: "Failed to delete social link." };
   }
 }

@@ -66,9 +66,7 @@ export function ProfileContent({
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-lg">About</CardTitle>
-          {isOwnProfile && (
-            <EditAboutDialog currentBio={user.bio} currentIntro={user.intro} />
-          )}
+          {isOwnProfile && <EditAboutDialog currentBio={user.bio} />}
         </CardHeader>
         <CardContent>
           {/* Show bio if available, otherwise fallback message */}
@@ -295,8 +293,8 @@ export function ProfileContent({
         </CardHeader>
         <CardContent className="space-y-6">
           {user.socialLinks.length > 0 ? (
-            user.socialLinks.map((link, index) => (
-              <div key={`${link.type}-${index}`}>
+            user.socialLinks.map((link) => (
+              <div key={link.url}>
                 <p className="text-sm font-semibold">{link.type}</p>
                 <Link
                   href={link.url}

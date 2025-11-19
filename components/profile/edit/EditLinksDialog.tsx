@@ -115,21 +115,32 @@ export function EditLinksDialog({ currentLinks }: EditLinksDialogProps) {
       return;
     }
 
-    console.log("Adding link:", { type: newLinkType, url: newLinkUrl });
+    // Check for duplicate URLs in the current form
+    const currentLinks = form.getValues("links");
+    const isDuplicate = currentLinks.some((link) => link.url === newLinkUrl);
+
+    if (isDuplicate) {
+      toast.error("This URL already exists in your social links");
+      return;
+    }
+
     append({ type: newLinkType, url: newLinkUrl });
-    console.log("Current links after append:", form.getValues("links"));
     form.setValue("newLinkType", "LinkedIn");
     form.setValue("newLinkUrl", "");
   };
 
   const onSubmit = async (values: LinksFormValues) => {
     try {
-      console.log("Form values on submit:", values);
-      console.log("Links array:", values.links);
-      console.log("Number of links:", values.links.length);
-      await updateSocialLinks(values.links);
-      toast.success("Links updated successfully!");
-      setOpen(false);
+      const result = await updateSocialLinks(values.links);
+
+      if (result.success) {
+        toast.success("Links updated successfully!");
+        setOpen(false);
+      } else {
+        toast.error(
+          result.error || "Failed to update links. Please try again."
+        );
+      }
     } catch (error) {
       console.error("Failed to update links:", error);
       toast.error("Failed to update links. Please try again.");

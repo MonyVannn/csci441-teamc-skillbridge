@@ -270,7 +270,7 @@ export function EditEducationItemDialog({
                     </FormItem>
                   )}
                 />
-              </div>{" "}
+              </div>
               <FormField
                 control={form.control}
                 name="isCurrentlyStudying"

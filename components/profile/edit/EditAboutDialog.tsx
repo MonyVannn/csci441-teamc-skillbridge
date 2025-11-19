@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import { Pencil, Loader2 } from "lucide-react";
-import { updateBioAndIntro } from "@/lib/actions/user";
+import { updateBio } from "@/lib/actions/user";
 import { toast } from "sonner";
 
 const aboutSchema = z.object({
@@ -33,13 +33,9 @@ const aboutSchema = z.object({
 
 interface EditAboutDialogProps {
   currentBio: string | null;
-  currentIntro: string | null;
 }
 
-export function EditAboutDialog({
-  currentBio,
-  currentIntro,
-}: EditAboutDialogProps) {
+export function EditAboutDialog({ currentBio }: EditAboutDialogProps) {
   const [open, setOpen] = useState(false);
 
   const form = useForm<z.infer<typeof aboutSchema>>({
@@ -51,7 +47,7 @@ export function EditAboutDialog({
 
   const onSubmit = async (values: z.infer<typeof aboutSchema>) => {
     try {
-      await updateBioAndIntro(values.bio || "", currentIntro || "");
+      await updateBio(values.bio || "");
       toast.success("Profile updated successfully!");
       setOpen(false);
     } catch (error) {

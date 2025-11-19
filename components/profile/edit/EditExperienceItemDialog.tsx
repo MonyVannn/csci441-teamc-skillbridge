@@ -269,7 +269,7 @@ export function EditExperienceItemDialog({
                     </FormItem>
                   )}
                 />
-              </div>{" "}
+              </div>
               <FormField
                 control={form.control}
                 name="isCurrentRole"

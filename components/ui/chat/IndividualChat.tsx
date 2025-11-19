@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { X, Minus, ChevronUp, SendHorizonal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -74,6 +74,25 @@ export default function IndividualChat({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const hasScrolledToBottomRef = useRef(false);
 
+  // Define loadMessages with useCallback to prevent unnecessary re-renders
+  const loadMessages = useCallback(
+    async (silent = false) => {
+      if (!conversationId) return; // Can't load messages without a conversation
+
+      if (!silent) setIsLoading(true);
+
+      try {
+        const fetchedMessages = await getMessages(conversationId);
+        setMessages(fetchedMessages);
+      } catch (error) {
+        console.error("Error loading messages:", error);
+      } finally {
+        if (!silent) setIsLoading(false);
+      }
+    },
+    [conversationId]
+  );
+
   // Load messages when chat opens or is expanded (only if conversation exists)
   useEffect(() => {
     if (!isMinimized && conversationId) {
@@ -86,7 +105,7 @@ export default function IndividualChat({
         }
       });
     }
-  }, [conversationId, isMinimized]);
+  }, [conversationId, isMinimized, loadMessages, onMessagesRead]);
 
   // Scroll to bottom when messages first load
   useEffect(() => {
@@ -112,22 +131,7 @@ export default function IndividualChat({
     }, 3000);
 
     return () => clearInterval(interval);
-  }, [conversationId, isMinimized]);
-
-  const loadMessages = async (silent = false) => {
-    if (!conversationId) return; // Can't load messages without a conversation
-
-    if (!silent) setIsLoading(true);
-
-    try {
-      const fetchedMessages = await getMessages(conversationId);
-      setMessages(fetchedMessages);
-    } catch (error) {
-      console.error("Error loading messages:", error);
-    } finally {
-      if (!silent) setIsLoading(false);
-    }
-  };
+  }, [conversationId, isMinimized, loadMessages]);
 
   const handleSendMessage = async () => {
     if (!messageInput.trim() || isSending) return;

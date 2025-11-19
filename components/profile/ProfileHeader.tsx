@@ -4,6 +4,7 @@ import { User } from "@prisma/client";
 import { MapPin, Award, Clock, Briefcase } from "lucide-react";
 import Image from "next/image";
 import StartChatButton from "../ui/chat/StartChatButton";
+import { EditHeaderDialog } from "./edit/EditHeaderDialog";
 
 //helper checks
 const hasText = (v?: string | null) =>
@@ -15,9 +16,10 @@ function hasArray<T>(v?: readonly T[] | null): v is readonly T[] {
 
 interface ProfileHeaderProps {
   user: User;
+  isOwnProfile: boolean;
 }
 
-export function ProfileHeader({ user }: ProfileHeaderProps) {
+export function ProfileHeader({ user, isOwnProfile }: ProfileHeaderProps) {
   return (
     <div className="mx-4 mt-4 mb-6 overflow-hidden">
       {/* Header Background */}
@@ -48,17 +50,29 @@ export function ProfileHeader({ user }: ProfileHeaderProps) {
               <h1 className="text-3xl font-bold text-balance capitalize">
                 {user.firstName} {user.lastName}
               </h1>
-              <StartChatButton
-                userId={user.id}
-                clerkId={user.clerkId}
-                userName={`${user.firstName} ${user.lastName}`}
-                userAvatar={user.imageUrl || ""}
-                className="rounded-full bg-[#695dcc] hover:bg-[#695dcc]/80 text-white font-medium"
-              />
+              {!isOwnProfile ? (
+                <StartChatButton
+                  userId={user.id}
+                  clerkId={user.clerkId}
+                  userName={`${user.firstName} ${user.lastName}`}
+                  userAvatar={user.imageUrl || ""}
+                  className="rounded-full bg-[#695dcc] hover:bg-[#695dcc]/80 text-white font-medium"
+                />
+              ) : (
+                <EditHeaderDialog
+                  currentFirstName={user.firstName}
+                  currentLastName={user.lastName}
+                  currentIntro={user.intro}
+                  currentAddress={user.address}
+                />
+              )}
             </div>
 
             <p className="text-xl text-muted-foreground mb-3 text-pretty">
-              {user.intro}
+              {user.intro ||
+                (isOwnProfile
+                  ? "Add your professional intro"
+                  : "No intro provided")}
             </p>
 
             {/* Address - hide if empty */}

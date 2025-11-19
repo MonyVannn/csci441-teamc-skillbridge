@@ -34,13 +34,7 @@ export function ProfileSidebar({ peopleYouMayKnow }: ProfileSidebarProps) {
           <Separator className="my-5" />
           <div className="flex items-center justify-between">
             <span className="text-sm font-semibold">Public profile & URL</span>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-auto p-0 text-muted-foreground"
-            >
-              <Globe className="h-3 w-3" />
-            </Button>
+            <Globe className="h-4 w-4 text-muted-foreground" />
           </div>
           <div>
             <p className="text-sm text-muted-foreground break-all">

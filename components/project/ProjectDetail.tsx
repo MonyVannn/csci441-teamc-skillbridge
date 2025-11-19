@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import dynamic from "next/dynamic";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Badge } from "../ui/badge";
 import { AvailableProject, TimelineEntry } from "@/type";

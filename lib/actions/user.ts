@@ -175,6 +175,8 @@ export async function createExperience(experienceData: Omit<Experience, "id">) {
       },
     });
 
+    revalidatePath(`/profile/${user.id}`);
+
     return updatedUser;
   } catch (e) {
     console.error("Error adding an experience: ", e);
@@ -205,6 +207,7 @@ export async function editExperience(experienceData: Experience) {
       },
     });
 
+    revalidatePath(`/profile/${user.id}`);
     return updatedExperience;
   } catch (e) {
     console.error("Error editing user experience, ", e);
@@ -233,6 +236,7 @@ export async function deleteExperience(experienceId: string) {
         },
       },
     });
+    revalidatePath(`/profile/${user.id}`);
     return updatedUser;
   } catch (e) {
     console.error("Error deleting user experience, ", e);
@@ -283,6 +287,8 @@ export async function createEducation(educationData: Omit<Education, "id">) {
       },
     });
 
+    revalidatePath(`/profile/${user.id}`);
+
     return updatedUser;
   } catch (e) {
     console.error("Error adding an education: ", e);
@@ -313,6 +319,7 @@ export async function editEducation(educationData: Education) {
       },
     });
 
+    revalidatePath(`/profile/${user.id}`);
     return updatedEducation;
   } catch (e) {
     console.error("Error editing user education, ", e);
@@ -339,10 +346,76 @@ export async function deleteEducation(educationId: string) {
         },
       },
     });
+
+    revalidatePath(`/profile/${user.id}`);
     return updatedUser;
   } catch (e) {
     console.error("Error deleting user education, ", e);
     throw new Error("Failed to delete user education.");
+  }
+}
+
+// Bio and Intro
+export async function updateBio(bio: string) {
+  const user = await currentUser();
+
+  if (!user) throw new Error("Not authenticated.");
+
+  try {
+    const existingUser = await prisma.user.findFirst({
+      where: { clerkId: user.id },
+    });
+
+    if (!existingUser) throw new Error("User not found.");
+
+    await prisma.user.update({
+      where: { clerkId: user.id },
+      data: {
+        bio: bio,
+      },
+    });
+
+    revalidatePath(`/profile/${user.id}`);
+    return { success: true };
+  } catch (e) {
+    console.error("Error updating bio and intro: ", e);
+    throw new Error("Failed to update bio and intro.");
+  }
+}
+
+// Update Header (First Name, Last Name, and Intro)
+export async function updateUserHeader(
+  firstName: string,
+  lastName: string,
+  intro: string,
+  address: string
+) {
+  const user = await currentUser();
+
+  if (!user) throw new Error("Not authenticated.");
+
+  try {
+    const existingUser = await prisma.user.findFirst({
+      where: { clerkId: user.id },
+    });
+
+    if (!existingUser) throw new Error("User not found.");
+
+    await prisma.user.update({
+      where: { clerkId: user.id },
+      data: {
+        firstName: firstName,
+        lastName: lastName,
+        intro: intro,
+        address: address,
+      },
+    });
+
+    revalidatePath(`/profile/${user.id}`);
+    return { success: true };
+  } catch (e) {
+    console.error("Error updating user header: ", e);
+    throw new Error("Failed to update user header.");
   }
 }
 
@@ -507,5 +580,121 @@ export async function getUsersRecommendation() {
   } catch (e) {
     console.error("Error getting user recommendation ", e);
     throw new Error("Failed to get user recommendation.");
+  }
+}
+
+// Social Links Management
+export async function createSocialLink(type: string, url: string) {
+  const user = await currentUser();
+
+  if (!user) throw new Error("Not authenticated.");
+
+  try {
+    const existingUser = await prisma.user.findFirst({
+      where: { clerkId: user.id },
+    });
+
+    if (!existingUser) throw new Error("User not found.");
+
+    // Check if URL already exists
+    const urlExists = existingUser.socialLinks.some((link) => link.url === url);
+
+    if (urlExists) {
+      return {
+        success: false,
+        error: "This URL already exists in your social links.",
+      };
+    }
+
+    // Add new social link to existing links
+    await prisma.user.update({
+      where: { clerkId: user.id },
+      data: {
+        socialLinks: {
+          push: {
+            type: type,
+            url: url,
+          },
+        },
+      },
+    });
+
+    revalidatePath(`/profile/${user.id}`);
+    return { success: true };
+  } catch (e) {
+    console.error("Error creating social link: ", e);
+    return { success: false, error: "Failed to create social link." };
+  }
+}
+
+export async function updateSocialLinks(
+  links: Array<{ type: string; url: string }>
+) {
+  const user = await currentUser();
+
+  if (!user) throw new Error("Not authenticated.");
+
+  try {
+    const existingUser = await prisma.user.findFirst({
+      where: { clerkId: user.id },
+    });
+
+    if (!existingUser) throw new Error("User not found.");
+
+    // Ensure URLs are unique as a safety measure (frontend should already handle this)
+    const uniqueLinks = links.filter(
+      (link, index, self) => index === self.findIndex((l) => l.url === link.url)
+    );
+
+    // Replace all social links
+    await prisma.user.update({
+      where: { clerkId: user.id },
+      data: {
+        socialLinks: uniqueLinks,
+      },
+    });
+
+    revalidatePath(`/profile/${user.id}`);
+    return { success: true };
+  } catch (e) {
+    console.error("Error updating social links: ", e);
+    return { success: false, error: "Failed to update social links." };
+  }
+}
+
+export async function deleteSocialLink(linkUrl: string) {
+  const user = await currentUser();
+
+  if (!user) throw new Error("Not authenticated.");
+
+  try {
+    const existingUser = await prisma.user.findFirst({
+      where: { clerkId: user.id },
+    });
+
+    if (!existingUser) throw new Error("User not found.");
+
+    // Filter out the link to delete
+    const updatedLinks = existingUser.socialLinks.filter(
+      (link) => link.url !== linkUrl
+    );
+
+    // Check if link was actually found and removed
+    if (updatedLinks.length === existingUser.socialLinks.length) {
+      return { success: false, error: "Social link not found." };
+    }
+
+    await prisma.user.update({
+      where: { clerkId: user.id },
+      data: {
+        socialLinks: updatedLinks,
+      },
+    });
+
+    revalidatePath(`/profile/${user.id}`);
+    return { success: true };
+  } catch (e) {
+    console.error("Error deleting social link: ", e);
+    return { success: false, error: "Failed to delete social link." };
   }
 }

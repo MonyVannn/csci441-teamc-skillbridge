@@ -698,3 +698,183 @@ export async function deleteSocialLink(linkUrl: string) {
     return { success: false, error: "Failed to delete social link." };
   }
 }
+
+export async function deleteUser(clerkId: string) {
+  console.log(`[deleteUser] Starting deletion for clerkId: ${clerkId}`);
+
+  try {
+    // Find the user first
+    const user = await prisma.user.findUnique({
+      where: { clerkId },
+      include: {
+        applications: true,
+        postedProjects: true,
+        assignedProjects: true,
+        sentMessages: true,
+        conversations: true,
+      },
+    });
+
+    if (!user) {
+      console.log(
+        `[deleteUser] User with clerkId ${clerkId} not found in database`
+      );
+      return {
+        success: true,
+        message: "User not found (may already be deleted)",
+      };
+    }
+
+    console.log(
+      `[deleteUser] Found user: ${user.email} (${clerkId}) with ${user.applications.length} applications, ${user.postedProjects.length} posted projects, ${user.assignedProjects.length} assigned projects, ${user.sentMessages.length} messages, ${user.conversations.length} conversations`
+    );
+
+    // Step 1: Delete all applications made by this user
+    console.log(`[deleteUser] Step 1: Deleting applications...`);
+    const deletedApplications = await prisma.application.deleteMany({
+      where: { applicantId: user.id },
+    });
+    console.log(
+      `[deleteUser] Deleted ${deletedApplications.count} applications`
+    );
+
+    // Step 2: Handle projects posted by this user (business owner)
+    // Option A: Delete projects if no one is assigned
+    // Option B: Mark projects as archived/cancelled
+    // We'll use Option B for better data integrity
+    console.log(`[deleteUser] Step 2: Handling posted projects...`);
+    const postedProjectsCount = await prisma.project.updateMany({
+      where: {
+        businessOwnerId: user.id,
+        status: { notIn: ["COMPLETED", "CANCELLED", "ARCHIVED"] },
+      },
+      data: {
+        status: "CANCELLED",
+        cancelledAt: new Date(),
+      },
+    });
+    console.log(
+      `[deleteUser] Cancelled ${postedProjectsCount.count} active posted projects`
+    );
+
+    // For completed/archived projects, we'll keep them but remove the owner reference
+    // This maintains project history for students who worked on them
+    await prisma.project.updateMany({
+      where: {
+        businessOwnerId: user.id,
+        status: { in: ["COMPLETED", "ARCHIVED"] },
+      },
+      data: {
+        businessOwnerId: "000000000000000000000000", // Placeholder ID for deleted users
+      },
+    });
+
+    // Step 3: Handle projects assigned to this user (student)
+    // Reset assigned projects back to OPEN or IN_REVIEW status
+    console.log(`[deleteUser] Step 3: Handling assigned projects...`);
+    const assignedProjectsCount = await prisma.project.updateMany({
+      where: {
+        assignedStudentId: user.id,
+        status: { notIn: ["COMPLETED", "ARCHIVED"] },
+      },
+      data: {
+        assignedStudentId: null,
+        assignedAt: null,
+        status: "OPEN",
+      },
+    });
+    console.log(
+      `[deleteUser] Unassigned user from ${assignedProjectsCount.count} active projects`
+    );
+
+    // For completed projects, just remove the student reference but keep history
+    await prisma.project.updateMany({
+      where: {
+        assignedStudentId: user.id,
+        status: { in: ["COMPLETED", "ARCHIVED"] },
+      },
+      data: {
+        assignedStudentId: null,
+      },
+    });
+
+    // Step 4: Delete all messages sent by this user
+    console.log(`[deleteUser] Step 4: Deleting messages...`);
+    const deletedMessages = await prisma.message.deleteMany({
+      where: { senderId: user.id },
+    });
+    console.log(`[deleteUser] Deleted ${deletedMessages.count} messages`);
+
+    // Step 5: Handle conversations
+    console.log(`[deleteUser] Step 5: Handling conversations...`);
+    // First, disconnect the user from all conversations in the User model
+    await prisma.user.update({
+      where: { clerkId },
+      data: {
+        conversationIds: [],
+        conversations: {
+          set: [], // Disconnect from all conversations
+        },
+      },
+    });
+    console.log(`[deleteUser] Disconnected user from all conversations`);
+
+    // Now remove user from conversation participant lists and clean up empty conversations
+    for (const conversation of user.conversations) {
+      const updatedParticipantIds = conversation.participantIds.filter(
+        (id) => id !== user.id
+      );
+
+      // If conversation has no more participants, delete it
+      if (updatedParticipantIds.length === 0) {
+        await prisma.conversation.delete({
+          where: { id: conversation.id },
+        });
+        console.log(
+          `[deleteUser] Deleted empty conversation ${conversation.id}`
+        );
+      } else {
+        // Update conversation to remove this user
+        await prisma.conversation.update({
+          where: { id: conversation.id },
+          data: {
+            participantIds: updatedParticipantIds,
+          },
+        });
+      }
+    }
+    console.log(
+      `[deleteUser] Processed ${user.conversations.length} conversations`
+    );
+
+    // Step 6: Finally, delete the user record
+    console.log(`[deleteUser] Step 6: Deleting user record...`);
+    await prisma.user.delete({
+      where: { clerkId },
+    });
+    console.log(
+      `[deleteUser] ✅ Successfully deleted user: ${user.email} (${clerkId})`
+    );
+
+    return {
+      success: true,
+      message: "User and all associated data deleted successfully",
+      details: {
+        applications: deletedApplications.count,
+        messages: deletedMessages.count,
+        postedProjects: postedProjectsCount.count,
+        assignedProjects: assignedProjectsCount.count,
+        conversations: user.conversations.length,
+      },
+    };
+  } catch (error) {
+    console.error("[deleteUser] ❌ Error deleting user:", error);
+    // Log the full error details for debugging
+    if (error instanceof Error) {
+      console.error("[deleteUser] Error name:", error.name);
+      console.error("[deleteUser] Error message:", error.message);
+      console.error("[deleteUser] Error stack:", error.stack);
+    }
+    throw new Error(`Failed to delete user from the database: ${error}`);
+  }
+}

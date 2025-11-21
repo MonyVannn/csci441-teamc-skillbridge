@@ -1,6 +1,6 @@
 import { Webhook } from "svix";
 import { WebhookEvent } from "@clerk/nextjs/server";
-import { createUser } from "@/lib/actions/user";
+import { createUser, deleteUser } from "@/lib/actions/user";
 
 export async function POST(req: Request) {
   // You can find this in the Clerk Dashboard -> Webhooks -> choose the webhook
@@ -48,13 +48,41 @@ export async function POST(req: Request) {
   }
 
   const eventType = evt.type;
+
   if (eventType === "user.created") {
     try {
       await createUser(evt.data);
+      console.log(`User created: ${evt.data.id}`);
     } catch (e) {
       console.error("Error saving user", e);
       return new Response("Error saving user", { status: 500 });
     }
   }
-  return new Response("boop", { status: 201 });
+
+  if (eventType === "user.deleted") {
+    try {
+      // evt.data contains the deleted user info with their id (clerkId)
+      const clerkId = evt.data.id;
+      console.log(
+        "[Webhook] Received user.deleted event for clerkId:",
+        clerkId
+      );
+
+      if (!clerkId) {
+        console.error("[Webhook] No clerkId provided in user.deleted event");
+        return new Response("Error: Missing clerkId", { status: 400 });
+      }
+
+      const result = await deleteUser(clerkId);
+      console.log("[Webhook] ✅ User deleted successfully:", clerkId, result);
+    } catch (e) {
+      console.error("[Webhook] ❌ Error deleting user:", e);
+      if (e instanceof Error) {
+        console.error("[Webhook] Error details:", e.message);
+      }
+      return new Response("Error deleting user", { status: 500 });
+    }
+  }
+
+  return new Response("Webhook processed successfully", { status: 200 });
 }

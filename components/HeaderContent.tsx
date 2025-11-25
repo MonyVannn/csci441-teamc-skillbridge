@@ -15,9 +15,6 @@ import {
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { SignedIn, SignedOut, UserButton, useUser } from "@clerk/nextjs";
-import { UserExperience } from "./setting/UserExperience";
-import { UserEducation } from "./setting/UserEducation";
-import { UserInformation } from "./setting/UserInformation";
 import { User } from "@prisma/client";
 import { SearchBar } from "./browse/SearchBar";
 import { getUserByClerkId } from "@/lib/actions/user";
@@ -180,31 +177,6 @@ const HeaderContent: React.FC<HeaderContentProps> = ({
                   />
                   <UserButton.Action label="signOut" />
                 </UserButton.MenuItems>
-                <UserButton.UserProfilePage
-                  label="Bio"
-                  url="bio"
-                  labelIcon={<ScanFace className="w-4 h-4" />}
-                >
-                  <UserInformation />
-                </UserButton.UserProfilePage>
-                {dbUser?.role === "USER" && (
-                  <UserButton.UserProfilePage
-                    label="Experience"
-                    url="experience"
-                    labelIcon={<BriefcaseBusiness className="w-4 h-4" />}
-                  >
-                    <UserExperience />
-                  </UserButton.UserProfilePage>
-                )}
-                {dbUser?.role === "USER" && (
-                  <UserButton.UserProfilePage
-                    label="Education"
-                    url="education"
-                    labelIcon={<GraduationCap className="w-4 h-4" />}
-                  >
-                    <UserEducation />
-                  </UserButton.UserProfilePage>
-                )}
                 <UserButton.UserProfileLink
                   url={`/profile/${dbUser?.clerkId}`}
                   label="Go to profile page"

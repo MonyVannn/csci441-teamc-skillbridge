@@ -432,7 +432,7 @@ export async function editUserInformation(informationData: User) {
     if (!existingUser) throw new Error("User not found.");
 
     const { id, ...dataWithoutId } = informationData;
-    const updatedInformation = await prisma.user.update({
+    await prisma.user.update({
       where: { clerkId: user.id },
       data: {
         ...dataWithoutId,

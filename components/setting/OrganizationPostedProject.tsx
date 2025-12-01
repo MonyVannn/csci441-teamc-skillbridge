@@ -136,8 +136,6 @@ export function OrganizationPostedProjects() {
     return status.replace(/_/g, " ");
   };
 
-  const totalProjects = filteredProjects?.length || 0;
-
   return (
     <div className="space-y-4">
       {/* Header */}

@@ -203,7 +203,7 @@ export default function IndividualChat({
     <div
       className={`shadow-lg border flex flex-col overflow-hidden
         lg:rounded-t-xl lg:rounded-b-none
-        lg:${isMinimized ? "w-[230px]" : "w-[360px]"}
+        ${isMinimized ? "lg:w-[230px]" : "lg:w-[360px]"}
         fixed lg:relative
         inset-0 lg:inset-auto
         z-50 lg:z-auto

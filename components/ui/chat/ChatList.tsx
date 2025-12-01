@@ -63,6 +63,22 @@ export default function ChatList({
   const [searchedUsers, setSearchedUsers] = useState<SearchedUser[]>([]);
   const [isSearching, setIsSearching] = useState(false);
 
+  // Check if device is mobile to prevent hydration mismatch
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window !== "undefined" ? window.innerWidth < 1024 : false
+  );
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
   // Auto-refresh conversations every 5 seconds when open
   useEffect(() => {
     if (!isOpen) return;
@@ -152,15 +168,8 @@ export default function ChatList({
           isOpen ? "opacity-100" : "h-0 opacity-0 pointer-events-none lg:h-0"
         } transition-all duration-200 ease-in-out`}
       style={{
-        width:
-          typeof window !== "undefined" && window.innerWidth >= 1024
-            ? width
-            : "100%",
-        height: isOpen
-          ? typeof window !== "undefined" && window.innerWidth >= 1024
-            ? "620px"
-            : "100%"
-          : "0px",
+        width: isMobile ? "100%" : width,
+        height: isOpen ? (isMobile ? "100%" : "620px") : "0px",
       }}
       aria-hidden={!isOpen}
     >

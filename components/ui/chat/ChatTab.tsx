@@ -29,6 +29,23 @@ export default function ChatTab() {
   const [unreadCount, setUnreadCount] = useState(0);
   const { user, isAuthenticated } = useUserAuth();
 
+  // Check if device is mobile (screen width < 1024px)
+  // Initialize with window check to prevent hydration mismatch
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window !== "undefined" ? window.innerWidth < 1024 : false
+  );
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
   // Load conversations and unread count when user becomes authenticated
   useEffect(() => {
     if (isAuthenticated) {
@@ -36,6 +53,19 @@ export default function ChatTab() {
       loadUnreadCount();
     }
   }, [isAuthenticated]);
+
+  // Prevent body scroll when mobile chat overlay is open
+  useEffect(() => {
+    if (open && isMobile) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [open, isMobile]);
 
   // Adaptive polling: poll more frequently when chat is active, less when idle
   useEffect(() => {
@@ -57,20 +87,6 @@ export default function ChatTab() {
     if (buttonRef.current) {
       setButtonWidth(buttonRef.current.offsetWidth);
     }
-  }, []);
-
-  // Check if device is mobile (screen width < 1024px)
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 1024);
-    };
-
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-
-    return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
   // Open a new chat window with a user (no existing conversation)
@@ -435,7 +451,12 @@ export default function ChatTab() {
 
         {/* Chat List - Full screen overlay on mobile */}
         {open && (
-          <div className="fixed inset-0 z-50 bg-white">
+          <div
+            className="fixed inset-0 z-50 bg-white overflow-hidden"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="chat-list-title"
+          >
             <div className="flex flex-col h-full">
               <div className="flex items-center justify-between px-4 py-3 border-b bg-white">
                 <div className="flex items-center gap-2">
@@ -445,7 +466,9 @@ export default function ChatTab() {
                       M
                     </AvatarFallback>
                   </Avatar>
-                  <div className="text-base font-semibold">Contacts</div>
+                  <div id="chat-list-title" className="text-base font-semibold">
+                    Contacts
+                  </div>
                 </div>
                 <Button
                   variant="ghost"

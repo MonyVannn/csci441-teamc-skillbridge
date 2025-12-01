@@ -118,13 +118,7 @@ const HeaderContent: React.FC<HeaderContentProps> = ({
                     {unseenApplicationCount}
                   </div>
                 )}
-              <UserButton
-                appearance={{
-                  elements: {
-                    userButtonBadge: "hidden",
-                  },
-                }}
-              >
+              <UserButton>
                 <UserButton.MenuItems>
                   <UserButton.Link
                     href={`/profile/${dbUser?.clerkId}`}

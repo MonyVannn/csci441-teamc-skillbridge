@@ -143,7 +143,7 @@ export function OrganizationPostedProjects() {
         <div>
           <Button
             variant="ghost"
-            className="mb-4 -ml-2"
+            className="mb-4 -ml-2 text-sm"
             onClick={() => {
               router.push("/");
             }}
@@ -151,8 +151,10 @@ export function OrganizationPostedProjects() {
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Projects
           </Button>
-          <h1 className="text-3xl font-bold">Manage your Projects</h1>
-          <p className="text-muted-foreground mt-2">
+          <h1 className="text-2xl sm:text-3xl font-bold">
+            Manage your Projects
+          </h1>
+          <p className="text-sm sm:text-base text-muted-foreground mt-2">
             Manage and browse through all your posted projects here
           </p>
         </div>
@@ -253,13 +255,13 @@ export function OrganizationPostedProjects() {
       {isLoading ? (
         <div className="text-center py-12 text-gray-500">
           <LoaderCircle className="h-6 w-6 mx-auto mb-4 text-gray-300 animate-spin" />
-          <p>Loading projects...</p>
+          <p className="text-sm sm:text-base">Loading projects...</p>
         </div>
       ) : filteredProjects?.length === 0 ? (
         <div className="text-center py-12 text-gray-500">
           <Briefcase className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-          <p className="font-medium">No projects found</p>
-          <p className="text-sm mt-1">
+          <p className="text-sm sm:text-base font-medium">No projects found</p>
+          <p className="text-xs sm:text-sm mt-1">
             {searchQuery || selectedStatuses.length > 0
               ? "Try adjusting your search or filters"
               : "Click 'Create' to get started"}
@@ -270,7 +272,7 @@ export function OrganizationPostedProjects() {
           {filteredProjects?.map((project) => (
             <div
               key={project.id}
-              className="border rounded-lg p-4 bg-white hover:border-gray-300 transition-colors"
+              className="border rounded-lg p-3 sm:p-4 bg-white hover:border-gray-300 transition-colors"
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0 space-y-2">
@@ -279,31 +281,33 @@ export function OrganizationPostedProjects() {
                       type="button"
                       aria-label={`View project ${project.title}`}
                       onClick={() => navigate(`/project/${project.id}`)}
-                      className="font-medium hover:underline text-gray-900 flex-1 text-left cursor-pointer"
+                      className="text-sm sm:text-base font-medium hover:underline text-gray-900 flex-1 text-left cursor-pointer"
                     >
                       {project.title}
                     </button>
                     <Badge
                       variant="outline"
                       className={cn(
-                        "border shrink-0",
+                        "border shrink-0 text-xs",
                         getStatusColor(project.status)
                       )}
                     >
                       {getStatusLabel(project.status)}
                     </Badge>
                   </div>
-                  <p className="text-sm text-gray-500 line-clamp-2">
+                  <p className="text-xs sm:text-sm text-gray-500 line-clamp-2">
                     {project.description}
                   </p>
-                  <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500">
+                  <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs text-gray-500">
                     <span className="flex items-center gap-1">
-                      <Briefcase className="h-3 w-3" />
-                      {project.category.replace(/_/g, " ")}
+                      <Briefcase className="h-3 w-3 flex-shrink-0" />
+                      <span className="truncate">
+                        {project.category.replace(/_/g, " ")}
+                      </span>
                     </span>
-                    <span>•</span>
+                    <span className="hidden sm:inline">•</span>
                     <span className="flex items-center gap-1">
-                      <CalendarIcon className="h-3 w-3" />
+                      <CalendarIcon className="h-3 w-3 flex-shrink-0" />
                       {new Date(project.applicationDeadline).toLocaleDateString(
                         "en-US",
                         {
@@ -312,8 +316,8 @@ export function OrganizationPostedProjects() {
                         }
                       )}
                     </span>
-                    <span>•</span>
-                    <span className="font-medium text-gray-900">
+                    <span className="hidden sm:inline">•</span>
+                    <span className="font-medium text-gray-900 text-xs sm:text-sm">
                       ${project.budget.toLocaleString()}
                     </span>
                   </div>
@@ -322,13 +326,16 @@ export function OrganizationPostedProjects() {
                       <Badge
                         key={skill}
                         variant="secondary"
-                        className="text-xs"
+                        className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5"
                       >
                         {skill}
                       </Badge>
                     ))}
                     {project.requiredSkills.length > 4 && (
-                      <Badge variant="secondary" className="text-xs">
+                      <Badge
+                        variant="secondary"
+                        className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5"
+                      >
                         +{project.requiredSkills.length - 4}
                       </Badge>
                     )}
@@ -336,22 +343,22 @@ export function OrganizationPostedProjects() {
                   {project.assignedStudent && (
                     <button
                       type="button"
-                      aria-label={`View project ${project.title}`}
+                      aria-label={`View profile of ${project.assignedStudent.firstName} ${project.assignedStudent.lastName}`}
                       onClick={() =>
                         navigate(`/profile/${project.assignedStudent?.clerkId}`)
                       }
                       className="flex items-center gap-2 hover:underline w-fit cursor-pointer"
                     >
-                      <Avatar className="h-5 w-5">
+                      <Avatar className="h-4 w-4 sm:h-5 sm:w-5">
                         <AvatarImage
                           src={project.assignedStudent.imageUrl || ""}
                         />
-                        <AvatarFallback className="text-xs">
+                        <AvatarFallback className="text-[10px] sm:text-xs">
                           {project.assignedStudent.firstName?.[0]}
                           {project.assignedStudent.lastName?.[0]}
                         </AvatarFallback>
                       </Avatar>
-                      <span className="text-xs text-gray-600">
+                      <span className="text-[10px] sm:text-xs text-gray-600">
                         Assigned to {project.assignedStudent.firstName}{" "}
                         {project.assignedStudent.lastName}
                       </span>

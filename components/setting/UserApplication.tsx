@@ -242,20 +242,22 @@ export function UserApplications({
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Withdraw Application</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle className="text-base sm:text-lg">
+              Withdraw Application
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-sm sm:text-base">
               Are you sure you want to withdraw this application? This action
               cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel className="text-sm">Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={() =>
                 applicationToWithdraw &&
                 handleWithdrawApplication(applicationToWithdraw)
               }
-              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600 text-sm"
             >
               Withdraw
             </AlertDialogAction>
@@ -267,7 +269,7 @@ export function UserApplications({
       <div>
         <Button
           variant="ghost"
-          className="mb-4 -ml-2"
+          className="mb-4 -ml-2 text-sm"
           onClick={() => {
             router.push("/");
           }}
@@ -275,8 +277,10 @@ export function UserApplications({
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to Projects
         </Button>
-        <h1 className="text-3xl font-bold">Manage Incoming Applications</h1>
-        <p className="text-muted-foreground mt-2">
+        <h1 className="text-2xl sm:text-3xl font-bold">
+          Manage Incoming Applications
+        </h1>
+        <p className="text-sm sm:text-base text-muted-foreground mt-2">
           Showing {totalApplications} of {applications?.length || 0} application
           {applications?.length !== 1 ? "s" : ""}
         </p>
@@ -292,7 +296,7 @@ export function UserApplications({
               placeholder="Search by project title, business owner, or cover letter..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
+              className="pl-10 text-sm sm:text-base"
             />
           </div>
           <DropdownMenu>
@@ -302,14 +306,16 @@ export function UserApplications({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel>Filter by Status</DropdownMenuLabel>
+              <DropdownMenuLabel className="text-sm">
+                Filter by Status
+              </DropdownMenuLabel>
               <DropdownMenuSeparator />
               {statusOptions.map((option) => (
                 <DropdownMenuCheckboxItem
                   key={option.value}
                   checked={selectedStatuses.includes(option.value)}
                   onCheckedChange={() => toggleStatus(option.value)}
-                  className="hover:cursor-pointer"
+                  className="hover:cursor-pointer text-sm"
                 >
                   {option.label}
                 </DropdownMenuCheckboxItem>
@@ -321,7 +327,7 @@ export function UserApplications({
                     variant="ghost"
                     size="sm"
                     onClick={clearAllFilters}
-                    className="w-full justify-start text-xs"
+                    className="w-full justify-start text-xs sm:text-sm"
                   >
                     Clear all filters
                   </Button>
@@ -363,7 +369,7 @@ export function UserApplications({
                 variant="ghost"
                 size="sm"
                 onClick={clearAllFilters}
-                className="h-7 text-xs"
+                className="h-7 text-xs sm:text-sm"
               >
                 Clear all
               </Button>
@@ -379,13 +385,15 @@ export function UserApplications({
         {isLoading ? (
           <div className="text-center py-12 text-gray-500">
             <LoaderCircle className="h-6 w-6 mx-auto mb-4 text-gray-300 animate-spin" />
-            <p>Loading Applications</p>
+            <p className="text-sm sm:text-base">Loading Applications</p>
           </div>
         ) : !filteredApplications || filteredApplications.length === 0 ? (
           <div className="text-center py-12 text-gray-500">
             <FileText className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-            <p className="font-medium">No applications found</p>
-            <p className="text-sm mt-1">
+            <p className="font-medium text-sm sm:text-base">
+              No applications found
+            </p>
+            <p className="text-xs sm:text-sm mt-1">
               {searchQuery || selectedStatuses.length > 0
                 ? "Try adjusting your search or filters"
                 : "You haven't applied to any projects yet."}
@@ -396,21 +404,21 @@ export function UserApplications({
             {filteredApplications.map((app) => (
               <div
                 key={app.id}
-                className="border rounded-lg p-4 bg-white hover:border-gray-300 transition-colors"
+                className="border rounded-lg p-3 sm:p-4 bg-white hover:border-gray-300 transition-colors"
               >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1 min-w-0 space-y-3">
+                <div className="flex items-start justify-between gap-3 sm:gap-4">
+                  <div className="flex-1 min-w-0 space-y-2 sm:space-y-3">
                     {/* Title and Status */}
                     <div className="flex items-start gap-2 flex-wrap justify-between">
                       <Link
                         href={`/project/${app.project.id}`}
-                        className="font-medium hover:underline text-gray-900 flex-1 text-left"
+                        className="font-medium hover:underline text-gray-900 flex-1 text-left text-sm sm:text-base"
                       >
                         {app.project.title}
                       </Link>
                       <Badge
                         variant="outline"
-                        className={`border shrink-0 ${getStatusBadgeVariant(
+                        className={`border shrink-0 text-xs ${getStatusBadgeVariant(
                           app.status
                         )}`}
                       >
@@ -421,7 +429,7 @@ export function UserApplications({
 
                     {/* Cover Letter */}
                     {app.coverLetter && (
-                      <p className="text-sm text-gray-600 line-clamp-2">
+                      <p className="text-xs sm:text-sm text-gray-600 line-clamp-2">
                         {app.coverLetter}
                       </p>
                     )}
@@ -447,7 +455,7 @@ export function UserApplications({
                       variant="ghost"
                       size="sm"
                       onClick={() => setApplicationToWithdraw(app.id)}
-                      className="shrink-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                      className="shrink-0 text-red-600 hover:text-red-700 hover:bg-red-50 text-xs sm:text-sm"
                     >
                       <Trash2 className="h-4 w-4 mr-2" />
                     </Button>

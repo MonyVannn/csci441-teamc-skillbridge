@@ -63,6 +63,22 @@ export default function ChatList({
   const [searchedUsers, setSearchedUsers] = useState<SearchedUser[]>([]);
   const [isSearching, setIsSearching] = useState(false);
 
+  // Check if device is mobile to prevent hydration mismatch
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window !== "undefined" ? window.innerWidth < 1024 : false
+  );
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
   // Auto-refresh conversations every 5 seconds when open
   useEffect(() => {
     if (!isOpen) return;
@@ -145,18 +161,20 @@ export default function ChatList({
 
   return (
     <div
-      className={`flex flex-col overflow-hidden bg-card text-card-foreground rounded-t-xl border-t border-l border-r shadow-lg -mb-1
+      className={`flex flex-col overflow-hidden bg-card text-card-foreground 
+        lg:rounded-t-xl lg:border-t lg:border-l lg:border-r lg:shadow-lg lg:-mb-1
+        w-full lg:w-auto h-full lg:h-auto
         ${
-          isOpen ? "opacity-100" : "h-0 opacity-0 pointer-events-none"
+          isOpen ? "opacity-100" : "h-0 opacity-0 pointer-events-none lg:h-0"
         } transition-all duration-200 ease-in-out`}
       style={{
-        width: width,
-        height: isOpen ? "620px" : "0px",
+        width: isMobile ? "100%" : width,
+        height: isOpen ? (isMobile ? "100%" : "620px") : "0px",
       }}
       aria-hidden={!isOpen}
     >
       <>
-        <header className="flex items-center justify-between px-4 py-2.5">
+        <header className="hidden lg:flex items-center justify-between px-4 py-2.5">
           <div className="flex items-center gap-2.5">
             <div className="relative">
               <Avatar className="h-7 w-7">

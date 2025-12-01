@@ -42,6 +42,18 @@ export function SearchBar() {
 
   const isHomePage = pathname === "/";
 
+  // Clear search when navigating away from homepage
+  useEffect(() => {
+    if (!isHomePage) {
+      setQuery("");
+      setShowDropdown(false);
+      setSearchResults([]);
+    } else {
+      // Sync query with URL params on homepage
+      setQuery(searchParams.get("query") || "");
+    }
+  }, [pathname, isHomePage]);
+
   // Debounce the URL update for home page
   useEffect(() => {
     if (!isHomePage) return;

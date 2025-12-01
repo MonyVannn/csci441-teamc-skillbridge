@@ -68,7 +68,6 @@ interface UserApplicationsProps {
 export function UserApplications({
   onApplicationsSeen,
 }: UserApplicationsProps) {
-  const navigate = useClerkNavigation();
   const router = useRouter();
   const [applications, setApplications] = useState<Application[] | undefined>();
   const [filteredApplications, setFilteredApplications] = useState<

@@ -112,13 +112,19 @@ const HeaderContent: React.FC<HeaderContentProps> = ({
                   </div>
                 )}
               {dbUser?.role === "USER" &&
-                unseenApplicationCount &&
+                typeof unseenApplicationCount === "number" &&
                 unseenApplicationCount > 0 && (
                   <div className="absolute top-0 -right-1 sm:-right-2 w-4 h-4 sm:w-5 sm:h-5 z-50 bg-red-400 rounded-full text-white font-bold text-[10px] sm:text-xs flex items-center justify-center">
                     {unseenApplicationCount}
                   </div>
                 )}
-              <UserButton>
+              <UserButton
+                appearance={{
+                  elements: {
+                    userButtonBadge: "hidden",
+                  },
+                }}
+              >
                 <UserButton.MenuItems>
                   <UserButton.Link
                     href={`/profile/${dbUser?.clerkId}`}

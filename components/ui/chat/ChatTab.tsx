@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState, useCallback } from "react";
-import { ChevronUp } from "lucide-react";
+import { ChevronUp, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import ChatList, { type Conversation } from "@/components/ui/chat/ChatList";
@@ -59,6 +59,20 @@ export default function ChatTab() {
     }
   }, []);
 
+  // Check if device is mobile (screen width < 1024px)
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
   // Open a new chat window with a user (no existing conversation)
   const openNewChatWindow = useCallback(
     (userId: string, clerkId: string, userName: string, userAvatar: string) => {
@@ -72,12 +86,32 @@ export default function ChatTab() {
           // Chat already open - bring to front and expand
           const updated = [...prev];
           const [chat] = updated.splice(existingIndex, 1);
+
+          // On mobile, only keep this one chat open
+          if (isMobile) {
+            return [{ ...chat, isMinimized: false }];
+          }
+
           return [
             ...updated.map((c) => ({ ...c, isMinimized: true })),
             { ...chat, isMinimized: false },
           ];
         } else {
-          // New chat - minimize all others and add this one
+          // New chat - on mobile, replace all; on desktop, minimize all others
+          if (isMobile) {
+            return [
+              {
+                id: userId,
+                userId: userId,
+                clerkId: clerkId,
+                name: userName,
+                avatar: userAvatar,
+                isMinimized: false,
+                isNewChat: true,
+              },
+            ];
+          }
+
           return [
             ...prev.map((c) => ({ ...c, isMinimized: true })),
             {
@@ -93,7 +127,7 @@ export default function ChatTab() {
         }
       });
     },
-    []
+    [isMobile]
   );
 
   // Open a chat window from conversation list (existing conversation)
@@ -106,12 +140,32 @@ export default function ChatTab() {
           // Chat already open - move to end (front) and ensure it's not minimized
           const updated = [...prev];
           const [chat] = updated.splice(existingIndex, 1);
+
+          // On mobile, only keep this one chat open
+          if (isMobile) {
+            return [{ ...chat, isMinimized: false }];
+          }
+
           return [
             ...updated.map((c) => ({ ...c, isMinimized: true })),
             { ...chat, isMinimized: false },
           ];
         } else {
-          // New chat from existing conversation - minimize all others and add this one
+          // New chat from existing conversation
+          // On mobile, replace all; on desktop, minimize all others
+          if (isMobile) {
+            return [
+              {
+                id: conv.id,
+                clerkId: conv.clerkId || "",
+                name: conv.name,
+                avatar: conv.avatar,
+                isMinimized: false,
+                isNewChat: false,
+              },
+            ];
+          }
+
           return [
             ...prev.map((c) => ({ ...c, isMinimized: true })),
             {
@@ -126,7 +180,7 @@ export default function ChatTab() {
         }
       });
     },
-    []
+    [isMobile]
   );
 
   // Handle selecting a user from search (wrapper for openNewChatWindow)
@@ -265,75 +319,160 @@ export default function ChatTab() {
   if (!isAuthenticated) return null;
 
   return (
-    <div
-      aria-expanded={open}
-      className="fixed right-4 shadow-2xl bottom-0 z-50 flex flex-col items-stretch transition-all duration-200 ease-out"
-    >
-      {/* Expanded conversation list - slides up */}
-      <ChatList
-        conversations={conversations}
-        isOpen={open}
-        width={buttonWidth}
-        avatar={user?.imageUrl || ""}
-        onToggle={handleToggle}
-        onSelectChat={handleOpenChat}
-        onSelectUser={handleSelectUser}
-        onRefresh={loadConversations}
-      />
-
-      {/* Fixed bottom tab - always visible */}
-      {!open && (
-        <div
-          ref={buttonRef}
-          className={`flex items-center gap-2 px-3 py-2 cursor-pointer bg-white border
-          ${
-            open ? "rounded-t-none" : "rounded-t-xl"
-          } transition-all duration-200 hover:shadow-xl relative`}
-          onClick={handleToggle}
-          role="button"
-          aria-label={open ? "Close chat" : "Open chat"}
-          tabIndex={0}
-        >
-          <Avatar className="h-7 w-7 flex-shrink-0">
-            <AvatarImage src={user?.imageUrl || ""} alt="Messaging" />
-            <AvatarFallback className="bg-gradient-to-br from-red-500 to-orange-500 text-white text-sm font-medium">
-              M
-            </AvatarFallback>
-          </Avatar>
-          <div className="w-full flex flex-col items-start min-w-0 mr-16">
-            <div className="text-sm font-semibold">Contacts</div>
-          </div>
-          {unreadCount > 0 && (
-            <span className="absolute top-1 right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-              {unreadCount > 9 ? "9+" : unreadCount}
-            </span>
-          )}
-          <div className="flex items-center gap-1">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleToggle();
-              }}
-              aria-label={open ? "Minimize" : "Expand chat"}
-            >
-              <ChevronUp
-                className={`h-4 w-4 transition-transform duration-200 ${
-                  open ? "rotate-180" : ""
-                }`}
-              />
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* Individual chat windows - positioned to the left of main chat */}
+    <>
+      {/* Desktop Layout - Bottom right fixed */}
       <div
-        className="fixed bottom-0 z-40 flex flex-row-reverse items-end gap-2"
-        style={{ right: `${buttonWidth + 20}px` }}
+        aria-expanded={open}
+        className="hidden lg:flex fixed right-4 shadow-2xl bottom-0 z-50 flex-col items-stretch transition-all duration-200 ease-out"
       >
+        {/* Expanded conversation list - slides up */}
+        <ChatList
+          conversations={conversations}
+          isOpen={open}
+          width={buttonWidth}
+          avatar={user?.imageUrl || ""}
+          onToggle={handleToggle}
+          onSelectChat={handleOpenChat}
+          onSelectUser={handleSelectUser}
+          onRefresh={loadConversations}
+        />
+
+        {/* Fixed bottom tab - always visible */}
+        {!open && (
+          <div
+            ref={buttonRef}
+            className={`flex items-center gap-2 px-3 py-2 cursor-pointer bg-white border
+            ${
+              open ? "rounded-t-none" : "rounded-t-xl"
+            } transition-all duration-200 hover:shadow-xl relative`}
+            onClick={handleToggle}
+            role="button"
+            aria-label={open ? "Close chat" : "Open chat"}
+            tabIndex={0}
+          >
+            <Avatar className="h-7 w-7 flex-shrink-0">
+              <AvatarImage src={user?.imageUrl || ""} alt="Messaging" />
+              <AvatarFallback className="bg-gradient-to-br from-red-500 to-orange-500 text-white text-sm font-medium">
+                M
+              </AvatarFallback>
+            </Avatar>
+            <div className="w-full flex flex-col items-start min-w-0 mr-16">
+              <div className="text-sm font-semibold">Contacts</div>
+            </div>
+            {unreadCount > 0 && (
+              <span className="absolute top-1 right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </span>
+            )}
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleToggle();
+                }}
+                aria-label={open ? "Minimize" : "Expand chat"}
+              >
+                <ChevronUp
+                  className={`h-4 w-4 transition-transform duration-200 ${
+                    open ? "rotate-180" : ""
+                  }`}
+                />
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Individual chat windows - positioned to the left of main chat */}
+        <div
+          className="fixed bottom-0 z-40 flex flex-row-reverse items-end gap-2"
+          style={{ right: `${buttonWidth + 20}px` }}
+        >
+          {openChats.map((chat) => (
+            <IndividualChat
+              key={chat.id}
+              id={chat.id}
+              userId={chat.userId}
+              clerkId={chat.clerkId}
+              name={chat.name}
+              avatar={chat.avatar}
+              isMinimized={chat.isMinimized}
+              isNewChat={chat.isNewChat}
+              onToggleMinimize={handleToggleMinimize}
+              onClose={handleCloseChat}
+              onConversationCreated={handleConversationCreated}
+              onMessageSent={handleMessageSent}
+              onMessagesRead={handleMessagesRead}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Mobile Layout - Floating icon below filter button */}
+      <div className="lg:hidden">
+        {/* Floating Chat Icon - positioned above the filter button */}
+        {!open && openChats.length === 0 && (
+          <Button
+            onClick={handleToggle}
+            variant="outline"
+            size="sm"
+            className="fixed right-6 z-30 shadow-lg rounded-full w-14 h-14 p-0 bg-white hover:bg-gray-50"
+            style={{ bottom: "calc(1.5rem + 56px + 0.5rem)" }} // 1.5rem (bottom-6) + 56px (filter button height) + 0.5rem (gap)
+            aria-label="Open chat"
+          >
+            <div className="relative">
+              <MessageSquare className="h-5 w-5" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </span>
+              )}
+            </div>
+          </Button>
+        )}
+
+        {/* Chat List - Full screen overlay on mobile */}
+        {open && (
+          <div className="fixed inset-0 z-50 bg-white">
+            <div className="flex flex-col h-full">
+              <div className="flex items-center justify-between px-4 py-3 border-b bg-white">
+                <div className="flex items-center gap-2">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={user?.imageUrl || ""} alt="Messaging" />
+                    <AvatarFallback className="bg-gradient-to-br from-red-500 to-orange-500 text-white text-sm font-medium">
+                      M
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="text-base font-semibold">Contacts</div>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleToggle}
+                  aria-label="Close chat"
+                >
+                  <ChevronUp className="h-5 w-5 rotate-180" />
+                </Button>
+              </div>
+              <div className="flex-1 overflow-hidden">
+                <ChatList
+                  conversations={conversations}
+                  isOpen={true}
+                  width={buttonWidth}
+                  avatar={user?.imageUrl || ""}
+                  onToggle={handleToggle}
+                  onSelectChat={handleOpenChat}
+                  onSelectUser={handleSelectUser}
+                  onRefresh={loadConversations}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Individual Chat - Full screen on mobile */}
         {openChats.map((chat) => (
           <IndividualChat
             key={chat.id}
@@ -352,6 +491,6 @@ export default function ChatTab() {
           />
         ))}
       </div>
-    </div>
+    </>
   );
 }

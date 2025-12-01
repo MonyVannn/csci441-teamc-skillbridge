@@ -145,18 +145,27 @@ export default function ChatList({
 
   return (
     <div
-      className={`flex flex-col overflow-hidden bg-card text-card-foreground rounded-t-xl border-t border-l border-r shadow-lg -mb-1
+      className={`flex flex-col overflow-hidden bg-card text-card-foreground 
+        lg:rounded-t-xl lg:border-t lg:border-l lg:border-r lg:shadow-lg lg:-mb-1
+        w-full lg:w-auto h-full lg:h-auto
         ${
-          isOpen ? "opacity-100" : "h-0 opacity-0 pointer-events-none"
+          isOpen ? "opacity-100" : "h-0 opacity-0 pointer-events-none lg:h-0"
         } transition-all duration-200 ease-in-out`}
       style={{
-        width: width,
-        height: isOpen ? "620px" : "0px",
+        width:
+          typeof window !== "undefined" && window.innerWidth >= 1024
+            ? width
+            : "100%",
+        height: isOpen
+          ? typeof window !== "undefined" && window.innerWidth >= 1024
+            ? "620px"
+            : "100%"
+          : "0px",
       }}
       aria-hidden={!isOpen}
     >
       <>
-        <header className="flex items-center justify-between px-4 py-2.5">
+        <header className="hidden lg:flex items-center justify-between px-4 py-2.5">
           <div className="flex items-center gap-2.5">
             <div className="relative">
               <Avatar className="h-7 w-7">

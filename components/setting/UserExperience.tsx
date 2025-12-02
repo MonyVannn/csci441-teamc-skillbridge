@@ -284,14 +284,14 @@ export function UserExperience() {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <div className="flex items-center justify-between">
-            <h3 className="font-bold text-gray-900 flex items-center gap-2">
+            <h3 className="font-bold text-gray-900 flex items-center gap-2 text-base sm:text-lg">
               {editingId ? "Edit Experience" : "Add New Experience"}
             </h3>
             <div className="flex gap-2">
               <Button
                 type="submit"
                 size="sm"
-                className="bg-[#1DBF9F] hover:bg-[#1DBF9F]/80 text-white"
+                className="bg-[#1DBF9F] hover:bg-[#1DBF9F]/80 text-white text-xs sm:text-sm"
                 disabled={form.formState.isSubmitting}
               >
                 {form.formState.isSubmitting ? "Saving..." : "Save"}
@@ -301,7 +301,7 @@ export function UserExperience() {
                 onClick={handleCancel}
                 variant="outline"
                 size="sm"
-                className="border-gray-300 text-gray-700 hover:bg-gray-50 bg-white"
+                className="border-gray-300 text-gray-700 hover:bg-gray-50 bg-white text-xs sm:text-sm"
               >
                 Cancel
               </Button>
@@ -496,14 +496,14 @@ export function UserExperience() {
     <div>
       <div className="flex items-center justify-between">
         <div className="space-y-1">
-          <h1 className="font-bold text-gray-900 flex items-center gap-2">
+          <h1 className="font-bold text-gray-900 flex items-center gap-2 text-xl sm:text-2xl">
             Experiences
           </h1>
         </div>
         <Button
           onClick={handleAddExperience}
           variant={"outline"}
-          className="mr-10"
+          className="mr-10 text-sm"
         >
           Add Experience
         </Button>
@@ -514,13 +514,13 @@ export function UserExperience() {
         {isLoading ? (
           <div className="text-center py-12 text-gray-500">
             <LoaderCircle className="h-6 w-6 mx-auto mb-4 text-gray-300 animate-spin" />
-            <p>Loading</p>
+            <p className="text-sm sm:text-base">Loading</p>
           </div>
         ) : experiences?.length === 0 ? (
           <div className="text-center py-12 text-gray-500">
             <Building2 className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-            <p>No experiences added yet</p>
-            <p className="text-sm">
+            <p className="text-sm sm:text-base">No experiences added yet</p>
+            <p className="text-xs sm:text-sm">
               Click &apos;Add Experience&apos; to get started
             </p>
           </div>
@@ -533,16 +533,16 @@ export function UserExperience() {
                 ) : (
                   <div className="py-6 px-2 hover:bg-gray-50 transition-colors duration-200 group">
                     <div className="flex items-start justify-between">
-                      <div className="flex-1 space-y-3">
+                      <div className="flex-1 space-y-2 sm:space-y-3">
                         <div className="space-y-1">
-                          <h3 className="font-semibold text-gray-900 text-balance">
+                          <h3 className="font-semibold text-gray-900 text-balance text-sm sm:text-base">
                             {experience.title}
                           </h3>
                           <div className="flex items-center justify-between">
-                            <p className="text-sm font-medium text-gray-700">
+                            <p className="text-xs sm:text-sm font-medium text-gray-700">
                               {experience.company}
                             </p>
-                            <div className="flex items-center gap-2 text-sm text-gray-500">
+                            <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-500">
                               {!experience.endDate && (
                                 <Badge
                                   variant="secondary"
@@ -560,7 +560,7 @@ export function UserExperience() {
                             </div>
                           </div>
                         </div>
-                        <p className="text-sm text-gray-600 leading-relaxed text-pretty">
+                        <p className="text-xs sm:text-sm text-gray-600 leading-relaxed text-pretty">
                           {experience.description}
                         </p>
                       </div>

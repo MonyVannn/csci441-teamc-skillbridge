@@ -203,11 +203,14 @@ export default function IndividualChat({
     <div
       className={`shadow-lg border flex flex-col overflow-hidden
         lg:rounded-t-xl lg:rounded-b-none
-        ${isMinimized ? "lg:w-[230px]" : "lg:w-[360px]"}
+        ${
+          isMinimized ? "lg:w-[230px] lg:h-[48px]" : "lg:w-[360px] lg:h-[500px]"
+        }
         fixed lg:relative
         inset-0 lg:inset-auto
         z-50 lg:z-auto
-        bg-white`}
+        bg-white
+        h-screen lg:h-auto`}
     >
       {/* Chat header */}
       <div className="flex items-center justify-between px-3 py-2 border-b bg-white">
@@ -257,7 +260,7 @@ export default function IndividualChat({
       {!isMinimized && (
         <>
           {/* Messages area */}
-          <div className="flex-1 lg:h-[400px] lg:max-h-[400px] overflow-y-auto px-4 py-3 bg-white">
+          <div className="h-[calc(100vh-120px)] lg:h-[400px] overflow-y-auto px-4 py-3 bg-white flex-shrink-0">
             {isLoading ? (
               <div className="flex items-center justify-center h-full">
                 <p className="text-sm text-muted-foreground">

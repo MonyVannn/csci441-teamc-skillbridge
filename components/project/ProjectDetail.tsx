@@ -190,15 +190,15 @@ export function ProjectDetail({ project, timeline }: ProjectDetailProps) {
   const statusInfo = getStatusChangeMessage();
 
   return (
-    <div className="p-12 grid grid-cols-4 gap-8">
+    <div className="p-4 md:p-8 lg:p-12 flex flex-col lg:grid lg:grid-cols-4 gap-6 lg:gap-8">
       <div
         className={`${
-          project.assignedStudent ? "col-span-3" : "col-span-4"
+          project.assignedStudent ? "lg:col-span-3" : "lg:col-span-4"
         } w-full`}
       >
         <div>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 mb-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
               <Avatar className="h-10 w-10 rounded-none">
                 <AvatarImage
                   src={project.businessOwner.imageUrl || "/placeholder.svg"}
@@ -207,7 +207,7 @@ export function ProjectDetail({ project, timeline }: ProjectDetailProps) {
                   {project.businessOwner.firstName?.charAt(0)}
                 </AvatarFallback>
               </Avatar>
-              <h3 className="font-bold text-gray-900 capitalize">
+              <h3 className="font-bold text-gray-900 capitalize text-sm sm:text-base">
                 {project.businessOwner.firstName}{" "}
                 {project.businessOwner.lastName}
               </h3>
@@ -258,22 +258,24 @@ export function ProjectDetail({ project, timeline }: ProjectDetailProps) {
                 ))}
             </div>
           </div>
-          <div className="md:flex items-center justify-between">
-            <div>
-              <div className="text-2xl font-bold text-gray-900 mt-2">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-0">
+            <div className="flex-1">
+              <div className="text-xl sm:text-2xl font-bold text-gray-900 mt-2 break-words">
                 {project.title}
               </div>
-              <div className="flex items-center text-sm text-muted-foreground">
+              <div className="flex flex-wrap items-center text-xs sm:text-sm text-muted-foreground gap-1">
                 <div className="font-medium">
                   {project.businessOwner.address}
                 </div>
-                <Dot className="h-6 w-6 text-muted-foreground" />
+                <Dot className="h-4 w-4 sm:h-6 sm:w-6 text-muted-foreground hidden sm:block" />
+                <span className="sm:hidden">•</span>
                 <div className="font-medium">
                   {formatDistanceToNow(new Date(project.createdAt), {
                     addSuffix: true,
                   })}
                 </div>
-                <Dot className="h-6 w-6 text-muted-foreground" />
+                <Dot className="h-4 w-4 sm:h-6 sm:w-6 text-muted-foreground hidden sm:block" />
+                <span className="sm:hidden">•</span>
                 <div className="font-medium">
                   {project.applications?.length} applicants
                 </div>
@@ -325,40 +327,44 @@ export function ProjectDetail({ project, timeline }: ProjectDetailProps) {
                 ))}
             </div>
           </div>
-          <div className="flex items-center gap-2 mt-2">
-            <Badge variant={"outline"}>
+          <div className="flex flex-wrap items-center gap-2 mt-3">
+            <Badge variant={"outline"} className="text-xs">
               {project.category.replaceAll("_", " ")}
             </Badge>
-            <Badge variant={"outline"}>{project.scope}</Badge>
+            <Badge variant={"outline"} className="text-xs">
+              {project.scope}
+            </Badge>
           </div>
         </div>
-        <div className="grid flex-1 auto-rows-min gap-6 overflow-y-auto pt-10">
-          <h2 className="font-semibold text-xl text-gray-900">
+        <div className="grid flex-1 auto-rows-min gap-4 md:gap-6 overflow-y-auto pt-6 md:pt-10">
+          <h2 className="font-semibold text-lg md:text-xl text-gray-900">
             About the project
           </h2>
           <div className="text-sm">
             <h3 className="font-semibold text-gray-900">About Us</h3>
-            <p className="text-gray-900 mt-5 text-justify">
+            <p className="text-gray-900 mt-3 md:mt-5 text-justify leading-relaxed">
               {project.businessOwner.bio}
             </p>
-            <p className="text-gray-900 text-justify">
+            <p className="text-gray-900 text-justify leading-relaxed">
               {project.businessOwner.intro}
             </p>
           </div>
           <div className="text-sm">
             <h3 className="font-semibold text-gray-900">Description</h3>
-            <p className="text-gray-900 mt-5 text-justify">
+            <p className="text-gray-900 mt-3 md:mt-5 text-justify leading-relaxed">
               {project.description}
             </p>
           </div>
           <div className="text-sm">
             <h3 className="font-semibold text-gray-900">Responsibilities</h3>
-            <ul className="text-gray-900 mt-5 list-disc list-inside ml-4">
+            <ul className="text-gray-900 mt-3 md:mt-5 list-disc list-inside ml-2 md:ml-4 space-y-1">
               {project.responsibilities?.split(/•/).map((responsibility) => {
                 const cleanText = responsibility.trim();
                 return (
                   cleanText && ( // skip empty strings
-                    <li key={cleanText}>{cleanText}</li>
+                    <li key={cleanText} className="leading-relaxed">
+                      {cleanText}
+                    </li>
                   )
                 );
               })}
@@ -366,12 +372,14 @@ export function ProjectDetail({ project, timeline }: ProjectDetailProps) {
           </div>
           <div className="text-sm">
             <h3 className="font-semibold text-gray-900">Deliverables</h3>
-            <ul className="text-gray-900 mt-5 list-disc list-inside ml-4">
+            <ul className="text-gray-900 mt-3 md:mt-5 list-disc list-inside ml-2 md:ml-4 space-y-1">
               {project.deliverables?.split(/•/).map((deliverable) => {
                 const cleanText = deliverable.trim();
                 return (
                   cleanText && ( // skip empty strings
-                    <li key={cleanText}>{cleanText}</li>
+                    <li key={cleanText} className="leading-relaxed">
+                      {cleanText}
+                    </li>
                   )
                 );
               })}
@@ -381,13 +389,13 @@ export function ProjectDetail({ project, timeline }: ProjectDetailProps) {
             <h3 className="font-semibold text-gray-900">
               Skills & Qualifications
             </h3>
-            <p className="text-gray-900 mt-5">
+            <p className="text-gray-900 mt-3 md:mt-5 leading-relaxed">
               To successfully complete this project, applicants should
               demonstrate proficiency in the following areas:
             </p>
-            <div className="w-[500px] space-y-1 mt-3">
+            <div className="w-full max-w-full flex flex-wrap gap-2 mt-3">
               {project.requiredSkills.map((skill) => (
-                <Badge key={skill} variant={"outline"} className="mr-1">
+                <Badge key={skill} variant={"outline"} className="text-xs">
                   {skill}
                 </Badge>
               ))}
@@ -395,7 +403,7 @@ export function ProjectDetail({ project, timeline }: ProjectDetailProps) {
           </div>
           <div className="text-sm">
             <h3 className="font-semibold text-gray-900">Compensation</h3>
-            <p className="text-gray-900 mt-5 text-justify">
+            <p className="text-gray-900 mt-3 md:mt-5 text-justify leading-relaxed">
               This project offers a budget of{" "}
               <span className="font-semibold">${project.budget}</span> provided
               by the business owner as compensation for successful completion of
@@ -410,44 +418,44 @@ export function ProjectDetail({ project, timeline }: ProjectDetailProps) {
         </div>
       </div>
       {project.assignedStudent && (
-        <div className="w-full border-l pl-6 relative">
+        <div className="w-full lg:border-l lg:pl-6 relative mt-6 lg:mt-0">
           <Image
             src="/bg.jpeg"
             alt="bg"
             width={1920}
             height={1080}
-            className="h-[100px] rounded-tl-lg rounded-tr-lg"
+            className="h-[100px] rounded-tl-lg rounded-tr-lg w-full object-cover"
           />
-          <Avatar className="absolute top-[72px] left-3 w-16 h-16 border-4 border-background">
+          <Avatar className="absolute top-[72px] left-3 lg:left-6 w-14 h-14 sm:w-16 sm:h-16 border-4 border-background">
             <AvatarImage src={project.assignedStudent?.imageUrl || ""} />
-            <AvatarFallback className="text-2xl bg-muted">
+            <AvatarFallback className="text-xl sm:text-2xl bg-muted">
               {project.assignedStudent?.firstName}
               {project.assignedStudent?.lastName}
             </AvatarFallback>
           </Avatar>
-          <h1 className="absolute left-20 font-semibold text-lg">
+          <h1 className="absolute top-[90px] left-20 sm:left-24 lg:left-24 font-semibold text-base sm:text-lg">
             {project.assignedStudent?.firstName}{" "}
             {project.assignedStudent?.lastName}
           </h1>
-          <div className="mt-10">
-            <p className="text-sm text-muted-foreground">
+          <div className="mt-10 px-2 sm:px-0">
+            <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
               {project.assignedStudent?.bio}
             </p>
-            <div className="mt-2">
+            <div className="mt-2 flex flex-wrap gap-1">
               {project.assignedStudent?.skills?.map((skill) => (
-                <Badge key={skill} variant={"outline"} className="mr-1">
+                <Badge key={skill} variant={"outline"} className="text-xs">
                   {skill}
                 </Badge>
               ))}
             </div>
-            <Separator className="my-5" />
-            <section className="p-4 border rounded-xl shadow-md">
-              <h1 className="text-lg font-semibold">
+            <Separator className="my-4 md:my-5" />
+            <section className="p-3 sm:p-4 border rounded-xl shadow-md">
+              <h1 className="text-base sm:text-lg font-semibold">
                 {project.status.replace("_", " ")}
               </h1>
-              <div className="w-full h-4 rounded-full bg-muted mt-1">
+              <div className="w-full h-3 sm:h-4 rounded-full bg-muted mt-1">
                 <div
-                  className={`h-4 rounded-tl-full rounded-bl-full bg-[#695DCC] ${
+                  className={`h-3 sm:h-4 rounded-tl-full rounded-bl-full bg-[#695DCC] ${
                     project.status === "ASSIGNED"
                       ? "w-1/4"
                       : project.status === "IN_PROGRESS"
@@ -464,7 +472,7 @@ export function ProjectDetail({ project, timeline }: ProjectDetailProps) {
                 <Button
                   size={"sm"}
                   variant={"outline"}
-                  className="w-full rounded-full mt-5"
+                  className="w-full rounded-full mt-4 md:mt-5 text-xs sm:text-sm"
                   onClick={handleStatusChangeClick}
                 >
                   {statusInfo.buttonText}
@@ -475,33 +483,38 @@ export function ProjectDetail({ project, timeline }: ProjectDetailProps) {
                   <Button
                     size={"sm"}
                     variant={"outline"}
-                    className="w-full rounded-full mt-5"
+                    className="w-full rounded-full mt-4 md:mt-5 text-xs sm:text-sm"
                     onClick={() => setIsCompleteDialogOpen(true)}
                   >
                     Mark as completed
                   </Button>
                 )}
-              <div className="bg-background mt-8">
-                <h1 className="text-lg font-semibold">Project Timeline</h1>
+              <div className="bg-background mt-6 md:mt-8">
+                <h1 className="text-base sm:text-lg font-semibold">
+                  Project Timeline
+                </h1>
                 <div className="relative mx-auto max-w-4xl">
                   <Separator
                     orientation="vertical"
                     className="bg-muted absolute left-1.5 top-4"
                   />
                   {timeline?.map((entry, index) => (
-                    <div key={index} className="relative mb-10 pl-8">
-                      <div className="bg-[#695DCC] absolute left-0 top-3.5 flex size-3 items-center justify-center rounded-full" />
-                      <h4 className="rounded-xl pt-2 text-sm font-medium tracking-tight ">
+                    <div
+                      key={index}
+                      className="relative mb-8 md:mb-10 pl-6 md:pl-8"
+                    >
+                      <div className="bg-[#695DCC] absolute left-0 top-3.5 flex size-2.5 sm:size-3 items-center justify-center rounded-full" />
+                      <h4 className="rounded-xl pt-2 text-xs sm:text-sm font-medium tracking-tight ">
                         {entry.title}
                       </h4>
 
-                      <h5 className="text-sm text-muted-foreground ">
+                      <h5 className="text-xs sm:text-sm text-muted-foreground ">
                         {entry.date}
                       </h5>
 
                       <div className="border-none shadow-none mt-2">
                         <div
-                          className="prose dark:prose-invert text-foreground text-sm"
+                          className="prose dark:prose-invert text-foreground text-xs sm:text-sm max-w-full"
                           dangerouslySetInnerHTML={{ __html: entry.content }}
                         />
                       </div>

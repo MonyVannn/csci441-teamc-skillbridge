@@ -2,6 +2,20 @@
 
 This directory contains automated CI/CD workflows for the SkillBridge project.
 
+## 🛡️ Database Safety - READ THIS FIRST!
+
+**✅ Your tests are completely safe!** They use Jest mocks and **DO NOT make any real database connections**.
+
+All database operations in tests are mocked using `jest.mock()`, meaning:
+- ✅ No data is read from your production database
+- ✅ No data is written to your production database  
+- ✅ No database connections are made during tests
+- ✅ All test data exists only in memory
+
+The `DATABASE_URL` in workflows is only used by Prisma Client generation during build time, not for actual database operations. Your tests use mocked functions instead of real Prisma queries.
+
+---
+
 ## Available Workflows
 
 ### 1. Unit Tests (`unit-tests.yml`)
@@ -60,12 +74,21 @@ This directory contains automated CI/CD workflows for the SkillBridge project.
 
 To run these workflows, configure the following secrets in your GitHub repository:
 
+### ⚠️ IMPORTANT: Database Safety
+
+**Your tests are completely mocked and DO NOT interact with any real database!**
+
+The workflows use `TEST_DATABASE_URL` which can be:
+- A dummy/mock URL (since tests don't actually connect)
+- A separate test database (if you add real integration tests later)
+- **NEVER use your production `DATABASE_URL`!**
+
 ### Essential Secrets
 | Secret Name | Description | Required For |
 |-------------|-------------|--------------|
 | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Clerk public key | All workflows |
 | `CLERK_SECRET_KEY` | Clerk secret key | All workflows |
-| `DATABASE_URL` | Prisma database connection | All workflows |
+| `TEST_DATABASE_URL` | **Test/mock database URL** (NOT production!) | All workflows |
 
 ### Optional Secrets
 | Secret Name | Description | Required For |
@@ -78,6 +101,22 @@ To run these workflows, configure the following secrets in your GitHub repositor
 2. Navigate to **Settings** → **Secrets and variables** → **Actions**
 3. Click **New repository secret**
 4. Add each secret with its corresponding value
+
+### Setting Up TEST_DATABASE_URL
+
+Since your tests are fully mocked and don't actually connect to a database, you have two options:
+
+**Option 1: Use a Dummy URL (Recommended for your current setup)**
+```
+TEST_DATABASE_URL=mongodb://localhost:27017/test
+```
+This works because tests never actually connect to it.
+
+**Option 2: Create a Separate Test Database**
+If you plan to add real database integration tests later:
+- Create a completely separate database instance
+- Use a different database name (e.g., `skillbridge-test` instead of `skillbridge-prod`)
+- **NEVER** point this to your production database!
 
 ---
 

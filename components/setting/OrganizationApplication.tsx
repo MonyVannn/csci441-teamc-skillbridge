@@ -271,7 +271,7 @@ export function OrganizationApplication() {
     <div>
       <Button
         variant="ghost"
-        className="mb-4 -ml-2"
+        className="mb-4 -ml-2 text-sm"
         onClick={() => {
           router.push("/");
         }}
@@ -279,8 +279,10 @@ export function OrganizationApplication() {
         <ArrowLeft className="h-4 w-4 mr-2" />
         Back to Projects
       </Button>
-      <h1 className="text-3xl font-bold">Manage Incoming Applications</h1>
-      <p className="text-muted-foreground mt-2">
+      <h1 className="text-2xl sm:text-3xl font-bold">
+        Manage Incoming Applications
+      </h1>
+      <p className="text-sm sm:text-base text-muted-foreground mt-2">
         Showing {totalApplications} of {applications?.length || 0} application
         {applications?.length !== 1 ? "s" : ""}
       </p>
@@ -380,13 +382,15 @@ export function OrganizationApplication() {
         {isLoading ? (
           <div className="text-center py-12 text-gray-500">
             <LoaderCircle className="h-6 w-6 mx-auto mb-4 text-gray-300 animate-spin" />
-            <p>Loading Applications</p>
+            <p className="text-sm sm:text-base">Loading Applications</p>
           </div>
         ) : !filteredApplications || filteredApplications.length === 0 ? (
           <div className="text-center py-12 text-gray-500">
             <FileText className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-            <p className="font-medium">No applications found</p>
-            <p className="text-sm mt-1">
+            <p className="text-sm sm:text-base font-medium">
+              No applications found
+            </p>
+            <p className="text-xs sm:text-sm mt-1">
               {searchQuery || selectedStatuses.length > 0
                 ? "Try adjusting your search or filters"
                 : "No applications have been received for any of your projects yet."}
@@ -405,32 +409,32 @@ export function OrganizationApplication() {
                   <AccordionItem
                     key={projectTitle}
                     value={projectTitle}
-                    className="border rounded-lg bg-white px-4 last:border-b"
+                    className="border rounded-lg bg-white px-3 sm:px-4 last:border-b"
                   >
-                    <AccordionTrigger className="hover:no-underline py-4 hover:cursor-pointer">
-                      <div className="flex items-center gap-3 w-full">
-                        <div className="flex items-center justify-between gap-3 flex-1">
-                          <h2 className="font-semibold text-gray-800">
+                    <AccordionTrigger className="hover:no-underline py-3 sm:py-4 hover:cursor-pointer">
+                      <div className="flex items-center gap-2 sm:gap-3 w-full">
+                        <div className="flex items-center justify-between gap-2 sm:gap-3 flex-1">
+                          <h2 className="text-sm sm:text-base font-semibold text-gray-800">
                             {projectTitle} ({projectApps.length})
                           </h2>
                           {pendingCount > 0 && (
-                            <Badge className="bg-yellow-500 text-white hover:bg-yellow-500">
+                            <Badge className="bg-yellow-500 text-white hover:bg-yellow-500 text-xs">
                               {pendingCount} pending
                             </Badge>
                           )}
                         </div>
                       </div>
                     </AccordionTrigger>
-                    <AccordionContent className="pt-2 pb-4">
-                      <div className="space-y-3">
+                    <AccordionContent className="pt-2 pb-3 sm:pb-4">
+                      <div className="space-y-2 sm:space-y-3">
                         {/* Map over the applications for each project */}
                         {projectApps.map((app) => (
                           <div
                             key={app.id}
-                            className="p-4 border border-gray-200 rounded-lg bg-gray-50"
+                            className="p-3 sm:p-4 border border-gray-200 rounded-lg bg-gray-50"
                           >
-                            <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
-                              <div className="flex-1 space-y-3">
+                            <div className="flex flex-col sm:flex-row items-start justify-between gap-3 sm:gap-4">
+                              <div className="flex-1 space-y-2 sm:space-y-3">
                                 <div className="flex items-center justify-between">
                                   <button
                                     type="button"

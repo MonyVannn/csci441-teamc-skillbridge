@@ -366,17 +366,6 @@ describe("hasCompleteProfile utility function", () => {
     });
   });
 
-  describe("missing skills", () => {
-    it("should detect empty skills array", () => {
-      const user = createCompleteUser();
-      user.skills = [];
-      const result = hasCompleteProfile(user);
-
-      expect(result.isComplete).toBe(false);
-      expect(result.missingFields).toContain("Skills");
-    });
-  });
-
   describe("missing education", () => {
     it("should detect empty education array", () => {
       const user = createCompleteUser();
@@ -442,7 +431,6 @@ describe("hasCompleteProfile utility function", () => {
       user.lastName = null;
       user.bio = null;
       user.intro = null;
-      user.skills = [];
       user.education = [];
 
       const result = hasCompleteProfile(user);
@@ -453,7 +441,6 @@ describe("hasCompleteProfile utility function", () => {
         "Last Name",
         "Bio",
         "Professional Introduction",
-        "Skills",
         "Education",
       ]);
     });

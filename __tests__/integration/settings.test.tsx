@@ -58,6 +58,7 @@ describe("Settings Page Integration Tests", () => {
     earnedSkillBadges: [],
     earnedSpecializationBadges: [],
     earnedEngagementBadges: [],
+    conversationIds: [],
     createdAt: new Date("2024-01-01"),
     updatedAt: new Date("2024-01-15"),
   };
@@ -873,7 +874,7 @@ describe("Settings Page Integration Tests", () => {
 
       await waitFor(() => {
         expect(consoleSpy).toHaveBeenCalledWith(
-          "Failed to load experiences:",
+          "Failed to load user data:",
           expect.any(Error)
         );
       });
@@ -898,6 +899,7 @@ describe("Settings Page Integration Tests", () => {
         projectsCompleted: 0,
         industriesExperienced: [],
         socialLinks: [],
+        conversationIds: [],
         skills: [],
         previousProjects: [],
         experiences: [],
@@ -1157,9 +1159,18 @@ describe("Settings Page Integration Tests", () => {
       await user.click(editButton);
 
       const firstNameInput = screen.getByPlaceholderText("Enter first name");
-      const parentDiv = firstNameInput.closest(".grid");
+      // Find the grid container with both firstName and lastName inputs
+      const firstNameFormItem = firstNameInput.closest(
+        '[data-slot="form-item"]'
+      );
+      const gridContainer = firstNameFormItem?.parentElement;
 
-      expect(parentDiv).toHaveClass("grid-cols-1", "md:grid-cols-2");
+      expect(gridContainer).toHaveClass(
+        "grid",
+        "grid-cols-1",
+        "md:grid-cols-2",
+        "gap-4"
+      );
     });
 
     it("should have responsive grid for settings section", async () => {
@@ -1175,10 +1186,17 @@ describe("Settings Page Integration Tests", () => {
       const editButton = screen.getByRole("button", { name: /edit/i });
       await user.click(editButton);
 
-      const locationInput = screen.getByPlaceholderText("Enter your location");
-      const gridParent = locationInput.closest(".grid");
+      // Look for the Label "Location" which is a sibling to the FormField containing the input
+      const locationLabel = screen.getByText("Location");
+      // The grid container is the parent of the div that contains both the Label and FormField
+      const gridContainer = locationLabel.parentElement?.parentElement;
 
-      expect(gridParent).toHaveClass("grid-cols-1", "md:grid-cols-3");
+      expect(gridContainer).toHaveClass(
+        "grid",
+        "grid-cols-1",
+        "md:grid-cols-3",
+        "gap-6"
+      );
     });
   });
 

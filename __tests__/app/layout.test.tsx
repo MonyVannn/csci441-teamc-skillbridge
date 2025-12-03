@@ -7,6 +7,12 @@ jest.mock("@clerk/nextjs", () => ({
   ClerkProvider: ({ children }: any) => children,
 }));
 
+// Mock the provider.tsx file itself to avoid fumadocs-ui import issues
+jest.mock("@/provider", () => ({
+  __esModule: true,
+  Provider: ({ children }: any) => children,
+}));
+
 jest.mock("next/font/google", () => ({
   Geist: () => ({
     variable: "--font-geist-sans",

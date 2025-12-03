@@ -16,6 +16,7 @@ import {
   AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
+  AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
@@ -105,27 +106,27 @@ export function ApplyButton({ project, user }: ApplyButtonProps) {
               <ShieldAlert className="h-5 w-5 text-amber-500" />
               Complete Your Profile
             </AlertDialogTitle>
-            <div className="space-y-3">
-              <p>
-                To apply for projects, you need to complete your profile first.
-                This helps project owners understand your qualifications better.
-              </p>
-              <div>
-                <p className="font-semibold text-foreground mb-2">
-                  Missing Information:
-                </p>
-                <ul className="list-disc list-inside space-y-1 text-sm">
-                  {profileCheck.missingFields.map((field) => (
-                    <li key={field}>{field}</li>
-                  ))}
-                </ul>
-              </div>
-              <p className="text-sm">
-                Please update your profile in the settings page to include all
-                required information.
-              </p>
-            </div>
+            <AlertDialogDescription>
+              To apply for projects, you need to complete your profile first.
+              This helps project owners understand your qualifications better.
+            </AlertDialogDescription>
           </AlertDialogHeader>
+          <div className="space-y-3">
+            <div>
+              <p className="font-semibold text-foreground mb-2">
+                Missing Information:
+              </p>
+              <ul className="list-disc list-inside space-y-1 text-sm">
+                {profileCheck.missingFields.map((field) => (
+                  <li key={field}>{field}</li>
+                ))}
+              </ul>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Please update your profile in the settings page to include all
+              required information.
+            </p>
+          </div>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction asChild>

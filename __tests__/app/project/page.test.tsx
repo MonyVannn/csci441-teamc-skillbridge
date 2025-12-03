@@ -1,5 +1,12 @@
+// Mock Clerk modules before imports to prevent ESM errors
+jest.mock("@clerk/backend", () => ({}));
+jest.mock("@clerk/nextjs/server", () => ({
+  currentUser: jest.fn(),
+  auth: jest.fn(),
+}));
+
 import { render, screen, waitFor } from "@testing-library/react";
-import ProjectDetailPage from "@/app/project/[projectId]/page";
+import ProjectDetailPage from "@/app/(main)/project/[projectId]/page";
 import {
   getProjectByProjectId,
   getProjectTimelineByProjectId,
@@ -408,14 +415,14 @@ describe("ProjectDetailPage", () => {
   });
 
   describe("error scenarios", () => {
-    it("should handle missing project data", async () => {
+    it("should render ProjectNotFound when project not found", async () => {
       (getProjectByProjectId as jest.Mock).mockResolvedValue(null);
 
       const params = Promise.resolve({ projectId: "nonexistent" });
 
-      // The component doesn't handle null project gracefully - it will throw
-      // This documents the current behavior
-      await expect(ProjectDetailPage({ params })).rejects.toThrow();
+      // When project is not found, render ProjectNotFound component
+      const result = await ProjectDetailPage({ params });
+      expect(result.type.name || result.type).toBe("ProjectNotFound");
     });
   });
 });

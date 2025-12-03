@@ -6,16 +6,18 @@ This directory contains integration tests that verify complete user flows and AP
 
 ## Test Statistics
 
-**Total: 151 Integration Tests** - ✅ **100% Passing**
+**Total: 229 Integration Tests** - ✅ **100% Passing**
 
 | Test Suite | Tests | Focus |
 |------------|-------|-------|
-| `signin.test.tsx` | 29 | Complete sign-in authentication flow |
-| `signup.test.tsx` | 32 | Complete sign-up user journey |
-| `webhook.test.ts` | 15 | Clerk webhook processing |
-| `browse-projects.test.tsx` | 29 | Project browsing and filtering |
-| `profile.test.tsx` | 23 | User profile display and data |
-| **TOTAL** | **151** | **End-to-end flow validation** |
+| `signin.test.tsx` | ~52 | Complete sign-in authentication flow |
+| `signup.test.tsx` | ~32 | Complete sign-up user journey |
+| `webhook.test.ts` | ~15 | Clerk webhook processing |
+| `browse-projects.test.tsx` | ~29 | Project browsing and filtering |
+| `profile.test.tsx` | ~23 | User profile display and data |
+| `project-detail.test.tsx` | ~40 | Project detail page and timeline |
+| `settings.test.tsx` | ~38 | User settings and preferences |
+| **TOTAL** | **229** | **End-to-end flow validation** |
 
 ## What Are Integration Tests?
 
@@ -29,20 +31,20 @@ Integration tests verify the interaction between multiple components, services, 
 
 ## Test Files
 
-### 1. `signin.test.tsx` - Sign-in Flow Integration (52 tests)
+### 1. `signin.test.tsx` - Sign-in Flow Integration
 
 Tests the complete user sign-in authentication flow including UI, form validation, error handling, and security features.
 
 #### Test Categories
 
-**Sign-in Page Rendering (8 tests)**
+**Sign-in Page Rendering**
 - Page structure and container rendering
 - Clerk SignIn component integration
 - Background image rendering
 - Form fields and submit button
 - Helper links (forgot password, sign up)
 
-**Accessibility (5 tests)**
+**Accessibility**
 - ARIA labels for required fields
 - Autocomplete attributes (email, current-password)
 - Error display with proper ARIA roles
@@ -406,6 +408,168 @@ jest.mock("svix", () => ({
   })),
 }));
 ```
+
+### 5. `project-detail.test.tsx` - Project Detail Integration
+
+Tests the project detail page including data fetching, timeline display, and status-based rendering.
+
+#### Test Categories
+
+**Project Data Fetching**
+- Fetch project by ID
+- Handle project not found scenarios
+- Database error handling
+- Project with all optional fields
+
+**Timeline Fetching**
+- Fetch timeline for projects with status requiring timeline
+- Skip timeline fetch for OPEN/DRAFT projects
+- Timeline ordering by date
+
+**Status-Based Rendering**
+- OPEN project display (no timeline)
+- ASSIGNED project with timeline
+- IN_PROGRESS project with timeline
+- IN_REVIEW project with timeline
+- COMPLETED project with timeline
+- ARCHIVED project handling
+
+**Business Owner Integration**
+- Display business owner information
+- Handle missing business owner data
+
+**Assigned Student Display**
+- Show assigned student for non-OPEN projects
+- Handle projects without assigned students
+
+#### Key Technologies
+
+```typescript
+// Mock project server actions
+jest.mock("@/lib/actions/project", () => ({
+  getProjectByProjectId: jest.fn(),
+  getProjectTimelineByProjectId: jest.fn(),
+}));
+
+// Test conditional timeline fetching
+it("should fetch timeline for IN_PROGRESS project", async () => {
+  const mockProject = {
+    id: "project-1",
+    status: "IN_PROGRESS",
+    // ... other fields
+  };
+  
+  (getProjectByProjectId as jest.Mock).mockResolvedValue(mockProject);
+  (getProjectTimelineByProjectId as jest.Mock).mockResolvedValue(mockTimeline);
+  
+  // Render and verify
+});
+```
+
+### 6. `settings.test.tsx` - Settings Page Integration
+
+Tests the user settings page including form rendering, data loading, and user information updates.
+
+#### Test Categories
+
+**Settings Page Rendering**
+- Page structure and layout
+- Tab navigation (Information, Experience, Education, etc.)
+- Form field rendering
+- Submit button states
+
+**User Information Loading**
+- Load user data on mount
+- Handle loading states
+- Display user information in form fields
+- Handle missing/null user data
+
+**Form Interaction**
+- Update user fields
+- Form validation
+- Submit handling
+- Error display
+
+**Role-Based Display**
+- STUDENT-specific fields (education, experience)
+- BUSINESS_OWNER-specific fields
+- Common fields for all roles
+
+**Error Handling**
+- Handle failed data loads
+- Display error messages
+- Retry functionality
+
+#### Key Technologies
+
+```typescript
+// Mock user actions
+jest.mock("@/lib/actions/user", () => ({
+  getUserByClerkId: jest.fn(),
+  updateUser: jest.fn(),
+}));
+
+// Mock Clerk hooks
+jest.mock("@clerk/nextjs", () => ({
+  useUser: jest.fn().mockReturnValue({
+    user: { id: "clerk_123" },
+    isLoaded: true,
+  }),
+}));
+
+// Test user data loading
+it("should load user information on mount", async () => {
+  const mockUser = {
+    firstName: "John",
+    lastName: "Doe",
+    email: "john@example.com",
+    // ... other fields
+  };
+  
+  (getUserByClerkId as jest.Mock).mockResolvedValue(mockUser);
+  
+  render(<UserInformation />);
+  
+  await waitFor(() => {
+    expect(screen.getByDisplayValue("John")).toBeInTheDocument();
+  });
+});
+```
+
+### 7. `browse-projects.test.tsx` - Browse Projects Integration
+
+Tests the project browsing functionality including filtering, search, and pagination.
+
+#### Test Categories
+
+**Project Fetching**
+- Fetch available projects
+- Handle empty results
+- Database error handling
+
+**Search Functionality**
+- Search by title
+- Search by description
+- Combined search terms
+
+**Category Filtering**
+- Single category filter
+- Multiple category filters
+- Clear filters
+
+**Scope Filtering**
+- Filter by project scope
+- Multiple scope selection
+
+**Budget Filtering**
+- Minimum budget filter
+- Maximum budget filter
+- Budget range
+
+**Pagination**
+- Page navigation
+- Results per page
+- Total count accuracy
 
 ## Web API Polyfills
 

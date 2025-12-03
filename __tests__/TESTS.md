@@ -6,16 +6,16 @@ This directory contains comprehensive unit and integration tests for the SkillBr
 
 ## Test Statistics
 
-**Total: 371 Tests** across 11 test suites - ✅ **100% Passing**
+**Total: 712 Tests** across 21 test suites - ✅ **100% Passing**
 
 | Category | Files | Tests | Coverage |
 |----------|-------|-------|----------|
-| **Unit Tests** | 7 | 220 | Pages, components, middleware |
-| **Integration Tests** | 5 | 151 | Sign-in, sign-up, webhooks, browse, profile |
-| **App Pages** | 3 | 57 | Root layout, project details, user profiles |
-| **Components** | 2 | 109 | Header and Footer navigation |
-| **Root Pages** | 2 | 54 | Home page marketplace, middleware |
-| **TOTAL** | **11** | **371** | **Complete application coverage** |
+| **Integration Tests** | 8 | ~200 | Sign-in, sign-up, webhooks, browse, profile, project-detail, settings |
+| **App Pages** | 3 | ~57 | Root layout, project details, user profiles |
+| **Components** | 4 | ~160 | Header, Footer, ApplyButton, SearchBar |
+| **Library Tests** | 5 | ~250 | Prisma, utils, stores, actions, categoryThumbnails |
+| **Root Pages** | 2 | ~45 | Home page marketplace, middleware |
+| **TOTAL** | **21** | **712** | **Complete application coverage** |
 
 ## Test Organization
 
@@ -23,30 +23,44 @@ This directory contains comprehensive unit and integration tests for the SkillBr
 
 ```
 __tests__/
-├── integration/                  # Integration tests (151 tests)
-│   ├── signin.test.tsx          # Sign-in flow integration (29 tests)
-│   ├── signup.test.tsx          # Sign-up flow integration (32 tests)
-│   ├── webhook.test.ts          # Clerk webhook integration (15 tests)
-│   ├── browse-projects.test.tsx # Browse projects integration (29 tests)
-│   └── profile.test.tsx         # Profile page integration (23 tests)
-├── app/                          # App Router pages (57 tests)
-│   ├── layout.test.tsx          # Root layout metadata (4 tests)
+├── integration/                  # Integration tests
+│   ├── signin.test.tsx          # Sign-in flow integration
+│   ├── signup.test.tsx          # Sign-up flow integration
+│   ├── webhook.test.ts          # Clerk webhook integration
+│   ├── browse-projects.test.tsx # Browse projects integration
+│   ├── profile.test.tsx         # Profile page integration
+│   ├── project-detail.test.tsx  # Project detail integration
+│   └── settings.test.tsx        # Settings page integration
+├── app/                          # App Router pages
+│   ├── layout.test.tsx          # Root layout metadata
 │   ├── project/
-│   │   └── page.test.tsx        # Project detail page (31 tests)
+│   │   └── page.test.tsx        # Project detail page
 │   └── profile/
-│       └── page.test.tsx        # User profile page (22 tests)
-├── components/                   # React components (109 tests)
-│   ├── Header.test.tsx          # Header navigation (~55 tests)
-│   └── Footer.test.tsx          # Footer navigation (~54 tests)
-├── page.test.tsx                # Home/Marketplace page (~27 tests)
-└── middleware.test.ts           # Route middleware (~27 tests)
+│       └── page.test.tsx        # User profile page
+├── components/                   # React components
+│   ├── Header.test.tsx          # Header navigation
+│   ├── Footer.test.tsx          # Footer navigation
+│   ├── application/
+│   │   └── ApplyButton.test.tsx # Apply button component
+│   └── browse/
+│       └── SearchBar.test.tsx   # Search bar component
+├── lib/                          # Library utilities
+│   ├── actions/
+│   │   └── project.test.ts      # Project server actions (44 tests)
+│   ├── stores/
+│   │   └── userStore.test.ts    # User store tests
+│   ├── prisma.test.ts           # Prisma client tests
+│   ├── utils.test.ts            # Utility function tests
+│   └── categoryThumbnails.test.ts # Category thumbnail tests
+├── page.test.tsx                # Home/Marketplace page
+└── middleware.test.ts           # Route middleware
 ```
 
 ## Test Coverage by Area
 
-### 1. Integration Tests (151 tests)
+### 1. Integration Tests
 
-#### Sign-in Flow (`integration/signin.test.tsx`) - 29 tests
+#### Sign-in Flow (`integration/signin.test.tsx`)
 **Focus:** Complete sign-in authentication flow with Clerk
 - ✅ Sign-in page rendering and structure
 - ✅ Accessibility features (ARIA labels, autocomplete, keyboard navigation)
@@ -66,7 +80,7 @@ __tests__/
 - React Testing Library for user interactions
 - OAuth provider mocking (Google, GitHub)
 
-#### Sign-up Flow (`integration/signup.test.tsx`) - 32 tests
+#### Sign-up Flow (`integration/signup.test.tsx`)
 **Focus:** Complete sign-up user journey with Clerk authentication
 - ✅ Sign-up page rendering and structure
 - ✅ Accessibility features (ARIA labels, keyboard navigation, required fields)
@@ -83,7 +97,7 @@ __tests__/
 - React Testing Library for user interactions
 - Custom Web API polyfills (Request/Response/Headers)
 
-#### Webhook Integration (`integration/webhook.test.ts`) - 15 tests
+#### Webhook Integration (`integration/webhook.test.ts`)
 **Focus:** Clerk webhook processing for user creation events
 - ✅ Webhook endpoint setup and configuration
 - ✅ WEBHOOK_SECRET environment variable validation
@@ -100,7 +114,7 @@ __tests__/
 - Custom Request/Response polyfills for testing
 - Server action integration (createUser)
 
-#### Browse Projects Flow (`integration/browse-projects.test.tsx`) - 29 tests
+#### Browse Projects Flow (`integration/browse-projects.test.tsx`)
 **Focus:** Project browsing, filtering, and search functionality
 - ✅ Available projects fetching (getAvailableProjects server action)
 - ✅ Pagination support (page parameter, limit, offset)
@@ -121,9 +135,9 @@ __tests__/
 - ProjectScope enum validation
 - Complex filter combinations
 
-#### Profile Page (`integration/profile.test.tsx`) - 23 tests
+#### Profile Page (`integration/profile.test.tsx`)
 **Focus:** User profile data fetching and display
-- ✅ getUserByClerkId server action - user data fetching (7 tests)
+- ✅ getUserByClerkId server action - user data fetching
   - Successful user fetch by Clerk ID
   - User not found (returns null)
   - Database error handling
@@ -131,7 +145,7 @@ __tests__/
   - User with empty badge arrays
   - User with multiple experiences and education
   - Organization user (role: ORGANIZATION)
-- ✅ getCompletedProjectsByAssignedStudentId server action - projects fetching (7 tests)
+- ✅ getCompletedProjectsByAssignedStudentId server action - projects fetching
   - Successful completed projects fetch
   - Empty array when user has no completed projects
   - Error when user is not found
@@ -139,13 +153,13 @@ __tests__/
   - BusinessOwner details inclusion
   - Database error handling
   - Multiple completed projects with various categories
-- ✅ Profile page integration scenarios (5 tests)
+- ✅ Profile page integration scenarios
   - Fetch user data and completed projects for profile display
   - Handle profile not found scenario
   - Display user with badges but no completed projects
   - Display organization profile without experiences/education
   - Handle user with extensive profile data
-- ✅ Error handling and edge cases (4 tests)
+- ✅ Error handling and edge cases
   - Null values in optional user fields
   - Projects with null businessOwner fields
   - Concurrent user and projects fetch
@@ -162,6 +176,18 @@ __tests__/
 - Validate data transformations
 - Test error scenarios (user not found, database failures)
 - Verify data structure completeness
+
+#### Project Detail (`integration/project-detail.test.tsx`)
+**Focus:** Project detail page data fetching
+- ✅ Project fetching by ID
+- ✅ Timeline data fetching
+- ✅ Error handling for missing projects
+
+#### Settings Page (`integration/settings.test.tsx`)
+**Focus:** User settings and preferences
+- ✅ Settings page rendering
+- ✅ User data updates
+- ✅ Form validation
 
 **Integration Test Architecture:**
 ```
@@ -188,9 +214,70 @@ Testing Strategy:
 - Validate error scenarios
 ```
 
-### 2. App Router Pages (57 tests)
+### 2. Library Tests (`lib/`)
 
-#### Root Layout (`app/layout.test.tsx`) - 4 tests
+#### Project Server Actions (`lib/actions/project.test.ts`) - 44 tests
+**Focus:** Project CRUD operations and status management
+- ✅ **createProject** - Creating new projects
+  - Successfully creates project when user is authenticated business owner
+  - Error handling for unauthenticated users
+  - Error handling when user is not found in database
+  - Error handling when user is not a business owner
+  - Error handling when database operation fails
+- ✅ **editProject** - Updating existing projects
+  - Successfully updates open projects
+  - Successfully updates draft projects
+  - Error handling for authentication, authorization, and invalid status states
+  - Only allows editing DRAFT and OPEN projects
+- ✅ **publishDraftProject** - Publishing draft projects
+  - Successfully publishes draft to OPEN status
+  - Sets isPublic to true on publish
+  - Error handling for non-draft projects
+- ✅ **deleteProject** (archive) - Archiving projects
+  - Successfully archives open and draft projects
+  - Error handling for already archived or completed projects
+- ✅ **unarchiveProject** - Restoring archived projects
+  - Successfully restores archived projects to OPEN status
+  - Error handling for non-archived projects
+- ✅ **updateProjectStatus** - Updating project status with timestamps
+  - Sets inProgressAt timestamp when moving to IN_PROGRESS
+  - Sets inReviewAt timestamp when moving to IN_REVIEW
+  - Sets completedAt timestamp when moving to COMPLETED
+  - Updates user badges and stats on project completion
+  - Allows both business owner and assigned student to update status
+  - Graceful handling of badge update failures
+
+**Key Technologies:**
+- Mock Clerk currentUser authentication
+- Mock Prisma database operations
+- Mock Next.js cache revalidation
+- Mock badge action functions
+
+#### Prisma Client (`lib/prisma.test.ts`)
+**Focus:** Database client singleton pattern
+- ✅ Module exports validation
+- ✅ Singleton pattern in development/test environments
+- ✅ Production environment behavior
+
+#### User Store (`lib/stores/userStore.test.ts`)
+**Focus:** Client-side user state management
+- ✅ Authentication state handling
+- ✅ User data fetching
+- ✅ Edge cases and null handling
+
+#### Utilities (`lib/utils.test.ts`)
+**Focus:** Helper function testing
+- ✅ Utility function implementations
+- ✅ Edge cases and boundary conditions
+
+#### Category Thumbnails (`lib/categoryThumbnails.test.ts`)
+**Focus:** Category image mapping
+- ✅ Thumbnail URL resolution
+- ✅ Default fallback handling
+
+### 3. App Router Pages
+
+#### Root Layout (`app/layout.test.tsx`)
 **Focus:** Metadata and SEO validation
 - ✅ Application title and description
 - ✅ Metadata structure validation
@@ -198,7 +285,7 @@ Testing Strategy:
 
 **Note:** Full RootLayout component testing is limited due to `<html>`/`<body>` tags which cannot be rendered in Jest. Structure is validated through TypeScript compilation and build process.
 
-#### Project Detail Page (`app/project/[projectId]/page.test.tsx`) - 31 tests
+#### Project Detail Page (`app/project/[projectId]/page.test.tsx`)
 **Focus:** Dynamic project pages with conditional rendering
 - ✅ OPEN project rendering (no timeline)
 - ✅ ASSIGNED/IN_PROGRESS/IN_REVIEW/COMPLETED/ARCHIVED rendering (with timeline)
@@ -209,7 +296,7 @@ Testing Strategy:
 - ✅ Data fetching order validation
 - ✅ Edge cases and error scenarios
 
-#### Profile Page (`app/profile/[userId]/page.test.tsx`) - 22 tests
+#### Profile Page (`app/profile/[userId]/page.test.tsx`)
 **Focus:** User profile display with role-based rendering
 - ✅ Profile component rendering (Header, Sidebar, Content)
 - ✅ User data fetching and display
@@ -220,9 +307,9 @@ Testing Strategy:
 - ✅ Component layout structure and order
 - ✅ Data fetching order validation
 
-### 3. Components (109 tests)
+### 4. Components
 
-#### Header Component (`components/Header.test.tsx`) - ~55 tests
+#### Header Component (`components/Header.test.tsx`)
 **Focus:** Main navigation and authentication UI
 - ✅ Server component data fetching (user auth, notifications)
 - ✅ Client component rendering (HeaderContent)
@@ -236,7 +323,7 @@ Testing Strategy:
 - ✅ Mobile responsiveness
 - ✅ Accessibility features
 
-#### Footer Component (`components/Footer.test.tsx`) - ~54 tests
+#### Footer Component (`components/Footer.test.tsx`)
 **Focus:** Footer navigation and information
 - ✅ Footer structure and layout
 - ✅ Navigation links (Browse, Post Project, About)
@@ -247,9 +334,23 @@ Testing Strategy:
 - ✅ Responsive design
 - ✅ Accessibility compliance
 
-### 4. Root Pages (54 tests)
+#### ApplyButton Component (`components/application/ApplyButton.test.tsx`)
+**Focus:** Project application button functionality
+- ✅ Button rendering and states
+- ✅ Application submission handling
+- ✅ User authentication checks
+- ✅ Error handling
 
-#### Marketplace Page (`page.test.tsx`) - ~27 tests
+#### SearchBar Component (`components/browse/SearchBar.test.tsx`)
+**Focus:** Project search functionality
+- ✅ Search input rendering
+- ✅ Search query handling
+- ✅ Search submission
+- ✅ Clear functionality
+
+### 5. Root Pages
+
+#### Marketplace Page (`page.test.tsx`)
 **Focus:** Main landing page with project listings
 - ✅ Project fetching and display
 - ✅ Pagination logic (totalPages calculation)
@@ -491,19 +592,19 @@ Each test directory contains detailed documentation:
 
 ## Test Quality Standards
 
-✅ **All tests passing** - 319/319 tests pass consistently  
+✅ **All tests passing** - 712/712 tests pass consistently  
 ✅ **TypeScript strict mode** - Full type checking enabled  
 ✅ **No compilation errors** - Clean build with zero warnings  
 ✅ **Comprehensive coverage** - Unit and integration tests covering happy path, edge cases, and error scenarios  
 ✅ **User-centric approach** - Tests focus on user interactions, not implementation  
 ✅ **Well-documented** - Clear descriptions and inline comments  
-✅ **Fast execution** - Complete suite runs in ~15 seconds  
+✅ **Fast execution** - Complete suite runs in ~51 seconds  
 ✅ **Custom polyfills** - No external dependencies for Web API testing  
 
 ## Continuous Integration
 
 Tests are designed to run in CI/CD pipelines:
-- Fast execution time (~15 seconds for full suite)
+- Fast execution time (~51 seconds for full suite)
 - No external dependencies required
 - Custom Web API polyfills avoid runtime dependencies
 - Deterministic results (no flaky tests)
@@ -516,10 +617,8 @@ Tests are designed to run in CI/CD pipelines:
 2. **Visual Regression Tests** - Screenshot comparisons
 3. **Performance Tests** - Load time and rendering performance
 4. **Accessibility Tests** - Automated a11y audits
-5. **More Integration Tests** - Expand to other features (project posting, applications, settings, profile pages)
 
 ### Areas for Expansion
-- Additional integration tests (browse, profile, project pages)
 - More authentication scenarios (password reset, email verification)
 - API route testing for other endpoints
 - Database integration tests with test containers
@@ -538,11 +637,11 @@ When adding new tests:
 
 ## Support and Maintenance
 
-- **Last Updated:** 2024
+- **Last Updated:** December 2025
 - **Test Framework:** Jest + React Testing Library
-- **Total Coverage:** 220 tests across 7 test suites
+- **Total Coverage:** 712 tests across 21 test suites
 - **Passing Rate:** 100%
-- **Execution Time:** ~4 seconds
+- **Execution Time:** ~51 seconds
 
 ---
 

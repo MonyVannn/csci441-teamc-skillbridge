@@ -5,6 +5,7 @@ const isPublicRoute = createRouteMatcher([
   "/sign-up(.*)",
   "/",
   "/api/webhooks(.*)",
+  "/api/demo(.*)", // Demo API routes for Postman testing
   "/profile(.*)",
   "/docs(.*)",
 ]);

@@ -122,13 +122,6 @@ jest.mock("@/components/setting/UserInformation", () => ({
   ),
 }));
 
-jest.mock("@/components/project/PostProjectModal", () => ({
-  PostProjectModal: ({ open }: { open: boolean }) =>
-    open ? (
-      <div data-testid="post-project-modal">Post Project Modal</div>
-    ) : null,
-}));
-
 jest.mock("@/components/setting/OrganizationPostedProject", () => ({
   OrganizationPostedProjects: () => (
     <div data-testid="organization-posted-projects">

@@ -18,7 +18,7 @@ jest.mock("@clerk/nextjs/server", () => ({
 
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import SignUpPage from "@/app/sign-up/[[...sign-up]]/page";
+import SignUpPage from "@/app/(main)/sign-up/[[...sign-up]]/page";
 import { createUser } from "@/lib/actions/user";
 import prisma from "@/lib/prisma";
 

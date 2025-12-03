@@ -126,9 +126,9 @@ describe("Profile Page Integration Tests", () => {
       const dbError = new Error("Database connection failed");
       (prisma.user.findFirst as jest.Mock).mockRejectedValue(dbError);
 
-      await expect(getUserByClerkId("clerk_123")).rejects.toThrow(
-        "Failed to fatch user Data."
-      );
+      // Function returns null on error instead of throwing
+      const result = await getUserByClerkId("clerk_123");
+      expect(result).toBeNull();
     });
 
     it("should fetch user with all badge arrays", async () => {
@@ -488,13 +488,14 @@ describe("Profile Page Integration Tests", () => {
       });
     });
 
-    it("should throw error when user is not found", async () => {
+    it("should return empty array when user is not found", async () => {
       (prisma.user.findFirst as jest.Mock).mockResolvedValue(null);
 
-      await expect(
-        getCompletedProjectsByAssignedStudentId("nonexistent_clerk_id")
-      ).rejects.toThrow("Failed to fetch completed projects.");
+      const result = await getCompletedProjectsByAssignedStudentId(
+        "nonexistent_clerk_id"
+      );
 
+      expect(result).toEqual([]);
       expect(prisma.project.findMany).not.toHaveBeenCalled();
     });
 
@@ -608,9 +609,9 @@ describe("Profile Page Integration Tests", () => {
         new Error("Database connection failed")
       );
 
-      await expect(
-        getCompletedProjectsByAssignedStudentId("clerk_123")
-      ).rejects.toThrow("Failed to fetch completed projects.");
+      // Function returns empty array on error instead of throwing
+      const result = await getCompletedProjectsByAssignedStudentId("clerk_123");
+      expect(result).toEqual([]);
     });
 
     it("should fetch multiple completed projects with various categories", async () => {

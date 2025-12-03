@@ -38,6 +38,34 @@ jest.mock("@/lib/prisma", () => ({
 // Import the mocked Prisma instance
 const prisma = require("@/lib/prisma").default as jest.Mocked<PrismaClient>;
 
+// Valid MongoDB ObjectIDs for testing (24 hex characters)
+const VALID_IDS = {
+  // Project IDs
+  PROJECT_1: "507f1f77bcf86cd799439011",
+  PROJECT_2: "507f1f77bcf86cd799439012",
+  PROJECT_OPEN: "507f1f77bcf86cd799439013",
+  PROJECT_ASSIGNED: "507f1f77bcf86cd799439014",
+  PROJECT_IN_PROGRESS: "507f1f77bcf86cd799439015",
+  PROJECT_IN_REVIEW: "507f1f77bcf86cd799439016",
+  PROJECT_COMPLETED: "507f1f77bcf86cd799439017",
+  PROJECT_ARCHIVED: "507f1f77bcf86cd799439018",
+  PROJECT_LONG: "507f1f77bcf86cd799439019",
+  PROJECT_MANY_SKILLS: "507f1f77bcf86cd79943901a",
+  PROJECT_HIGH_BUDGET: "507f1f77bcf86cd79943901b",
+  NONEXISTENT: "507f1f77bcf86cd79943901c",
+  PROJECT_INTEGRATION: "507f1f77bcf86cd79943901d",
+  PROJECT_WITH_APPS: "507f1f77bcf86cd79943901e",
+  PROJECT_POPULAR: "507f1f77bcf86cd79943901f",
+  PROJECT_MINIMAL: "507f1f77bcf86cd799439020",
+  PROJECT_NO_APPS: "507f1f77bcf86cd799439021",
+  PROJECT_CONCURRENT: "507f1f77bcf86cd799439022",
+  // User IDs
+  STUDENT_1: "507f1f77bcf86cd799439031",
+  OWNER_1: "507f1f77bcf86cd799439041",
+  OWNER_2: "507f1f77bcf86cd799439042",
+  OWNER_DETAILED: "507f1f77bcf86cd799439043",
+};
+
 describe("Project Detail Page Integration Tests", () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -46,7 +74,7 @@ describe("Project Detail Page Integration Tests", () => {
   describe("getProjectByProjectId - Project Data Fetching", () => {
     it("should successfully fetch project by ID", async () => {
       const mockProject = {
-        id: "project-1",
+        id: VALID_IDS.PROJECT_1,
         title: "E-commerce Platform Development",
         description:
           "Build a full-stack e-commerce platform with payment integration",
@@ -66,7 +94,7 @@ describe("Project Detail Page Integration Tests", () => {
         businessOwnerId: "owner-1",
         assignedStudentId: null,
         businessOwner: {
-          id: "owner-1",
+          id: VALID_IDS.OWNER_1,
           clerkId: "clerk_owner_1",
           imageUrl: "https://example.com/owner.jpg",
           firstName: "Business",
@@ -81,11 +109,11 @@ describe("Project Detail Page Integration Tests", () => {
 
       (prisma.project.findUnique as jest.Mock).mockResolvedValue(mockProject);
 
-      const result = await getProjectByProjectId("project-1");
+      const result = await getProjectByProjectId(VALID_IDS.PROJECT_1);
 
       expect(result).toEqual(mockProject);
       expect(prisma.project.findUnique).toHaveBeenCalledWith({
-        where: { id: "project-1" },
+        where: { id: VALID_IDS.PROJECT_1 },
         include: {
           businessOwner: {
             select: {
@@ -122,7 +150,7 @@ describe("Project Detail Page Integration Tests", () => {
 
     it("should fetch project with assigned student", async () => {
       const mockProject = {
-        id: "project-2",
+        id: VALID_IDS.PROJECT_2,
         title: "Mobile App Development",
         description: "Create a cross-platform mobile application",
         category: "MOBILE_DEVELOPMENT",
@@ -138,10 +166,10 @@ describe("Project Detail Page Integration Tests", () => {
         inProgressAt: new Date("2024-02-05"),
         inReviewAt: null,
         completedAt: null,
-        businessOwnerId: "owner-2",
-        assignedStudentId: "student-1",
+        businessOwnerId: VALID_IDS.OWNER_2,
+        assignedStudentId: VALID_IDS.STUDENT_1,
         businessOwner: {
-          id: "owner-2",
+          id: VALID_IDS.OWNER_2,
           clerkId: "clerk_owner_2",
           imageUrl: "https://example.com/owner2.jpg",
           firstName: "Startup",
@@ -151,7 +179,7 @@ describe("Project Detail Page Integration Tests", () => {
           intro: "Disrupting the market",
         },
         assignedStudent: {
-          id: "student-1",
+          id: VALID_IDS.STUDENT_1,
           clerkId: "clerk_student_1",
           imageUrl: "https://example.com/student.jpg",
           firstName: "John",
@@ -169,12 +197,12 @@ describe("Project Detail Page Integration Tests", () => {
 
       (prisma.project.findUnique as jest.Mock).mockResolvedValue(mockProject);
 
-      const result = await getProjectByProjectId("project-2");
+      const result = await getProjectByProjectId(VALID_IDS.PROJECT_2);
 
       expect(result).toEqual(mockProject);
-      expect(result.assignedStudent).toBeDefined();
-      expect(result.assignedStudent?.firstName).toBe("John");
-      expect(result.assignedStudent?.skills).toEqual([
+      expect(result!.assignedStudent).toBeDefined();
+      expect(result!.assignedStudent?.firstName).toBe("John");
+      expect(result!.assignedStudent?.skills).toEqual([
         "React Native",
         "Firebase",
         "JavaScript",
@@ -184,9 +212,9 @@ describe("Project Detail Page Integration Tests", () => {
     it("should throw error when project is not found", async () => {
       (prisma.project.findUnique as jest.Mock).mockResolvedValue(null);
 
-      await expect(
-        getProjectByProjectId("nonexistent-project-id")
-      ).rejects.toThrow("Failed to fetch project data.");
+      // When project ID format is valid but project doesn't exist, function returns null
+      const result = await getProjectByProjectId(VALID_IDS.NONEXISTENT);
+      expect(result).toBeNull();
     });
 
     it("should handle database errors gracefully", async () => {
@@ -194,14 +222,14 @@ describe("Project Detail Page Integration Tests", () => {
         new Error("Database connection failed")
       );
 
-      await expect(getProjectByProjectId("project-1")).rejects.toThrow(
-        "Failed to fetch project data."
-      );
+      // With valid ID, database error returns null (error is caught internally)
+      const result = await getProjectByProjectId(VALID_IDS.PROJECT_1);
+      expect(result).toBeNull();
     });
 
     it("should fetch project with all statuses - OPEN", async () => {
       const mockProject = {
-        id: "project-open",
+        id: VALID_IDS.PROJECT_OPEN,
         title: "Open Project",
         description: "Project accepting applications",
         category: "WEB_DEVELOPMENT",
@@ -217,10 +245,10 @@ describe("Project Detail Page Integration Tests", () => {
         inProgressAt: null,
         inReviewAt: null,
         completedAt: null,
-        businessOwnerId: "owner-1",
+        businessOwnerId: VALID_IDS.OWNER_1,
         assignedStudentId: null,
         businessOwner: {
-          id: "owner-1",
+          id: VALID_IDS.OWNER_1,
           clerkId: "clerk_owner_1",
           imageUrl: null,
           firstName: "Owner",
@@ -235,22 +263,22 @@ describe("Project Detail Page Integration Tests", () => {
 
       (prisma.project.findUnique as jest.Mock).mockResolvedValue(mockProject);
 
-      const result = await getProjectByProjectId("project-open");
+      const result = await getProjectByProjectId(VALID_IDS.PROJECT_OPEN);
 
-      expect(result.status).toBe("OPEN");
-      expect(result.assignedStudent).toBeNull();
-      expect(result.assignedAt).toBeNull();
+      expect(result!.status).toBe("OPEN");
+      expect(result!.assignedStudent).toBeNull();
+      expect(result!.assignedAt).toBeNull();
     });
 
     it("should fetch project with ASSIGNED status", async () => {
       const mockProject = {
-        id: "project-assigned",
+        id: VALID_IDS.PROJECT_ASSIGNED,
         status: "ASSIGNED" as ProjectStatus,
         assignedAt: new Date("2024-02-01"),
         inProgressAt: null,
-        assignedStudentId: "student-1",
+        assignedStudentId: VALID_IDS.STUDENT_1,
         assignedStudent: {
-          id: "student-1",
+          id: VALID_IDS.STUDENT_1,
           clerkId: "clerk_student_1",
           imageUrl: null,
           firstName: "Student",
@@ -259,7 +287,7 @@ describe("Project Detail Page Integration Tests", () => {
           skills: [],
         },
         businessOwner: {
-          id: "owner-1",
+          id: VALID_IDS.OWNER_1,
           clerkId: "clerk_owner_1",
           imageUrl: null,
           firstName: "Owner",
@@ -273,25 +301,25 @@ describe("Project Detail Page Integration Tests", () => {
 
       (prisma.project.findUnique as jest.Mock).mockResolvedValue(mockProject);
 
-      const result = await getProjectByProjectId("project-assigned");
+      const result = await getProjectByProjectId(VALID_IDS.PROJECT_ASSIGNED);
 
-      expect(result.status).toBe("ASSIGNED");
-      expect(result.assignedStudent).toBeDefined();
-      expect(result.assignedAt).toBeDefined();
-      expect(result.inProgressAt).toBeNull();
+      expect(result!.status).toBe("ASSIGNED");
+      expect(result!.assignedStudent).toBeDefined();
+      expect(result!.assignedAt).toBeDefined();
+      expect(result!.inProgressAt).toBeNull();
     });
 
     it("should fetch project with COMPLETED status", async () => {
       const mockProject = {
-        id: "project-completed",
+        id: VALID_IDS.PROJECT_COMPLETED,
         status: "COMPLETED" as ProjectStatus,
         assignedAt: new Date("2024-01-01"),
         inProgressAt: new Date("2024-01-05"),
         inReviewAt: new Date("2024-02-01"),
         completedAt: new Date("2024-02-15"),
-        assignedStudentId: "student-1",
+        assignedStudentId: VALID_IDS.STUDENT_1,
         assignedStudent: {
-          id: "student-1",
+          id: VALID_IDS.STUDENT_1,
           clerkId: "clerk_student_1",
           imageUrl: null,
           firstName: "Student",
@@ -300,7 +328,7 @@ describe("Project Detail Page Integration Tests", () => {
           skills: [],
         },
         businessOwner: {
-          id: "owner-1",
+          id: VALID_IDS.OWNER_1,
           clerkId: "clerk_owner_1",
           imageUrl: null,
           firstName: "Owner",
@@ -314,21 +342,21 @@ describe("Project Detail Page Integration Tests", () => {
 
       (prisma.project.findUnique as jest.Mock).mockResolvedValue(mockProject);
 
-      const result = await getProjectByProjectId("project-completed");
+      const result = await getProjectByProjectId(VALID_IDS.PROJECT_COMPLETED);
 
-      expect(result.status).toBe("COMPLETED");
-      expect(result.completedAt).toBeDefined();
-      expect(result.assignedAt).toBeDefined();
-      expect(result.inProgressAt).toBeDefined();
-      expect(result.inReviewAt).toBeDefined();
+      expect(result!.status).toBe("COMPLETED");
+      expect(result!.completedAt).toBeDefined();
+      expect(result!.assignedAt).toBeDefined();
+      expect(result!.inProgressAt).toBeDefined();
+      expect(result!.inReviewAt).toBeDefined();
     });
 
     it("should include business owner details", async () => {
       const mockProject = {
-        id: "project-1",
+        id: VALID_IDS.PROJECT_1,
         status: "OPEN" as ProjectStatus,
         businessOwner: {
-          id: "owner-detailed",
+          id: VALID_IDS.OWNER_DETAILED,
           clerkId: "clerk_owner_detailed",
           imageUrl: "https://example.com/owner-detailed.jpg",
           firstName: "Detailed",
@@ -343,27 +371,27 @@ describe("Project Detail Page Integration Tests", () => {
 
       (prisma.project.findUnique as jest.Mock).mockResolvedValue(mockProject);
 
-      const result = await getProjectByProjectId("project-1");
+      const result = await getProjectByProjectId(VALID_IDS.PROJECT_1);
 
-      expect(result.businessOwner).toHaveProperty("id");
-      expect(result.businessOwner).toHaveProperty("clerkId");
-      expect(result.businessOwner).toHaveProperty("imageUrl");
-      expect(result.businessOwner).toHaveProperty("firstName");
-      expect(result.businessOwner).toHaveProperty("lastName");
-      expect(result.businessOwner).toHaveProperty("address");
-      expect(result.businessOwner).toHaveProperty("bio");
-      expect(result.businessOwner).toHaveProperty("intro");
-      expect(result.businessOwner.bio).toBe(
+      expect(result!.businessOwner).toHaveProperty("id");
+      expect(result!.businessOwner).toHaveProperty("clerkId");
+      expect(result!.businessOwner).toHaveProperty("imageUrl");
+      expect(result!.businessOwner).toHaveProperty("firstName");
+      expect(result!.businessOwner).toHaveProperty("lastName");
+      expect(result!.businessOwner).toHaveProperty("address");
+      expect(result!.businessOwner).toHaveProperty("bio");
+      expect(result!.businessOwner).toHaveProperty("intro");
+      expect(result!.businessOwner.bio).toBe(
         "Experienced entrepreneur with 10+ years in tech"
       );
     });
 
     it("should include applications with status and updatedAt", async () => {
       const mockProject = {
-        id: "project-with-apps",
+        id: VALID_IDS.PROJECT_WITH_APPS,
         status: "OPEN" as ProjectStatus,
         businessOwner: {
-          id: "owner-1",
+          id: VALID_IDS.OWNER_1,
           clerkId: "clerk_owner_1",
           imageUrl: null,
           firstName: "Owner",
@@ -391,12 +419,12 @@ describe("Project Detail Page Integration Tests", () => {
 
       (prisma.project.findUnique as jest.Mock).mockResolvedValue(mockProject);
 
-      const result = await getProjectByProjectId("project-with-apps");
+      const result = await getProjectByProjectId(VALID_IDS.PROJECT_WITH_APPS);
 
-      expect(result.applications).toHaveLength(3);
-      expect(result.applications[0]).toHaveProperty("updatedAt");
-      expect(result.applications[0]).toHaveProperty("status");
-      expect(result.applications[1].status).toBe("ACCEPTED");
+      expect(result!.applications).toHaveLength(3);
+      expect(result!.applications[0]).toHaveProperty("updatedAt");
+      expect(result!.applications[0]).toHaveProperty("status");
+      expect(result!.applications[1].status).toBe("ACCEPTED");
     });
   });
 
@@ -413,7 +441,7 @@ describe("Project Detail Page Integration Tests", () => {
 
       (prisma.project.findUnique as jest.Mock).mockResolvedValue(mockProject);
 
-      const result = await getProjectTimelineByProjectId("project-1");
+      const result = await getProjectTimelineByProjectId(VALID_IDS.PROJECT_1);
 
       expect(result).toHaveLength(1);
       expect(result[0]).toEqual({
@@ -443,8 +471,8 @@ describe("Project Detail Page Integration Tests", () => {
       );
 
       const result = await getProjectTimelineByProjectId(
-        "project-1",
-        "student-1"
+        VALID_IDS.PROJECT_1,
+        VALID_IDS.STUDENT_1
       );
 
       expect(result).toHaveLength(5);
@@ -485,8 +513,8 @@ describe("Project Detail Page Integration Tests", () => {
       );
 
       const result = await getProjectTimelineByProjectId(
-        "project-1",
-        "student-1"
+        VALID_IDS.PROJECT_1,
+        VALID_IDS.STUDENT_1
       );
 
       expect(result).toHaveLength(3);
@@ -518,8 +546,8 @@ describe("Project Detail Page Integration Tests", () => {
       );
 
       const result = await getProjectTimelineByProjectId(
-        "project-1",
-        "student-1"
+        VALID_IDS.PROJECT_1,
+        VALID_IDS.STUDENT_1
       );
 
       expect(result).toHaveLength(2);
@@ -542,8 +570,8 @@ describe("Project Detail Page Integration Tests", () => {
       (prisma.application.findUnique as jest.Mock).mockResolvedValue(null);
 
       const result = await getProjectTimelineByProjectId(
-        "project-1",
-        "student-1"
+        VALID_IDS.PROJECT_1,
+        VALID_IDS.STUDENT_1
       );
 
       expect(result).toHaveLength(1);
@@ -558,7 +586,10 @@ describe("Project Detail Page Integration Tests", () => {
       (prisma.project.findUnique as jest.Mock).mockResolvedValue(null);
 
       await expect(
-        getProjectTimelineByProjectId("nonexistent-project-id", "student-1")
+        getProjectTimelineByProjectId(
+          VALID_IDS.NONEXISTENT,
+          VALID_IDS.STUDENT_1
+        )
       ).rejects.toThrow("Failed to fetch project timeline.");
     });
 
@@ -568,7 +599,7 @@ describe("Project Detail Page Integration Tests", () => {
       );
 
       await expect(
-        getProjectTimelineByProjectId("project-1", "student-1")
+        getProjectTimelineByProjectId(VALID_IDS.PROJECT_1, VALID_IDS.STUDENT_1)
       ).rejects.toThrow("Failed to fetch project timeline.");
     });
 
@@ -592,8 +623,8 @@ describe("Project Detail Page Integration Tests", () => {
       );
 
       const result = await getProjectTimelineByProjectId(
-        "project-1",
-        "student-1"
+        VALID_IDS.PROJECT_1,
+        VALID_IDS.STUDENT_1
       );
 
       // Only shows entries up to current status (ASSIGNED = index 1)
@@ -622,8 +653,8 @@ describe("Project Detail Page Integration Tests", () => {
       );
 
       const result = await getProjectTimelineByProjectId(
-        "project-1",
-        "student-1"
+        VALID_IDS.PROJECT_1,
+        VALID_IDS.STUDENT_1
       );
 
       expect(result).toHaveLength(4);
@@ -637,7 +668,7 @@ describe("Project Detail Page Integration Tests", () => {
   describe("Project Detail Page - Integration Scenarios", () => {
     it("should fetch project data and timeline together for IN_PROGRESS project", async () => {
       const mockProject = {
-        id: "project-integration",
+        id: VALID_IDS.PROJECT_INTEGRATION,
         title: "Integration Test Project",
         description: "Testing full integration",
         category: "WEB_DEVELOPMENT",
@@ -653,10 +684,10 @@ describe("Project Detail Page Integration Tests", () => {
         inProgressAt: new Date("2024-01-10"),
         inReviewAt: null,
         completedAt: null,
-        businessOwnerId: "owner-1",
-        assignedStudentId: "student-1",
+        businessOwnerId: VALID_IDS.OWNER_1,
+        assignedStudentId: VALID_IDS.STUDENT_1,
         businessOwner: {
-          id: "owner-1",
+          id: VALID_IDS.OWNER_1,
           clerkId: "clerk_owner_1",
           imageUrl: "https://example.com/owner.jpg",
           firstName: "Business",
@@ -666,7 +697,7 @@ describe("Project Detail Page Integration Tests", () => {
           intro: "Building great products",
         },
         assignedStudent: {
-          id: "student-1",
+          id: VALID_IDS.STUDENT_1,
           clerkId: "clerk_student_1",
           imageUrl: "https://example.com/student.jpg",
           firstName: "John",
@@ -708,31 +739,33 @@ describe("Project Detail Page Integration Tests", () => {
       );
 
       // Simulate the project detail page flow
-      const project = await getProjectByProjectId("project-integration");
+      const project = await getProjectByProjectId(
+        VALID_IDS.PROJECT_INTEGRATION
+      );
       const timeline =
-        project.status !== "OPEN"
+        project!.status !== "OPEN"
           ? await getProjectTimelineByProjectId(
-              "project-integration",
-              project.assignedStudent?.id || null
+              VALID_IDS.PROJECT_INTEGRATION,
+              project!.assignedStudent?.id || null
             )
           : null;
 
       expect(project).toEqual(mockProject);
       expect(timeline).toBeDefined();
       expect(timeline).toHaveLength(3); // Application, Assigned, In Progress
-      expect(project.status).toBe("IN_PROGRESS");
-      expect(project.assignedStudent).toBeDefined();
+      expect(project!.status).toBe("IN_PROGRESS");
+      expect(project!.assignedStudent).toBeDefined();
     });
 
     it("should handle OPEN project without timeline", async () => {
       const mockProject = {
-        id: "project-open",
+        id: VALID_IDS.PROJECT_OPEN,
         title: "Open Project",
         status: "OPEN" as ProjectStatus,
         assignedStudent: null,
         assignedStudentId: null,
         businessOwner: {
-          id: "owner-1",
+          id: VALID_IDS.OWNER_1,
           clerkId: "clerk_owner_1",
           imageUrl: null,
           firstName: "Owner",
@@ -746,28 +779,28 @@ describe("Project Detail Page Integration Tests", () => {
 
       (prisma.project.findUnique as jest.Mock).mockResolvedValue(mockProject);
 
-      const project = await getProjectByProjectId("project-open");
+      const project = await getProjectByProjectId(VALID_IDS.PROJECT_OPEN);
       const timeline =
-        project.status !== "OPEN"
+        project!.status !== "OPEN"
           ? await getProjectTimelineByProjectId(
-              "project-open",
-              project.assignedStudent?.id || null
+              VALID_IDS.PROJECT_OPEN,
+              project!.assignedStudent?.id || null
             )
           : null;
 
-      expect(project.status).toBe("OPEN");
+      expect(project!.status).toBe("OPEN");
       expect(timeline).toBeNull();
-      expect(project.assignedStudent).toBeNull();
+      expect(project!.assignedStudent).toBeNull();
     });
 
     it("should handle ARCHIVED project", async () => {
       const mockProject = {
-        id: "project-archived",
+        id: VALID_IDS.PROJECT_ARCHIVED,
         title: "Archived Project",
         status: "ARCHIVED" as ProjectStatus,
         assignedStudent: null,
         businessOwner: {
-          id: "owner-1",
+          id: VALID_IDS.OWNER_1,
           clerkId: "clerk_owner_1",
           imageUrl: null,
           firstName: "Owner",
@@ -781,17 +814,17 @@ describe("Project Detail Page Integration Tests", () => {
 
       (prisma.project.findUnique as jest.Mock).mockResolvedValue(mockProject);
 
-      const project = await getProjectByProjectId("project-archived");
+      const project = await getProjectByProjectId(VALID_IDS.PROJECT_ARCHIVED);
 
-      expect(project.status).toBe("ARCHIVED");
+      expect(project!.status).toBe("ARCHIVED");
     });
 
     it("should handle project with multiple applications", async () => {
       const mockProject = {
-        id: "project-popular",
+        id: VALID_IDS.PROJECT_POPULAR,
         status: "OPEN" as ProjectStatus,
         businessOwner: {
-          id: "owner-1",
+          id: VALID_IDS.OWNER_1,
           clerkId: "clerk_owner_1",
           imageUrl: null,
           firstName: "Owner",
@@ -809,33 +842,31 @@ describe("Project Detail Page Integration Tests", () => {
 
       (prisma.project.findUnique as jest.Mock).mockResolvedValue(mockProject);
 
-      const result = await getProjectByProjectId("project-popular");
+      const result = await getProjectByProjectId(VALID_IDS.PROJECT_POPULAR);
 
-      expect(result.applications).toHaveLength(10);
+      expect(result!.applications).toHaveLength(10);
       expect(
-        result.applications.filter((app) => app.status === "PENDING")
+        result!.applications.filter((app) => app.status === "PENDING")
       ).toHaveLength(3);
       expect(
-        result.applications.filter((app) => app.status === "ACCEPTED")
+        result!.applications.filter((app) => app.status === "ACCEPTED")
       ).toHaveLength(2);
       expect(
-        result.applications.filter((app) => app.status === "REJECTED")
+        result!.applications.filter((app) => app.status === "REJECTED")
       ).toHaveLength(5);
     });
   });
 
   describe("Project Detail Page - Error Handling and Edge Cases", () => {
     it("should handle invalid project ID format", async () => {
-      (prisma.project.findUnique as jest.Mock).mockResolvedValue(null);
-
-      await expect(getProjectByProjectId("invalid-id-123!@#")).rejects.toThrow(
-        "Failed to fetch project data."
-      );
+      // Invalid format returns null immediately (validation happens before DB call)
+      const result = await getProjectByProjectId("invalid-id-123!@#");
+      expect(result).toBeNull();
     });
 
     it("should handle null values in optional project fields", async () => {
       const mockProject = {
-        id: "project-minimal",
+        id: VALID_IDS.PROJECT_MINIMAL,
         title: "Minimal Project",
         description: "Minimal data project",
         category: "WEB_DEVELOPMENT",
@@ -851,10 +882,10 @@ describe("Project Detail Page Integration Tests", () => {
         inProgressAt: null,
         inReviewAt: null,
         completedAt: null,
-        businessOwnerId: "owner-1",
+        businessOwnerId: VALID_IDS.OWNER_1,
         assignedStudentId: null,
         businessOwner: {
-          id: "owner-1",
+          id: VALID_IDS.OWNER_1,
           clerkId: "clerk_owner_1",
           imageUrl: null,
           firstName: "Owner",
@@ -869,21 +900,21 @@ describe("Project Detail Page Integration Tests", () => {
 
       (prisma.project.findUnique as jest.Mock).mockResolvedValue(mockProject);
 
-      const result = await getProjectByProjectId("project-minimal");
+      const result = await getProjectByProjectId(VALID_IDS.PROJECT_MINIMAL);
 
-      expect(result.businessOwner.imageUrl).toBeNull();
-      expect(result.businessOwner.address).toBeNull();
-      expect(result.businessOwner.bio).toBeNull();
-      expect(result.assignedStudent).toBeNull();
-      expect(result.requiredSkills).toEqual([]);
+      expect(result!.businessOwner.imageUrl).toBeNull();
+      expect(result!.businessOwner.address).toBeNull();
+      expect(result!.businessOwner.bio).toBeNull();
+      expect(result!.assignedStudent).toBeNull();
+      expect(result!.requiredSkills).toEqual([]);
     });
 
     it("should handle project with empty applications array", async () => {
       const mockProject = {
-        id: "project-no-apps",
+        id: VALID_IDS.PROJECT_NO_APPS,
         status: "OPEN" as ProjectStatus,
         businessOwner: {
-          id: "owner-1",
+          id: VALID_IDS.OWNER_1,
           clerkId: "clerk_owner_1",
           imageUrl: null,
           firstName: "Owner",
@@ -898,24 +929,24 @@ describe("Project Detail Page Integration Tests", () => {
 
       (prisma.project.findUnique as jest.Mock).mockResolvedValue(mockProject);
 
-      const result = await getProjectByProjectId("project-no-apps");
+      const result = await getProjectByProjectId(VALID_IDS.PROJECT_NO_APPS);
 
-      expect(result.applications).toEqual([]);
-      expect(result.applications).toHaveLength(0);
+      expect(result!.applications).toEqual([]);
+      expect(result!.applications).toHaveLength(0);
     });
 
     it("should handle concurrent project and timeline fetch", async () => {
       const mockProject = {
-        id: "project-concurrent",
+        id: VALID_IDS.PROJECT_CONCURRENT,
         status: "ASSIGNED" as ProjectStatus,
-        assignedStudentId: "student-1",
+        assignedStudentId: VALID_IDS.STUDENT_1,
         createdAt: new Date("2024-01-01"),
         assignedAt: new Date("2024-01-15"),
         inProgressAt: null,
         inReviewAt: null,
         completedAt: null,
         businessOwner: {
-          id: "owner-1",
+          id: VALID_IDS.OWNER_1,
           clerkId: "clerk_owner_1",
           imageUrl: null,
           firstName: "Owner",
@@ -925,7 +956,7 @@ describe("Project Detail Page Integration Tests", () => {
           intro: null,
         },
         assignedStudent: {
-          id: "student-1",
+          id: VALID_IDS.STUDENT_1,
           clerkId: "clerk_student_1",
           imageUrl: null,
           firstName: "Student",
@@ -957,8 +988,11 @@ describe("Project Detail Page Integration Tests", () => {
       );
 
       const [project, timeline] = await Promise.all([
-        getProjectByProjectId("project-concurrent"),
-        getProjectTimelineByProjectId("project-concurrent", "student-1"),
+        getProjectByProjectId(VALID_IDS.PROJECT_CONCURRENT),
+        getProjectTimelineByProjectId(
+          VALID_IDS.PROJECT_CONCURRENT,
+          VALID_IDS.STUDENT_1
+        ),
       ]);
 
       expect(project).toEqual(mockProject);
@@ -968,12 +1002,12 @@ describe("Project Detail Page Integration Tests", () => {
     it("should handle very long project descriptions", async () => {
       const longDescription = "A".repeat(5000);
       const mockProject = {
-        id: "project-long",
+        id: VALID_IDS.PROJECT_LONG,
         title: "Project with Long Description",
         description: longDescription,
         status: "OPEN" as ProjectStatus,
         businessOwner: {
-          id: "owner-1",
+          id: VALID_IDS.OWNER_1,
           clerkId: "clerk_owner_1",
           imageUrl: null,
           firstName: "Owner",
@@ -988,20 +1022,20 @@ describe("Project Detail Page Integration Tests", () => {
 
       (prisma.project.findUnique as jest.Mock).mockResolvedValue(mockProject);
 
-      const result = await getProjectByProjectId("project-long");
+      const result = await getProjectByProjectId(VALID_IDS.PROJECT_LONG);
 
-      expect(result.description).toHaveLength(5000);
-      expect(result.description).toBe(longDescription);
+      expect(result!.description).toHaveLength(5000);
+      expect(result!.description).toBe(longDescription);
     });
 
     it("should handle project with many required skills", async () => {
       const manySkills = Array.from({ length: 20 }, (_, i) => `Skill-${i + 1}`);
       const mockProject = {
-        id: "project-many-skills",
+        id: VALID_IDS.PROJECT_MANY_SKILLS,
         requiredSkills: manySkills,
         status: "OPEN" as ProjectStatus,
         businessOwner: {
-          id: "owner-1",
+          id: VALID_IDS.OWNER_1,
           clerkId: "clerk_owner_1",
           imageUrl: null,
           firstName: "Owner",
@@ -1016,19 +1050,19 @@ describe("Project Detail Page Integration Tests", () => {
 
       (prisma.project.findUnique as jest.Mock).mockResolvedValue(mockProject);
 
-      const result = await getProjectByProjectId("project-many-skills");
+      const result = await getProjectByProjectId(VALID_IDS.PROJECT_MANY_SKILLS);
 
-      expect(result.requiredSkills).toHaveLength(20);
-      expect(result.requiredSkills).toEqual(manySkills);
+      expect(result!.requiredSkills).toHaveLength(20);
+      expect(result!.requiredSkills).toEqual(manySkills);
     });
 
     it("should handle project with very high budget", async () => {
       const mockProject = {
-        id: "project-high-budget",
+        id: VALID_IDS.PROJECT_HIGH_BUDGET,
         estimatedBudget: 1000000,
         status: "OPEN" as ProjectStatus,
         businessOwner: {
-          id: "owner-1",
+          id: VALID_IDS.OWNER_1,
           clerkId: "clerk_owner_1",
           imageUrl: null,
           firstName: "Owner",
@@ -1043,9 +1077,9 @@ describe("Project Detail Page Integration Tests", () => {
 
       (prisma.project.findUnique as jest.Mock).mockResolvedValue(mockProject);
 
-      const result = await getProjectByProjectId("project-high-budget");
+      const result = await getProjectByProjectId(VALID_IDS.PROJECT_HIGH_BUDGET);
 
-      expect(result.estimatedBudget).toBe(1000000);
+      expect((result as any).estimatedBudget).toBe(1000000);
     });
   });
 });

@@ -3,7 +3,10 @@ import userEvent from "@testing-library/user-event";
 import Header from "@/components/Header";
 import HeaderContent from "@/components/HeaderContent";
 import { getUserOrNull } from "@/lib/actions/user";
-import { getTotalUnrespondedApplication } from "@/lib/actions/application";
+import {
+  getTotalUnrespondedApplication,
+  getUnseenApplicationCount,
+} from "@/lib/actions/application";
 import { getUserByClerkId } from "@/lib/actions/user";
 
 // Mock Next.js navigation
@@ -17,47 +20,90 @@ jest.mock("@clerk/nextjs/server", () => ({
   currentUser: jest.fn(),
 }));
 
-// Mock Clerk
-let mockIsSignedIn = false;
-
-jest.mock("@clerk/nextjs", () => ({
-  SignedIn: ({ children }: { children: React.ReactNode }) => {
-    const mockIsSignedIn = (jest.requireMock("@clerk/nextjs") as any)
-      .__mockIsSignedIn;
-    return mockIsSignedIn ? (
-      <div data-testid="signed-in">{children}</div>
-    ) : null;
-  },
-  SignedOut: ({ children }: { children: React.ReactNode }) => {
-    const mockIsSignedIn = (jest.requireMock("@clerk/nextjs") as any)
-      .__mockIsSignedIn;
-    return !mockIsSignedIn ? (
-      <div data-testid="signed-out">{children}</div>
-    ) : null;
-  },
-  UserButton: ({ children }: { children?: React.ReactNode }) => (
+// Mock Clerk - define MockUserButton inside factory to avoid hoisting issues
+jest.mock("@clerk/nextjs", () => {
+  // Create UserButton mock component with sub-components
+  const MockUserButton = ({ children }: { children?: React.ReactNode }) => (
     <div data-testid="user-button">{children}</div>
-  ),
-  useUser: jest.fn(() => ({
-    user: null,
-    isLoaded: true,
-  })),
-  __mockIsSignedIn: false,
-}));
+  );
+  MockUserButton.MenuItems = ({ children }: { children?: React.ReactNode }) => (
+    <div data-testid="user-button-menu-items">{children}</div>
+  );
+  MockUserButton.Link = ({
+    href,
+    label,
+    labelIcon,
+  }: {
+    href: string;
+    label: string;
+    labelIcon?: React.ReactNode;
+  }) => (
+    <div
+      data-testid={`user-button-link-${label
+        .replace(/\s+/g, "-")
+        .toLowerCase()}`}
+    >
+      {label}
+    </div>
+  );
+  MockUserButton.Action = ({ label }: { label: string }) => (
+    <div data-testid={`user-button-action-${label}`}>{label}</div>
+  );
+  MockUserButton.UserProfilePage = ({
+    children,
+    label,
+  }: {
+    children?: React.ReactNode;
+    label: string;
+  }) => <div data-testid={`user-profile-page-${label}`}>{children}</div>;
+  MockUserButton.UserProfileLink = ({
+    url,
+    label,
+    labelIcon,
+  }: {
+    url: string;
+    label: string;
+    labelIcon?: React.ReactNode;
+  }) => (
+    <div
+      data-testid={`user-profile-link-${label
+        .replace(/\s+/g, "-")
+        .toLowerCase()}`}
+    >
+      {label}
+    </div>
+  );
 
-// Add UserButton sub-components
-Object.assign(jest.requireMock("@clerk/nextjs").UserButton, {
-  UserProfilePage: ({ children, label }: any) => (
-    <div data-testid={`user-profile-page-${label}`}>{children}</div>
-  ),
-  UserProfileLink: ({ label }: any) => (
-    <div data-testid={`user-profile-link-${label}`}>{label}</div>
-  ),
+  return {
+    SignedIn: ({ children }: { children: React.ReactNode }) => {
+      const mockIsSignedIn = (jest.requireMock("@clerk/nextjs") as any)
+        .__mockIsSignedIn;
+      return mockIsSignedIn ? (
+        <div data-testid="signed-in">{children}</div>
+      ) : null;
+    },
+    SignedOut: ({ children }: { children: React.ReactNode }) => {
+      const mockIsSignedIn = (jest.requireMock("@clerk/nextjs") as any)
+        .__mockIsSignedIn;
+      return !mockIsSignedIn ? (
+        <div data-testid="signed-out">{children}</div>
+      ) : null;
+    },
+    UserButton: MockUserButton,
+    useUser: jest.fn(() => ({
+      user: null,
+      isLoaded: true,
+    })),
+    __mockIsSignedIn: false,
+  };
 });
 
 // Mock server actions
 jest.mock("@/lib/actions/user");
-jest.mock("@/lib/actions/application");
+jest.mock("@/lib/actions/application", () => ({
+  getTotalUnrespondedApplication: jest.fn(),
+  getUnseenApplicationCount: jest.fn().mockResolvedValue(0),
+}));
 
 // Mock child components
 jest.mock("@/components/setting/UserExperience", () => ({
@@ -74,13 +120,6 @@ jest.mock("@/components/setting/UserInformation", () => ({
   UserInformation: () => (
     <div data-testid="user-information">User Information</div>
   ),
-}));
-
-jest.mock("@/components/project/PostProjectModal", () => ({
-  PostProjectModal: ({ open }: { open: boolean }) =>
-    open ? (
-      <div data-testid="post-project-modal">Post Project Modal</div>
-    ) : null,
 }));
 
 jest.mock("@/components/setting/OrganizationPostedProject", () => ({
@@ -169,6 +208,7 @@ describe("Header Component", () => {
         postedProjects: [],
         assignedProjects: [],
         applications: [],
+        conversationIds: [],
       };
 
       mockGetUserOrNull.mockResolvedValue(mockUser);
@@ -208,6 +248,7 @@ describe("Header Component", () => {
         postedProjects: [],
         assignedProjects: [],
         applications: [],
+        conversationIds: [],
       };
 
       mockGetUserOrNull.mockResolvedValue(mockUser);
@@ -246,6 +287,7 @@ describe("Header Component", () => {
         postedProjects: [],
         assignedProjects: [],
         applications: [],
+        conversationIds: [],
       };
 
       mockGetUserOrNull.mockResolvedValue(mockUser);
@@ -294,6 +336,7 @@ describe("Header Component", () => {
         postedProjects: [],
         assignedProjects: [],
         applications: [],
+        conversationIds: [],
       };
 
       mockGetUserOrNull.mockResolvedValue(mockUser);
@@ -425,6 +468,7 @@ describe("HeaderContent Component", () => {
       postedProjects: [],
       assignedProjects: [],
       applications: [],
+      conversationIds: [],
     };
 
     beforeEach(() => {
@@ -442,18 +486,7 @@ describe("HeaderContent Component", () => {
       expect(screen.getByTestId("user-button")).toBeInTheDocument();
     });
 
-    it("should render Bio profile page for USER role", () => {
-      render(
-        <HeaderContent
-          user={mockUserRole}
-          totalUnrespondedApplications={null}
-        />
-      );
-
-      expect(screen.getByTestId("user-profile-page-Bio")).toBeInTheDocument();
-    });
-
-    it("should render Experience profile page for USER role", () => {
+    it("should render View profile link for USER role", () => {
       render(
         <HeaderContent
           user={mockUserRole}
@@ -462,11 +495,11 @@ describe("HeaderContent Component", () => {
       );
 
       expect(
-        screen.getByTestId("user-profile-page-Experience")
+        screen.getByTestId("user-button-link-view-profile")
       ).toBeInTheDocument();
     });
 
-    it("should render Education profile page for USER role", () => {
+    it("should render Manage Applications link for USER role", () => {
       render(
         <HeaderContent
           user={mockUserRole}
@@ -475,11 +508,11 @@ describe("HeaderContent Component", () => {
       );
 
       expect(
-        screen.getByTestId("user-profile-page-Education")
+        screen.getByTestId("user-button-link-manage-applications")
       ).toBeInTheDocument();
     });
 
-    it("should render Applications profile page for USER role", () => {
+    it("should render Documentation link for USER role", () => {
       render(
         <HeaderContent
           user={mockUserRole}
@@ -488,7 +521,20 @@ describe("HeaderContent Component", () => {
       );
 
       expect(
-        screen.getByTestId("user-profile-page-Applications")
+        screen.getByTestId("user-button-link-documentation")
+      ).toBeInTheDocument();
+    });
+
+    it("should render manageAccount action for USER role", () => {
+      render(
+        <HeaderContent
+          user={mockUserRole}
+          totalUnrespondedApplications={null}
+        />
+      );
+
+      expect(
+        screen.getByTestId("user-button-action-manageAccount")
       ).toBeInTheDocument();
     });
 
@@ -501,7 +547,7 @@ describe("HeaderContent Component", () => {
       );
 
       const profileLink = screen.getByTestId(
-        "user-profile-link-Go to profile page"
+        "user-profile-link-go-to-profile-page"
       );
       expect(profileLink).toBeInTheDocument();
     });
@@ -517,7 +563,7 @@ describe("HeaderContent Component", () => {
       expect(screen.queryByText("Post a Project")).not.toBeInTheDocument();
     });
 
-    it("should not render Posted Projects page for USER role", () => {
+    it("should not render Manage Projects link for USER role", () => {
       render(
         <HeaderContent
           user={mockUserRole}
@@ -526,7 +572,7 @@ describe("HeaderContent Component", () => {
       );
 
       expect(
-        screen.queryByTestId("user-profile-page-Posted Projects")
+        screen.queryByTestId("user-button-link-manage-projects")
       ).not.toBeInTheDocument();
     });
   });
@@ -560,6 +606,7 @@ describe("HeaderContent Component", () => {
       postedProjects: [],
       assignedProjects: [],
       applications: [],
+      conversationIds: [],
     };
 
     beforeEach(() => {
@@ -577,8 +624,7 @@ describe("HeaderContent Component", () => {
       expect(screen.getByText("Post a Project")).toBeInTheDocument();
     });
 
-    it('should open PostProjectModal when "Post a Project" is clicked', async () => {
-      const user = userEvent.setup();
+    it('"Post a Project" button should link to /project/new', () => {
       render(
         <HeaderContent
           user={mockBusinessOwner}
@@ -587,25 +633,10 @@ describe("HeaderContent Component", () => {
       );
 
       const postButton = screen.getByText("Post a Project");
-      await user.click(postButton);
-
-      await waitFor(() => {
-        expect(screen.getByTestId("post-project-modal")).toBeInTheDocument();
-      });
+      expect(postButton.closest("a")).toHaveAttribute("href", "/project/new");
     });
 
-    it("should render Bio profile page for BUSINESS_OWNER role", () => {
-      render(
-        <HeaderContent
-          user={mockBusinessOwner}
-          totalUnrespondedApplications={null}
-        />
-      );
-
-      expect(screen.getByTestId("user-profile-page-Bio")).toBeInTheDocument();
-    });
-
-    it("should render Posted Projects profile page for BUSINESS_OWNER role", () => {
+    it("should render View profile link for BUSINESS_OWNER role", () => {
       render(
         <HeaderContent
           user={mockBusinessOwner}
@@ -614,11 +645,11 @@ describe("HeaderContent Component", () => {
       );
 
       expect(
-        screen.getByTestId("user-profile-page-Posted Projects")
+        screen.getByTestId("user-button-link-view-profile")
       ).toBeInTheDocument();
     });
 
-    it("should render Applications profile page for BUSINESS_OWNER role", () => {
+    it("should render Manage Projects link for BUSINESS_OWNER role", () => {
       render(
         <HeaderContent
           user={mockBusinessOwner}
@@ -627,11 +658,11 @@ describe("HeaderContent Component", () => {
       );
 
       expect(
-        screen.getByTestId("user-profile-page-Applications")
+        screen.getByTestId("user-button-link-manage-projects")
       ).toBeInTheDocument();
     });
 
-    it("should not render Experience page for BUSINESS_OWNER role", () => {
+    it("should render Manage Applications link for BUSINESS_OWNER role", () => {
       render(
         <HeaderContent
           user={mockBusinessOwner}
@@ -640,11 +671,11 @@ describe("HeaderContent Component", () => {
       );
 
       expect(
-        screen.queryByTestId("user-profile-page-Experience")
-      ).not.toBeInTheDocument();
+        screen.getByTestId("user-button-link-manage-applications")
+      ).toBeInTheDocument();
     });
 
-    it("should not render Education page for BUSINESS_OWNER role", () => {
+    it("should render Documentation link for BUSINESS_OWNER role", () => {
       render(
         <HeaderContent
           user={mockBusinessOwner}
@@ -653,8 +684,21 @@ describe("HeaderContent Component", () => {
       );
 
       expect(
-        screen.queryByTestId("user-profile-page-Education")
-      ).not.toBeInTheDocument();
+        screen.getByTestId("user-button-link-documentation")
+      ).toBeInTheDocument();
+    });
+
+    it("should render signOut action for BUSINESS_OWNER role", () => {
+      render(
+        <HeaderContent
+          user={mockBusinessOwner}
+          totalUnrespondedApplications={null}
+        />
+      );
+
+      expect(
+        screen.getByTestId("user-button-action-signOut")
+      ).toBeInTheDocument();
     });
   });
 
@@ -687,6 +731,7 @@ describe("HeaderContent Component", () => {
       postedProjects: [],
       assignedProjects: [],
       applications: [],
+      conversationIds: [],
     };
 
     beforeEach(() => {
@@ -825,6 +870,7 @@ describe("HeaderContent Component", () => {
         postedProjects: [],
         assignedProjects: [],
         applications: [],
+        conversationIds: [],
       };
 
       const { container } = render(
@@ -879,6 +925,7 @@ describe("HeaderContent Component", () => {
         postedProjects: [],
         assignedProjects: [],
         applications: [],
+        conversationIds: [],
       };
 
       mockUseUser.mockReturnValue({
@@ -924,6 +971,7 @@ describe("HeaderContent Component", () => {
         postedProjects: [],
         assignedProjects: [],
         applications: [],
+        conversationIds: [],
       };
 
       mockUseUser.mockReturnValue({

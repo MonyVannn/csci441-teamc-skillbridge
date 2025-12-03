@@ -1,12 +1,20 @@
+// Mock Clerk modules before imports to prevent ESM errors
+jest.mock("@clerk/backend", () => ({}));
+jest.mock("@clerk/nextjs/server", () => ({
+  currentUser: jest.fn(),
+  auth: jest.fn(),
+}));
+
 import { render, screen } from "@testing-library/react";
-import ProfilePage from "@/app/profile/[userId]/page";
-import { getUserByClerkId } from "@/lib/actions/user";
+import ProfilePage from "@/app/(main)/profile/[userId]/page";
+import { getUserByClerkId, getUsersRecommendation } from "@/lib/actions/user";
 import { getCompletedProjectsByAssignedStudentId } from "@/lib/actions/project";
 import { notFound } from "next/navigation";
 
 // Mock server actions
 jest.mock("@/lib/actions/user", () => ({
   getUserByClerkId: jest.fn(),
+  getUsersRecommendation: jest.fn().mockResolvedValue([]),
 }));
 
 jest.mock("@/lib/actions/project", () => ({
@@ -276,9 +284,8 @@ describe("ProfilePage", () => {
       const params = Promise.resolve({ userId: "nonexistent" });
       await ProfilePage({ params });
 
-      // Profile page fetches completed projects before checking if user exists
-      // This is the actual behavior - it calls the function regardless
-      expect(getCompletedProjectsByAssignedStudentId).toHaveBeenCalled();
+      // Profile page returns early when user not found, so this should NOT be called
+      expect(getCompletedProjectsByAssignedStudentId).not.toHaveBeenCalled();
     });
   });
 

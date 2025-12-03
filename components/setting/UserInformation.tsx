@@ -135,6 +135,7 @@ export function UserInformation() {
   }, [form]);
 
   const handleEdit = () => {
+    if (!userData) return;
     setIsEditing(true);
   };
 

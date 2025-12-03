@@ -2,6 +2,7 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { ApplyButton } from "@/components/application/ApplyButton";
 import { createApplication, isApplied } from "@/lib/actions/application";
 import { AvailableProject } from "@/type";
+import { User } from "@prisma/client";
 
 // Mock server actions
 jest.mock("@/lib/actions/application", () => ({
@@ -10,6 +11,43 @@ jest.mock("@/lib/actions/application", () => ({
 }));
 
 describe("ApplyButton Component", () => {
+  const mockCompleteUser: User = {
+    id: "user123",
+    clerkId: "clerk123",
+    email: "test@example.com",
+    firstName: "John",
+    lastName: "Doe",
+    bio: "A passionate developer",
+    intro: "Hello, I'm John",
+    address: "123 Main St",
+    skills: ["JavaScript", "TypeScript"],
+    imageUrl: "https://example.com/image.jpg",
+    role: "USER" as const,
+    occupied: false,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    socialLinks: [],
+    experiences: [],
+    education: [
+      {
+        id: "edu1",
+        degree: "Computer Science",
+        institution: "University",
+        startDate: new Date(),
+        endDate: null,
+        description: null,
+      },
+    ],
+    previousProjects: [],
+    earnedSkillBadges: [],
+    earnedSpecializationBadges: [],
+    earnedEngagementBadges: [],
+    totalHoursContributed: 0,
+    projectsCompleted: 0,
+    industriesExperienced: [],
+    conversationIds: [],
+  };
+
   const mockProject: AvailableProject = {
     id: "project-123",
     title: "Test Project",
@@ -49,7 +87,7 @@ describe("ApplyButton Component", () => {
   describe("initial rendering", () => {
     it("should render Apply Now button when not applied", async () => {
       (isApplied as jest.Mock).mockResolvedValue(false);
-      render(<ApplyButton project={mockProject} />);
+      render(<ApplyButton project={mockProject} user={mockCompleteUser} />);
 
       await waitFor(() => {
         expect(screen.getByText("Apply Now")).toBeInTheDocument();
@@ -58,7 +96,7 @@ describe("ApplyButton Component", () => {
 
     it("should render Applied button when already applied", async () => {
       (isApplied as jest.Mock).mockResolvedValue(true);
-      render(<ApplyButton project={mockProject} />);
+      render(<ApplyButton project={mockProject} user={mockCompleteUser} />);
 
       await waitFor(() => {
         expect(screen.getByText("Applied")).toBeInTheDocument();
@@ -66,7 +104,7 @@ describe("ApplyButton Component", () => {
     });
 
     it("should check application status on mount", async () => {
-      render(<ApplyButton project={mockProject} />);
+      render(<ApplyButton project={mockProject} user={mockCompleteUser} />);
 
       await waitFor(() => {
         expect(isApplied).toHaveBeenCalledWith(mockProject.id);
@@ -75,7 +113,7 @@ describe("ApplyButton Component", () => {
 
     it("should disable button when already applied", async () => {
       (isApplied as jest.Mock).mockResolvedValue(true);
-      render(<ApplyButton project={mockProject} />);
+      render(<ApplyButton project={mockProject} user={mockCompleteUser} />);
 
       await waitFor(() => {
         const button = screen.getByText("Applied");
@@ -87,7 +125,7 @@ describe("ApplyButton Component", () => {
   describe("dialog interactions", () => {
     it("should open dialog when Apply Now is clicked", async () => {
       (isApplied as jest.Mock).mockResolvedValue(false);
-      render(<ApplyButton project={mockProject} />);
+      render(<ApplyButton project={mockProject} user={mockCompleteUser} />);
 
       await waitFor(() => {
         const button = screen.getByText("Apply Now");
@@ -104,7 +142,7 @@ describe("ApplyButton Component", () => {
 
     it("should not open dialog when Applied button is clicked", async () => {
       (isApplied as jest.Mock).mockResolvedValue(true);
-      render(<ApplyButton project={mockProject} />);
+      render(<ApplyButton project={mockProject} user={mockCompleteUser} />);
 
       await waitFor(() => {
         const button = screen.getByText("Applied");
@@ -118,7 +156,7 @@ describe("ApplyButton Component", () => {
       (isApplied as jest.Mock).mockResolvedValue(false);
       (createApplication as jest.Mock).mockResolvedValue({ success: true });
 
-      render(<ApplyButton project={mockProject} />);
+      render(<ApplyButton project={mockProject} user={mockCompleteUser} />);
 
       await waitFor(() => {
         const button = screen.getByText("Apply Now");
@@ -149,7 +187,7 @@ describe("ApplyButton Component", () => {
 
     it("should not submit without cover letter", async () => {
       (isApplied as jest.Mock).mockResolvedValue(false);
-      render(<ApplyButton project={mockProject} />);
+      render(<ApplyButton project={mockProject} user={mockCompleteUser} />);
 
       await waitFor(() => {
         const button = screen.getByText("Apply Now");
@@ -170,7 +208,7 @@ describe("ApplyButton Component", () => {
       (isApplied as jest.Mock).mockResolvedValue(false);
       (createApplication as jest.Mock).mockResolvedValue({ success: true });
 
-      render(<ApplyButton project={mockProject} />);
+      render(<ApplyButton project={mockProject} user={mockCompleteUser} />);
 
       await waitFor(() => {
         const button = screen.getByText("Apply Now");
@@ -198,7 +236,7 @@ describe("ApplyButton Component", () => {
       (isApplied as jest.Mock).mockResolvedValue(false);
       (createApplication as jest.Mock).mockResolvedValue({ success: true });
 
-      render(<ApplyButton project={mockProject} />);
+      render(<ApplyButton project={mockProject} user={mockCompleteUser} />);
 
       // Open dialog
       await waitFor(() => {
@@ -236,7 +274,7 @@ describe("ApplyButton Component", () => {
         .spyOn(console, "error")
         .mockImplementation(() => {});
 
-      render(<ApplyButton project={mockProject} />);
+      render(<ApplyButton project={mockProject} user={mockCompleteUser} />);
 
       await waitFor(() => {
         const button = screen.getByText("Apply Now");
@@ -265,7 +303,7 @@ describe("ApplyButton Component", () => {
       (isApplied as jest.Mock).mockResolvedValue(false);
       (createApplication as jest.Mock).mockResolvedValue({ success: true });
 
-      render(<ApplyButton project={mockProject} />);
+      render(<ApplyButton project={mockProject} user={mockCompleteUser} />);
 
       await waitFor(() => {
         expect(screen.getByText("Apply Now")).toBeInTheDocument();
@@ -288,7 +326,7 @@ describe("ApplyButton Component", () => {
     it("should handle dialog state correctly", async () => {
       (isApplied as jest.Mock).mockResolvedValue(false);
 
-      render(<ApplyButton project={mockProject} />);
+      render(<ApplyButton project={mockProject} user={mockCompleteUser} />);
 
       await waitFor(() => {
         const button = screen.getByText("Apply Now");

@@ -18,7 +18,7 @@ jest.mock("@clerk/nextjs/server", () => ({
 
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import SignInPage from "@/app/sign-in/[[...sign-in]]/page";
+import SignInPage from "@/app/(main)/sign-in/[[...sign-in]]/page";
 
 // Mock Next.js Image component
 jest.mock("next/image", () => ({

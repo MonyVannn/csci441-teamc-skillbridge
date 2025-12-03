@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import MarketplacePage from "@/app/page";
+import MarketplacePage from "@/app/(main)/page";
 import { getAvailableProjects } from "@/lib/actions/project";
 import { getUserOrNull } from "@/lib/actions/user";
 

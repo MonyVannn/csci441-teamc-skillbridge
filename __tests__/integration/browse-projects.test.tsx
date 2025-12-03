@@ -103,15 +103,15 @@ describe("Browse Projects Integration Tests", () => {
       expect(mockCount).toHaveBeenCalledTimes(1);
     });
 
-    it("should exclude archived and draft projects", async () => {
+    it("should only show OPEN status projects", async () => {
       mockFindMany.mockResolvedValue([createMockProject()]);
       mockCount.mockResolvedValue(1);
 
       await getAvailableProjects("", "", "", "", "", "");
 
       const callArgs = mockFindMany.mock.calls[0][0];
-      expect(callArgs.where.status.notIn).toContain(ProjectStatus.ARCHIVED);
-      expect(callArgs.where.status.notIn).toContain(ProjectStatus.DRAFT);
+      // The function filters by status: "OPEN" only
+      expect(callArgs.where.status).toBe("OPEN");
     });
 
     it("should include business owner and assigned student relations", async () => {

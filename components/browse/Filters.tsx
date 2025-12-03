@@ -126,7 +126,7 @@ export function Filters() {
           (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
         )
         .replace("Ui Ux Design", "UI/UX Design");
-    
+
     return Object.keys(ProjectCategory).reduce((acc, key) => {
       acc[key] = formatCategoryDisplay(key);
       return acc;
@@ -135,7 +135,7 @@ export function Filters() {
 
   // Memoize sorted category keys
   const sortedCategories = useMemo(() => {
-    return Object.keys(ProjectCategory).sort((a, b) => 
+    return Object.keys(ProjectCategory).sort((a, b) =>
       categoryDisplayMap[a].localeCompare(categoryDisplayMap[b])
     );
   }, [categoryDisplayMap]);
@@ -172,19 +172,22 @@ export function Filters() {
         <div className="space-y-2 max-h-96 overflow-y-auto">
           {sortedCategories.map((categoryKey) => {
             const displayText = categoryDisplayMap[categoryKey];
-
             return (
-              <div key={categoryKey} className="flex items-center space-x-2">
+              <div
+                key={categoryKey}
+                className="flex items-center space-x-2 group"
+              >
                 <Checkbox
                   id={categoryKey}
                   checked={selectedCategories.includes(categoryKey)}
                   onCheckedChange={(checked) =>
                     handleCategoryChange(categoryKey, !!checked)
                   }
+                  className="cursor-pointer hover:border-primary"
                 />
                 <label
                   htmlFor={categoryKey}
-                  className="text-sm text-gray-700"
+                  className="text-sm text-gray-700 group-hover:text-primary cursor-pointer"
                 >
                   {displayText}
                 </label>
@@ -208,15 +211,19 @@ export function Filters() {
               .join(" ");
 
             return (
-              <div key={scope} className="flex items-center space-x-2">
+              <div key={scope} className="flex items-center space-x-2 group">
                 <Checkbox
                   id={scope}
                   checked={selectedScopes.includes(scope)}
                   onCheckedChange={(checked) =>
                     handleScopeChange(scope, !!checked)
                   }
+                  className="cursor-pointer hover:border-primary"
                 />
-                <label htmlFor={scope} className="text-sm text-gray-700">
+                <label
+                  htmlFor={scope}
+                  className="text-sm text-gray-700 cursor-pointer group-hover:text-primary"
+                >
                   {displayText}
                 </label>
               </div>
@@ -238,7 +245,7 @@ export function Filters() {
               max={5000}
               min={5}
               step={5}
-              className="w-full"
+              className="w-full cursor-pointer"
             />
             <div className="flex justify-between text-xs text-gray-500 mt-1">
               <span>$5</span>

@@ -39,10 +39,6 @@ export function hasCompleteProfile(user: User | null): {
     missingFields.push("Professional Introduction");
   }
 
-  if (!user.skills || user.skills.length === 0) {
-    missingFields.push("Skills");
-  }
-
   // Handle education - check for undefined, null, or empty array
   if (
     !user.education ||

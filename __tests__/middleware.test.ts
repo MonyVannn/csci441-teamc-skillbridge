@@ -57,6 +57,7 @@ describe("Middleware", () => {
         "/sign-up(.*)",
         "/",
         "/api/webhooks(.*)",
+        "/api/demo(.*)",
         "/profile(.*)",
         "/docs(.*)",
       ]);

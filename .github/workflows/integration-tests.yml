@@ -32,7 +32,7 @@ jobs:
         run: npx prisma generate
 
       - name: Run integration tests
-        run: npm test -- --coverage --testPathPattern=integration
+        run: npm test -- --coverage --testPathPatterns=integration
         env:
           NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
           CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}

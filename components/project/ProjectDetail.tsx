@@ -426,26 +426,21 @@ export function ProjectDetail({ project, timeline }: ProjectDetailProps) {
             height={1080}
             className="h-[100px] rounded-tl-lg rounded-tr-lg w-full object-cover"
           />
-
-          <div className="flex items-center gap-4 px-4 -mt-8">
-            <Avatar className="w-16 h-16 border-4 border-background bg-white">
-              <AvatarImage src={project.assignedStudent?.imageUrl || ""} />
-              <AvatarFallback className="text-xl bg-muted">
-                {project.assignedStudent?.firstName?.[0]}
-                {project.assignedStudent?.lastName?.[0]}
-              </AvatarFallback>
-            </Avatar>
-
-            <div className="mt-8">
-              <h1 className="font-semibold text-lg">
-                {project.assignedStudent?.firstName} {project.assignedStudent?.lastName}
-              </h1>
-              <p className="text-xs sm:text-sm text-muted-foreground">
-                {project.assignedStudent?.bio}
-              </p>
-            </div>
-          </div>
-
+          <Avatar className="absolute top-[72px] left-3 lg:left-6 w-14 h-14 sm:w-16 sm:h-16 border-4 border-background">
+            <AvatarImage src={project.assignedStudent?.imageUrl || ""} />
+            <AvatarFallback className="text-xl sm:text-2xl bg-muted">
+              {project.assignedStudent?.firstName}
+              {project.assignedStudent?.lastName}
+            </AvatarFallback>
+          </Avatar>
+          <h1 className="absolute top-[105px] left-20 sm:left-24 lg:left-24 font-semibold text-base sm:text-lg">
+            {project.assignedStudent?.firstName}{" "}
+            {project.assignedStudent?.lastName}
+          </h1>
+          <div className="mt-10 px-2 sm:px-0">
+            <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+              {project.assignedStudent?.bio}
+            </p>
             <div className="mt-2 flex flex-wrap gap-1">
               {project.assignedStudent?.skills?.map((skill) => (
                 <Badge key={skill} variant={"outline"} className="text-xs">
@@ -529,6 +524,7 @@ export function ProjectDetail({ project, timeline }: ProjectDetailProps) {
               </div>
             </section>
           </div>
+        </div>
       )}
 
       {/* Confirmation Dialog */}

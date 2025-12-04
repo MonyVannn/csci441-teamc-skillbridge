@@ -433,7 +433,7 @@ export function ProjectDetail({ project, timeline }: ProjectDetailProps) {
               {project.assignedStudent?.lastName}
             </AvatarFallback>
           </Avatar>
-          <h1 className="absolute top-[90px] left-20 sm:left-24 lg:left-24 font-semibold text-base sm:text-lg">
+          <h1 className="absolute top-[105px] left-20 sm:left-24 lg:left-24 font-semibold text-base sm:text-lg">
             {project.assignedStudent?.firstName}{" "}
             {project.assignedStudent?.lastName}
           </h1>

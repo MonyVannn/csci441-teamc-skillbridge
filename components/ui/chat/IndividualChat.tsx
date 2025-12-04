@@ -283,7 +283,7 @@ export default function IndividualChat({
                   return (
                     <React.Fragment key={message.id}>
                       {showSeparator && <Separator />}
-                      <div className="flex flex-col gap-1">
+                      <div className="flex flex-col gap-1 overflow-hidden">
                         <div className="flex items-center gap-2">
                           <Avatar className="h-7 w-7 flex-shrink-0">
                             <AvatarImage
@@ -301,7 +301,7 @@ export default function IndividualChat({
                             {formatTime(message.createdAt)}
                           </span>
                         </div>
-                        <div className="text-sm text-foreground leading-relaxed ml-9 whitespace-pre-wrap">
+                        <div className="w-full text-sm text-foreground leading-relaxed ml-9 whitespace-pre-wrap break-words pr-10">
                           {message.content}
                         </div>
                       </div>

@@ -367,10 +367,52 @@ export default function PostProjectPage() {
     });
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleSkillKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       e.preventDefault();
+      e.stopPropagation();
       addSkill(skillInput.trim());
+    }
+  };
+
+  const handleResponsibilityKeyDown = (
+    e: React.KeyboardEvent,
+    index: number
+  ) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      e.stopPropagation();
+      const current = form.getValues("responsibilities");
+      // Only add new if current field has content
+      if (current[index]?.trim()) {
+        addResponsibility();
+        // Focus the new input after a short delay
+        setTimeout(() => {
+          const inputs = document.querySelectorAll<HTMLInputElement>(
+            '[placeholder^="Responsibility"]'
+          );
+          inputs[index + 1]?.focus();
+        }, 50);
+      }
+    }
+  };
+
+  const handleDeliverableKeyDown = (e: React.KeyboardEvent, index: number) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      e.stopPropagation();
+      const current = form.getValues("deliverables");
+      // Only add new if current field has content
+      if (current[index]?.trim()) {
+        addDeliverable();
+        // Focus the new input after a short delay
+        setTimeout(() => {
+          const inputs = document.querySelectorAll<HTMLInputElement>(
+            '[placeholder^="Deliverable"]'
+          );
+          inputs[index + 1]?.focus();
+        }, 50);
+      }
     }
   };
 
@@ -660,6 +702,9 @@ export default function PostProjectPage() {
                                     newResponsibilities[index] = e.target.value;
                                     field.onChange(newResponsibilities);
                                   }}
+                                  onKeyDown={(e) =>
+                                    handleResponsibilityKeyDown(e, index)
+                                  }
                                   disabled={isSubmitting}
                                   className="flex-1"
                                 />
@@ -718,6 +763,9 @@ export default function PostProjectPage() {
                                     newDeliverables[index] = e.target.value;
                                     field.onChange(newDeliverables);
                                   }}
+                                  onKeyDown={(e) =>
+                                    handleDeliverableKeyDown(e, index)
+                                  }
                                   disabled={isSubmitting}
                                   className="flex-1"
                                 />
@@ -758,7 +806,7 @@ export default function PostProjectPage() {
                                 placeholder="Type a skill and press Enter"
                                 value={skillInput}
                                 onChange={(e) => setSkillInput(e.target.value)}
-                                onKeyPress={handleKeyPress}
+                                onKeyDown={handleSkillKeyDown}
                                 className="flex-1"
                                 maxLength={20}
                                 disabled={isSubmitting}

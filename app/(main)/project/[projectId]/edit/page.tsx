@@ -2,7 +2,7 @@
 
 import type React from "react";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -159,6 +159,10 @@ export default function EditProjectPage({ params }: PageProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [project, setProject] = useState<Project>();
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+
+  // Refs for dynamic input focus management
+  const responsibilityRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const deliverableRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   // Initialize form first
   const form = useForm<FormData>({
@@ -546,10 +550,7 @@ export default function EditProjectPage({ params }: PageProps) {
         addResponsibility();
         // Focus the new input after a short delay
         setTimeout(() => {
-          const inputs = document.querySelectorAll<HTMLInputElement>(
-            '[placeholder^="Responsibility"]'
-          );
-          inputs[index + 1]?.focus();
+          responsibilityRefs.current[index + 1]?.focus();
         }, 50);
       }
     }
@@ -565,10 +566,7 @@ export default function EditProjectPage({ params }: PageProps) {
         addDeliverable();
         // Focus the new input after a short delay
         setTimeout(() => {
-          const inputs = document.querySelectorAll<HTMLInputElement>(
-            '[placeholder^="Deliverable"]'
-          );
-          inputs[index + 1]?.focus();
+          deliverableRefs.current[index + 1]?.focus();
         }, 50);
       }
     }
@@ -852,6 +850,9 @@ export default function EditProjectPage({ params }: PageProps) {
                             {field.value.map((_, index) => (
                               <div key={index} className="flex gap-2">
                                 <Input
+                                  ref={(el) => {
+                                    responsibilityRefs.current[index] = el;
+                                  }}
                                   placeholder={`Responsibility ${index + 1}`}
                                   value={field.value[index]}
                                   onChange={(e) => {
@@ -915,6 +916,9 @@ export default function EditProjectPage({ params }: PageProps) {
                             {field.value.map((_, index) => (
                               <div key={index} className="flex gap-2">
                                 <Input
+                                  ref={(el) => {
+                                    deliverableRefs.current[index] = el;
+                                  }}
                                   placeholder={`Deliverable ${index + 1}`}
                                   value={field.value[index]}
                                   onChange={(e) => {

@@ -2,7 +2,7 @@
 
 import type React from "react";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -159,6 +159,10 @@ export default function EditProjectPage({ params }: PageProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [project, setProject] = useState<Project>();
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+
+  // Refs for dynamic input focus management
+  const responsibilityRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const deliverableRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   // Initialize form first
   const form = useForm<FormData>({
@@ -525,10 +529,46 @@ export default function EditProjectPage({ params }: PageProps) {
     });
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleSkillKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       e.preventDefault();
+      e.stopPropagation();
       addSkill(skillInput.trim());
+    }
+  };
+
+  const handleResponsibilityKeyDown = (
+    e: React.KeyboardEvent,
+    index: number
+  ) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      e.stopPropagation();
+      const current = form.getValues("responsibilities");
+      // Only add new if current field has content
+      if (current[index]?.trim()) {
+        addResponsibility();
+        // Focus the new input after a short delay
+        setTimeout(() => {
+          responsibilityRefs.current[index + 1]?.focus();
+        }, 50);
+      }
+    }
+  };
+
+  const handleDeliverableKeyDown = (e: React.KeyboardEvent, index: number) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      e.stopPropagation();
+      const current = form.getValues("deliverables");
+      // Only add new if current field has content
+      if (current[index]?.trim()) {
+        addDeliverable();
+        // Focus the new input after a short delay
+        setTimeout(() => {
+          deliverableRefs.current[index + 1]?.focus();
+        }, 50);
+      }
     }
   };
 
@@ -810,6 +850,9 @@ export default function EditProjectPage({ params }: PageProps) {
                             {field.value.map((_, index) => (
                               <div key={index} className="flex gap-2">
                                 <Input
+                                  ref={(el) => {
+                                    responsibilityRefs.current[index] = el;
+                                  }}
                                   placeholder={`Responsibility ${index + 1}`}
                                   value={field.value[index]}
                                   onChange={(e) => {
@@ -819,6 +862,9 @@ export default function EditProjectPage({ params }: PageProps) {
                                     newResponsibilities[index] = e.target.value;
                                     field.onChange(newResponsibilities);
                                   }}
+                                  onKeyDown={(e) =>
+                                    handleResponsibilityKeyDown(e, index)
+                                  }
                                   disabled={isSubmitting}
                                   className="flex-1"
                                 />
@@ -870,6 +916,9 @@ export default function EditProjectPage({ params }: PageProps) {
                             {field.value.map((_, index) => (
                               <div key={index} className="flex gap-2">
                                 <Input
+                                  ref={(el) => {
+                                    deliverableRefs.current[index] = el;
+                                  }}
                                   placeholder={`Deliverable ${index + 1}`}
                                   value={field.value[index]}
                                   onChange={(e) => {
@@ -877,6 +926,9 @@ export default function EditProjectPage({ params }: PageProps) {
                                     newDeliverables[index] = e.target.value;
                                     field.onChange(newDeliverables);
                                   }}
+                                  onKeyDown={(e) =>
+                                    handleDeliverableKeyDown(e, index)
+                                  }
                                   disabled={isSubmitting}
                                   className="flex-1"
                                 />
@@ -917,7 +969,7 @@ export default function EditProjectPage({ params }: PageProps) {
                                 placeholder="Type a skill and press Enter"
                                 value={skillInput}
                                 onChange={(e) => setSkillInput(e.target.value)}
-                                onKeyPress={handleKeyPress}
+                                onKeyDown={handleSkillKeyDown}
                                 className="flex-1"
                                 maxLength={20}
                                 disabled={isSubmitting}

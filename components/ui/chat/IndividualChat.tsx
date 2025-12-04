@@ -206,11 +206,11 @@ export default function IndividualChat({
         ${
           isMinimized ? "lg:w-[230px] lg:h-[48px]" : "lg:w-[360px] lg:h-[500px]"
         }
-        fixed lg:relative
-        inset-0 lg:inset-auto
+        ${isMinimized ? "fixed bottom-0 right-0" : "fixed inset-0"} 
+        lg:relative lg:inset-auto
         z-50 lg:z-auto
         bg-white
-        h-screen lg:h-auto`}
+        lg:h-auto`}
     >
       {/* Chat header */}
       <div className="flex items-center justify-between px-3 py-2 border-b bg-white">

@@ -163,7 +163,7 @@ export default function ChatList({
     <div
       className={`flex flex-col overflow-hidden bg-card text-card-foreground 
         lg:rounded-t-xl lg:border-t lg:border-l lg:border-r lg:shadow-lg lg:-mb-1
-        w-full lg:w-auto h-full lg:h-auto
+        w-full lg:w-auto
         ${
           isOpen ? "opacity-100" : "h-0 opacity-0 pointer-events-none lg:h-0"
         } transition-all duration-200 ease-in-out`}
